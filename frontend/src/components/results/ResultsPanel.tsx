@@ -11,7 +11,7 @@ import {
   Cell,
 } from 'recharts';
 import type { HydrologyResult, HydrologyInput } from '../../types';
-import { interpretResults, generateReport } from '../../services/api';
+import { interpretResults, generateReport, generateDocxReport } from '../../services/api';
 
 const RISK_STYLES: Record<string, string> = {
   muy_bajo: 'bg-green-100 text-green-800 border-green-300',
@@ -67,6 +67,7 @@ function Metric({
 export function ResultsPanel({ results, formData, onBack, onNewCalculation }: Props) {
   const { t } = useTranslation();
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isDownloadingDocx, setIsDownloadingDocx] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
 
   // AI interpretation — fires automatically when the panel mounts
@@ -105,6 +106,30 @@ export function ResultsPanel({ results, formData, onBack, onNewCalculation }: Pr
       setReportError(t('errors.reportFailed'));
     } finally {
       setIsDownloading(false);
+    }
+  }
+
+  async function handleDownloadDocx() {
+    setIsDownloadingDocx(true);
+    setReportError(null);
+    try {
+      const blob = await generateDocxReport(results, {
+        projectName: formData.project_name || 'Análisis Hidrológico',
+        location: formData.location_description || results.city,
+        clientName: formData.client_name || undefined,
+        language: formData.language || 'es',
+        aiInterpretation: interpretQuery.data?.interpretation,
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `autohydro_${results.city.replace(/\s+/g, '_')}_T${results.return_period}.docx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setReportError('Error al generar el Word. Intente nuevamente.');
+    } finally {
+      setIsDownloadingDocx(false);
     }
   }
 
@@ -397,6 +422,51 @@ export function ResultsPanel({ results, formData, onBack, onNewCalculation }: Pr
                     />
                   </svg>
                   {t('results.generateReport')}
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleDownloadDocx}
+              disabled={isDownloadingDocx}
+              className="px-5 py-2 rounded-lg border border-indigo-500 text-indigo-600 text-sm font-semibold hover:bg-indigo-50 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+            >
+              {isDownloadingDocx ? (
+                <>
+                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8z"
+                    />
+                  </svg>
+                  Generando Word...
+                </>
+              ) : (
+                <>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                  Descargar en Word (.docx)
                 </>
               )}
             </button>

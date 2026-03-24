@@ -82,6 +82,36 @@ export async function generateReport(
   return res.blob();
 }
 
+export async function generateDocxReport(
+  calculationData: HydrologyResult,
+  options: {
+    projectName: string;
+    location: string;
+    clientName?: string;
+    language: string;
+    aiInterpretation?: string;
+  },
+): Promise<Blob> {
+  const res = await fetch(`${BASE}/api/report/docx`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      calculationData,
+      projectName: options.projectName,
+      location: options.location,
+      clientName: options.clientName,
+      language: options.language,
+      aiInterpretation: options.aiInterpretation ?? '',
+      fetchAISections: true,
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(body.detail ?? `HTTP ${res.status}`);
+  }
+  return res.blob();
+}
+
 export async function getCities(): Promise<
   Array<{ city: string; province: string; source: string }>
 > {
