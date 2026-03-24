@@ -24,6 +24,7 @@ const RISK_STYLES: Record<string, string> = {
 interface Props {
   results: HydrologyResult;
   formData: HydrologyInput;
+  basinPolygon?: [number, number][];
   onBack: () => void;
   onNewCalculation: () => void;
 }
@@ -64,7 +65,7 @@ function Metric({
   );
 }
 
-export function ResultsPanel({ results, formData, onBack, onNewCalculation }: Props) {
+export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCalculation }: Props) {
   const { t } = useTranslation();
   const [isDownloading, setIsDownloading] = useState(false);
   const [isDownloadingDocx, setIsDownloadingDocx] = useState(false);
@@ -102,6 +103,7 @@ export function ResultsPanel({ results, formData, onBack, onNewCalculation }: Pr
         clientName: formData.client_name || undefined,
         language: formData.language || 'es',
         aiInterpretation: interpretQuery.data?.interpretation,
+        basinPolygon,
       });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -126,6 +128,7 @@ export function ResultsPanel({ results, formData, onBack, onNewCalculation }: Pr
         clientName: formData.client_name || undefined,
         language: formData.language || 'es',
         aiInterpretation: interpretQuery.data?.interpretation,
+        basinPolygon,
       });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');

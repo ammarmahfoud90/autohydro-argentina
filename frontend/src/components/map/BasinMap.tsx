@@ -18,6 +18,7 @@ export interface BasinData {
   area_km2: number;
   slope?: number;
   length_km?: number;
+  polygon?: [number, number][];  // [lat, lng] pairs
 }
 
 type DrawMode = 'idle' | 'drawing' | 'done';
@@ -270,7 +271,10 @@ export function BasinMap({ onUseData }: Props) {
             </p>
             <button
               type="button"
-              onClick={() => onUseData({ area_km2: polyArea })}
+              onClick={() => onUseData({
+                area_km2: polyArea,
+                polygon: vertices.map(v => [v.lat, v.lng] as [number, number]),
+              })}
               className="px-4 py-1.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors"
             >
               Usar esta area

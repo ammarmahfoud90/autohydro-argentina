@@ -191,6 +191,7 @@ export function Calculator() {
   const [basinMode, setBasinMode] = useState<'manual' | 'map'>('manual');
   const [formData, setFormData] = useState<HydrologyInput>(DEFAULT_FORM);
   const [results, setResults] = useState<HydrologyResult | null>(null);
+  const [basinPolygon, setBasinPolygon] = useState<[number, number][] | undefined>(undefined);
 
   // Scroll to top whenever the step changes
   useEffect(() => {
@@ -361,13 +362,14 @@ export function Calculator() {
             {basinMode === 'map' && (
               <div className="mb-5">
                 <BasinMap
-                  onUseData={(d) =>
+                  onUseData={(d) => {
                     update({
                       area_km2: d.area_km2,
                       ...(d.slope != null ? { slope: d.slope } : {}),
                       ...(d.length_km != null ? { length_km: d.length_km } : {}),
-                    })
-                  }
+                    });
+                    if (d.polygon) setBasinPolygon(d.polygon);
+                  }}
                 />
               </div>
             )}
@@ -443,11 +445,13 @@ export function Calculator() {
           <ResultsPanel
             results={results}
             formData={formData}
+            basinPolygon={basinPolygon}
             onBack={() => setStep(3)}
             onNewCalculation={() => {
               setStep(1);
               setResults(null);
               setFormData(DEFAULT_FORM);
+              setBasinPolygon(undefined);
             }}
           />
         )}

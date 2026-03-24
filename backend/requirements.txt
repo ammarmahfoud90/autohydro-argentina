@@ -8,6 +8,7 @@ python-docx>=1.1.0
 python-multipart>=0.0.20
 httpx>=0.28.1
 python-dotenv>=1.0.1
+staticmap>=0.5.7
 # Watershed delineation (uses httpx for DEM download, already listed above)
 numpy>=1.24
 scipy>=1.11

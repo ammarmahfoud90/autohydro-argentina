@@ -14,6 +14,7 @@ from docx.shared import Pt, Cm, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
+from app.services.map_image_service import generate_basin_map_image
 
 # ── Brand colours (hex strings for OOXML, RGBColor for runs) ──────────────────
 
@@ -373,14 +374,15 @@ class MemoriaCalculoDocxGenerator:
 
         toc_items = [
             ("1.", "Objeto del Estudio"),
-            ("2.", "Descripci\u00f3n de la Cuenca"),
-            ("3.", "An\u00e1lisis Pluviom\u00e9trico \u2014 Curvas IDF"),
-            ("4.", "Tiempo de Concentraci\u00f3n"),
-            ("5.", "Metodolog\u00eda de C\u00e1lculo"),
-            ("6.", "C\u00e1lculos y Resultados"),
-            ("7.", "An\u00e1lisis e Interpretaci\u00f3n"),
-            ("8.", "Conclusiones y Recomendaciones"),
-            ("Anexo A.", "Planilla de C\u00e1lculo Detallada"),
+            ("2.", "Descripción de la Cuenca"),
+            ("3.", "Ubicación de la Cuenca"),
+            ("4.", "Análisis Pluviométrico — Curvas IDF"),
+            ("5.", "Tiempo de Concentración"),
+            ("6.", "Metodología de Cálculo"),
+            ("7.", "Cálculos y Resultados"),
+            ("8.", "Análisis e Interpretación"),
+            ("9.", "Conclusiones y Recomendaciones"),
+            ("Anexo A.", "Planilla de Cálculo Detallada"),
         ]
 
         for num, title in toc_items:
@@ -432,10 +434,45 @@ class MemoriaCalculoDocxGenerator:
 
         self._make_table(doc, morph)
 
-    # ── Section 3: IDF ────────────────────────────────────────────────────────
+    # ── Section 3: Ubicación de la cuenca ─────────────────────────────────────
+
+    def _build_section_ubicacion(
+        self, doc: Document, basin_polygon: Optional[list[list[float]]]
+    ) -> None:
+        self._h1(doc, "3. UBICACIÓN DE LA CUENCA")
+
+        if basin_polygon and len(basin_polygon) >= 3:
+            img_bytes = generate_basin_map_image(basin_polygon, width=800, height=500)
+            if img_bytes:
+                img_buf = BytesIO(img_bytes)
+                para = doc.add_paragraph()
+                para.paragraph_format.space_after = Pt(4)
+                run = para.add_run()
+                run.add_picture(img_buf, width=Cm(14))
+                caption = doc.add_paragraph("Figura 1: Delimitación de la cuenca de estudio")
+                caption.paragraph_format.space_after = Pt(6)
+                for run in caption.runs:
+                    run.font.size = Pt(9)
+                    run.font.italic = True
+                    run.font.color.rgb = _GRAY
+                caption.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            else:
+                self._body(
+                    doc,
+                    "No fue posible generar la imagen del mapa. "
+                    "Verificar la conexión a internet para cargar las teselas base.",
+                )
+        else:
+            self._body(
+                doc,
+                "No se proporcionó delimitación cartográfica de la cuenca. "
+                "La ubicación fue definida mediante parámetros morfométricos ingresados manualmente.",
+            )
+
+    # ── Section 4: IDF ────────────────────────────────────────────────────────
 
     def _build_section_idf(self, doc: Document, data: dict) -> None:
-        self._h1(doc, "3. AN\u00c1LISIS PLUVIOM\u00c9TRICO \u2014 CURVAS IDF")
+        self._h1(doc, "4. ANÁLISIS PLUVIOMÉTRICO — CURVAS IDF")
 
         intro = (
             f"Los datos pluviom\u00e9tricos se obtuvieron de la estaci\u00f3n de referencia "
@@ -462,7 +499,7 @@ class MemoriaCalculoDocxGenerator:
     # ── Section 4: Tc ─────────────────────────────────────────────────────────
 
     def _build_section_tc(self, doc: Document, data: dict) -> None:
-        self._h1(doc, "4. TIEMPO DE CONCENTRACI\u00d3N (Tc)")
+        self._h1(doc, "5. TIEMPO DE CONCENTRACIÓN (Tc)")
 
         n = len(data.get("tc_results", []))
         self._body(
@@ -501,7 +538,7 @@ class MemoriaCalculoDocxGenerator:
     def _build_section_metodologia(
         self, doc: Document, data: dict, ai_sections: dict
     ) -> None:
-        self._h1(doc, "5. METODOLOG\u00cdA DE C\u00c1LCULO")
+        self._h1(doc, "6. METODOLOGÍA DE CÁLCULO")
 
         method_name = _METHOD_NAMES.get(data.get("method", ""), data.get("method", ""))
         para = doc.add_paragraph()
@@ -542,8 +579,8 @@ class MemoriaCalculoDocxGenerator:
     # ── Section 6: Cálculos ───────────────────────────────────────────────────
 
     def _build_section_calculos(self, doc: Document, data: dict) -> None:
-        self._h1(doc, "6. C\u00c1LCULOS Y RESULTADOS")
-        self._h2(doc, "6.1 Par\u00e1metros de c\u00e1lculo")
+        self._h1(doc, "7. CÁLCULOS Y RESULTADOS")
+        self._h2(doc, "7.1 Parámetros de cálculo")
 
         param_rows: list[list] = [["Par\u00e1metro", "Valor", "Unidad"]]
         if data.get("runoff_coeff") is not None:
@@ -568,7 +605,7 @@ class MemoriaCalculoDocxGenerator:
         ]
         self._make_table(doc, param_rows)
 
-        self._h2(doc, "6.2 Caudal de dise\u00f1o")
+        self._h2(doc, "7.2 Caudal de diseño")
         result_rows = [
             ["Par\u00e1metro", "Valor", "Unidad"],
             ["Caudal pico de dise\u00f1o (Q)", f"{data['peak_flow_m3s']:.3f}", "m\u00b3/s"],
@@ -577,7 +614,7 @@ class MemoriaCalculoDocxGenerator:
         self._make_table(doc, result_rows, highlight_last=True)
 
         if data.get("method_comparison"):
-            self._h2(doc, "6.3 Comparaci\u00f3n de m\u00e9todos")
+            self._h2(doc, "7.3 Comparación de métodos")
             comp_rows = [["M\u00e9todo", "Q (m\u00b3/s)", "Tc (hr)", "Observaciones"]]
             for r in data["method_comparison"]:
                 notes = r["notes"]
@@ -594,7 +631,7 @@ class MemoriaCalculoDocxGenerator:
     # ── Section 6b: CN Sensitivity ────────────────────────────────────────────
 
     def _build_section_sensibilidad(self, doc: Document, data: dict) -> None:
-        self._h2(doc, "6.4 Análisis de Sensibilidad del CN")
+        self._h2(doc, "7.4 Análisis de Sensibilidad del CN")
 
         self._body(
             doc,
@@ -649,7 +686,7 @@ class MemoriaCalculoDocxGenerator:
         ai_interpretation: str,
         ai_sections: dict,
     ) -> None:
-        self._h1(doc, "7. AN\u00c1LISIS E INTERPRETACI\u00d3N")
+        self._h1(doc, "8. ANÁLISIS E INTERPRETACIÓN")
 
         risk = data.get("risk_level", "moderado")
         risk_label = _RISK_LABELS_ES.get(risk, risk.upper())
@@ -690,7 +727,7 @@ class MemoriaCalculoDocxGenerator:
     def _build_section_conclusiones(
         self, doc: Document, data: dict, ai_sections: dict
     ) -> None:
-        self._h1(doc, "8. CONCLUSIONES Y RECOMENDACIONES")
+        self._h1(doc, "9. CONCLUSIONES Y RECOMENDACIONES")
 
         text = ai_sections.get("conclusiones") or (
             f"Se determin\u00f3 un caudal pico de dise\u00f1o de "
@@ -777,6 +814,7 @@ class MemoriaCalculoDocxGenerator:
         calculation_data: dict[str, Any],
         ai_interpretation: str = "",
         ai_recommendations: Any = "",
+        basin_polygon: Optional[list[list[float]]] = None,
     ) -> BytesIO:
         """
         Generate the complete Word report.
@@ -802,6 +840,7 @@ class MemoriaCalculoDocxGenerator:
         # Main sections (mirror PDF section order)
         self._build_section_objeto(doc, ai_sections)
         self._build_section_cuenca(doc, calculation_data, ai_sections)
+        self._build_section_ubicacion(doc, basin_polygon)
         self._build_section_idf(doc, calculation_data)
         self._build_section_tc(doc, calculation_data)
         self._build_section_metodologia(doc, calculation_data, ai_sections)

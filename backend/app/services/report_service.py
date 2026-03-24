@@ -22,8 +22,10 @@ from reportlab.platypus import (
     PageBreak,
     KeepTogether,
     HRFlowable,
+    Image as RLImage,
 )
 from reportlab.pdfgen import canvas as rl_canvas
+from app.services.map_image_service import generate_basin_map_image
 
 # Brand colours
 _NAVY = colors.HexColor("#1a365d")
@@ -312,12 +314,13 @@ class MemoriaCalculoGenerator:
         toc_items = [
             ("1.", "Objeto del Estudio"),
             ("2.", "Descripción de la Cuenca"),
-            ("3.", "Análisis Pluviométrico — Curvas IDF"),
-            ("4.", "Tiempo de Concentración"),
-            ("5.", "Metodología de Cálculo"),
-            ("6.", "Cálculos y Resultados"),
-            ("7.", "Análisis e Interpretación"),
-            ("8.", "Conclusiones y Recomendaciones"),
+            ("3.", "Ubicación de la Cuenca"),
+            ("4.", "Análisis Pluviométrico — Curvas IDF"),
+            ("5.", "Tiempo de Concentración"),
+            ("6.", "Metodología de Cálculo"),
+            ("7.", "Cálculos y Resultados"),
+            ("8.", "Análisis e Interpretación"),
+            ("9.", "Conclusiones y Recomendaciones"),
             ("Anexo A.", "Planilla de Cálculo Detallada"),
         ]
 
@@ -372,11 +375,58 @@ class MemoriaCalculoGenerator:
         story.append(tbl)
         return story
 
-    # ── Section 3: IDF ────────────────────────────────────────────────────
+    # ── Section 3: Ubicación de la cuenca ─────────────────────────────────
+
+    def _build_section_ubicacion(
+        self, basin_polygon: Optional[list[list[float]]]
+    ) -> list:
+        S = self.styles
+        story = [Paragraph("3. UBICACIÓN DE LA CUENCA", S["h1"])]
+        story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=8))
+
+        if basin_polygon and len(basin_polygon) >= 3:
+            img_bytes = generate_basin_map_image(basin_polygon, width=800, height=500)
+            if img_bytes:
+                img_buf = BytesIO(img_bytes)
+                img = RLImage(img_buf, width=14 * cm, height=8.75 * cm)
+                story.append(img)
+                story.append(Spacer(1, 4))
+                story.append(
+                    Paragraph(
+                        "Figura 1: Delimitación de la cuenca de estudio",
+                        ParagraphStyle(
+                            "Caption",
+                            fontSize=9,
+                            fontName="Helvetica-Oblique",
+                            textColor=_GRAY,
+                            alignment=TA_CENTER,
+                            spaceAfter=6,
+                        ),
+                    )
+                )
+            else:
+                story.append(
+                    Paragraph(
+                        "No fue posible generar la imagen del mapa. "
+                        "Verificar la conexión a internet para cargar las teselas base.",
+                        S["body"],
+                    )
+                )
+        else:
+            story.append(
+                Paragraph(
+                    "No se proporcionó delimitación cartográfica de la cuenca. "
+                    "La ubicación fue definida mediante parámetros morfométricos ingresados manualmente.",
+                    S["body"],
+                )
+            )
+        return story
+
+    # ── Section 4: IDF ────────────────────────────────────────────────────
 
     def _build_section_idf(self, data: dict[str, Any]) -> list:
         S = self.styles
-        story = [Paragraph("3. ANÁLISIS PLUVIOMÉTRICO — CURVAS IDF", S["h1"])]
+        story = [Paragraph("4. ANÁLISIS PLUVIOMÉTRICO — CURVAS IDF", S["h1"])]
         story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=8))
 
         intro = (
@@ -416,7 +466,7 @@ class MemoriaCalculoGenerator:
 
     def _build_section_tc(self, data: dict[str, Any]) -> list:
         S = self.styles
-        story = [Paragraph("4. TIEMPO DE CONCENTRACIÓN (Tc)", S["h1"])]
+        story = [Paragraph("5. TIEMPO DE CONCENTRACIÓN (Tc)", S["h1"])]
         story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=8))
 
         intro = (
@@ -475,7 +525,7 @@ class MemoriaCalculoGenerator:
         self, data: dict[str, Any], ai_sections: dict[str, str]
     ) -> list:
         S = self.styles
-        story = [Paragraph("5. METODOLOGÍA DE CÁLCULO", S["h1"])]
+        story = [Paragraph("6. METODOLOGÍA DE CÁLCULO", S["h1"])]
         story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=8))
 
         method_name = _METHOD_NAMES.get(data.get("method", ""), data.get("method", ""))
@@ -505,10 +555,10 @@ class MemoriaCalculoGenerator:
 
     def _build_section_calculos(self, data: dict[str, Any]) -> list:
         S = self.styles
-        story = [Paragraph("6. CÁLCULOS Y RESULTADOS", S["h1"])]
+        story = [Paragraph("7. CÁLCULOS Y RESULTADOS", S["h1"])]
         story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=8))
 
-        story.append(Paragraph("6.1 Parámetros de cálculo", S["h2"]))
+        story.append(Paragraph("7.1 Parámetros de cálculo", S["h2"]))
 
         param_rows = [["Parámetro", "Valor", "Unidad"]]
 
@@ -528,7 +578,7 @@ class MemoriaCalculoGenerator:
 
         story.append(self._make_table(param_rows))
 
-        story.append(Paragraph("6.2 Caudal de diseño", S["h2"]))
+        story.append(Paragraph("7.2 Caudal de diseño", S["h2"]))
 
         result_rows = [["Parámetro", "Valor", "Unidad"]]
         result_rows.append(["Caudal pico de diseño (Q)", f"{data['peak_flow_m3s']:.3f}", "m³/s"])
@@ -538,7 +588,7 @@ class MemoriaCalculoGenerator:
 
         # Method comparison if available
         if data.get("method_comparison"):
-            story.append(Paragraph("6.3 Comparación de métodos", S["h2"]))
+            story.append(Paragraph("7.3 Comparación de métodos", S["h2"]))
             comp_rows = [["Método", "Q (m³/s)", "Tc (hr)", "Observaciones"]]
             for r in data["method_comparison"]:
                 comp_rows.append([
@@ -556,7 +606,7 @@ class MemoriaCalculoGenerator:
 
     def _build_section_sensibilidad(self, data: dict[str, Any]) -> list:
         S = self.styles
-        story = [Paragraph("6.4 ANÁLISIS DE SENSIBILIDAD DEL CN", S["h2"])]
+        story = [Paragraph("7.4 ANÁLISIS DE SENSIBILIDAD DEL CN", S["h2"])]
 
         story.append(
             Paragraph(
@@ -626,7 +676,7 @@ class MemoriaCalculoGenerator:
         self, data: dict[str, Any], ai_interpretation: str, ai_sections: dict[str, str]
     ) -> list:
         S = self.styles
-        story = [Paragraph("7. ANÁLISIS E INTERPRETACIÓN", S["h1"])]
+        story = [Paragraph("8. ANÁLISIS E INTERPRETACIÓN", S["h1"])]
         story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=8))
 
         # Risk badge
@@ -679,7 +729,7 @@ class MemoriaCalculoGenerator:
         self, data: dict[str, Any], ai_sections: dict[str, str]
     ) -> list:
         S = self.styles
-        story = [Paragraph("8. CONCLUSIONES Y RECOMENDACIONES", S["h1"])]
+        story = [Paragraph("9. CONCLUSIONES Y RECOMENDACIONES", S["h1"])]
         story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=8))
 
         text = ai_sections.get("conclusiones") or (
@@ -806,6 +856,7 @@ class MemoriaCalculoGenerator:
         calculation_data: dict[str, Any],
         ai_interpretation: str = "",
         ai_recommendations: str = "",
+        basin_polygon: Optional[list[list[float]]] = None,
     ) -> BytesIO:
         """
         Generate the complete PDF report.
@@ -847,6 +898,7 @@ class MemoriaCalculoGenerator:
         # Main sections
         story.extend(self._build_section_objeto(ai_sections))
         story.extend(self._build_section_cuenca(calculation_data, ai_sections))
+        story.extend(self._build_section_ubicacion(basin_polygon))
         story.extend(self._build_section_idf(calculation_data))
         story.extend(self._build_section_tc(calculation_data))
         story.extend(self._build_section_metodologia(calculation_data, ai_sections))

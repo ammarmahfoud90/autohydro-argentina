@@ -28,6 +28,7 @@ def generate_report(payload: dict) -> StreamingResponse:
     language = payload.get("language", "es")
     ai_interpretation = payload.get("aiInterpretation", "")
     fetch_ai = payload.get("fetchAISections", True)
+    basin_polygon = payload.get("basinPolygon")  # list of [lat, lng] or None
 
     if not calculation_data:
         raise HTTPException(
@@ -58,6 +59,7 @@ def generate_report(payload: dict) -> StreamingResponse:
             calculation_data=calculation_data,
             ai_interpretation=ai_interpretation,
             ai_recommendations=ai_sections,
+            basin_polygon=basin_polygon,
         )
     except Exception as exc:
         raise HTTPException(
@@ -92,6 +94,7 @@ def generate_report_docx(payload: dict) -> StreamingResponse:
     language = payload.get("language", "es")
     ai_interpretation = payload.get("aiInterpretation", "")
     fetch_ai = payload.get("fetchAISections", True)
+    basin_polygon = payload.get("basinPolygon")  # list of [lat, lng] or None
 
     if not calculation_data:
         raise HTTPException(status_code=422, detail="calculationData is required")
@@ -118,6 +121,7 @@ def generate_report_docx(payload: dict) -> StreamingResponse:
             calculation_data=calculation_data,
             ai_interpretation=ai_interpretation,
             ai_recommendations=ai_sections,
+            basin_polygon=basin_polygon,
         )
     except Exception as exc:
         raise HTTPException(

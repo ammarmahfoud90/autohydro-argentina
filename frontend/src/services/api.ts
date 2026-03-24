@@ -60,6 +60,7 @@ export async function generateReport(
     clientName?: string;
     language: string;
     aiInterpretation?: string;
+    basinPolygon?: [number, number][];
   },
 ): Promise<Blob> {
   const res = await fetch(`${BASE}/api/report`, {
@@ -73,6 +74,7 @@ export async function generateReport(
       language: options.language,
       aiInterpretation: options.aiInterpretation ?? '',
       fetchAISections: true,
+      basinPolygon: options.basinPolygon ?? null,
     }),
   });
   if (!res.ok) {
@@ -90,6 +92,7 @@ export async function generateDocxReport(
     clientName?: string;
     language: string;
     aiInterpretation?: string;
+    basinPolygon?: [number, number][];
   },
 ): Promise<Blob> {
   const res = await fetch(`${BASE}/api/report/docx`, {
@@ -103,6 +106,7 @@ export async function generateDocxReport(
       language: options.language,
       aiInterpretation: options.aiInterpretation ?? '',
       fetchAISections: true,
+      basinPolygon: options.basinPolygon ?? null,
     }),
   });
   if (!res.ok) {
