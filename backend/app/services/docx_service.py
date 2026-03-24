@@ -591,6 +591,55 @@ class MemoriaCalculoDocxGenerator:
                 ])
             self._make_table(doc, comp_rows, col_widths=[Cm(5), Cm(2.5), Cm(2.5), Cm(6)])
 
+    # ── Section 6b: CN Sensitivity ────────────────────────────────────────────
+
+    def _build_section_sensibilidad(self, doc: Document, data: dict) -> None:
+        self._h2(doc, "6.4 Análisis de Sensibilidad del CN")
+
+        self._body(
+            doc,
+            "Este análisis muestra cómo varía el caudal pico ante cambios de ±5 unidades "
+            "en el Número de Curva. El CN es el parámetro con mayor incertidumbre en el "
+            "método SCS-CN; variaciones de ±5 unidades son habituales en la práctica y "
+            "pueden producir diferencias significativas en el caudal de diseño.",
+        )
+
+        sensitivity = data.get("cn_sensitivity") or []
+        if not sensitivity:
+            return
+
+        rows: list[list] = [["Número de Curva", "Q pico (m³/s)", "Variación"]]
+        for s in sensitivity:
+            label_cn = f"{s['label']} ({s['cn']:.0f})"
+            q_str = f"{s['peak_flow_m3s']:.3f}"
+            if s["label"] == "CN":
+                var_str = "Base"
+            else:
+                sign = "+" if s["variation_pct"] > 0 else ""
+                var_str = f"{sign}{s['variation_pct']:.1f}%"
+            rows.append([label_cn, q_str, var_str])
+
+        # Highlight base row (index 2, which is the "CN" row)
+        tbl = self._make_table(doc, rows, col_widths=[Cm(6), Cm(4), Cm(4)])
+        # Override base row color (index 2) after table is built
+        if tbl is not None and len(tbl.rows) > 2:
+            base_row = tbl.rows[2]
+            for cell in base_row.cells:
+                _set_cell_bg(cell, _LIGHT_BLUE_HEX)
+                for para in cell.paragraphs:
+                    for run in para.runs:
+                        run.font.bold = True
+
+        note = doc.add_paragraph(
+            "NOTA: Se recomienda adoptar el CN base como valor de diseño y usar CN+5 "
+            "como escenario conservador de verificación."
+        )
+        note.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        for run in note.runs:
+            run.font.size = Pt(8)
+            run.font.italic = True
+            run.font.color.rgb = _GRAY
+
     # ── Section 7: Análisis ───────────────────────────────────────────────────
 
     def _build_section_analisis(
@@ -758,6 +807,8 @@ class MemoriaCalculoDocxGenerator:
         self._build_section_metodologia(doc, calculation_data, ai_sections)
         doc.add_page_break()
         self._build_section_calculos(doc, calculation_data)
+        if calculation_data.get("cn_sensitivity"):
+            self._build_section_sensibilidad(doc, calculation_data)
         self._build_section_analisis(doc, calculation_data, ai_interpretation, ai_sections)
         self._build_section_conclusiones(doc, calculation_data, ai_sections)
         doc.add_page_break()

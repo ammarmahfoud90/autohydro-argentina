@@ -100,6 +100,14 @@ export interface HydrologyResult {
   risk_level: RiskLevel;
   risk_recommendations: RiskRecommendations;
   infrastructure_type: string;
+  cn_sensitivity?: CNSensitivityPoint[];
+}
+
+export interface CNSensitivityPoint {
+  label: string;        // "CN-5" | "CN" | "CN+5"
+  cn: number;           // actual CN value used
+  peak_flow_m3s: number;
+  variation_pct: number; // 0 for base case
 }
 
 export interface InterpretationResponse {

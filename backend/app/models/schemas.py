@@ -173,6 +173,13 @@ class RiskRecommendations(BaseModel):
     period_note: Optional[str] = None
 
 
+class CNSensitivityPoint(BaseModel):
+    label: str            # "CN-5" | "CN" | "CN+5"
+    cn: float             # actual CN value used (after clamping to [30, 98])
+    peak_flow_m3s: float
+    variation_pct: float  # 0.0 for base case, negative/positive for others
+
+
 class CalculationResponse(BaseModel):
     # Input echo
     city: str
@@ -213,3 +220,6 @@ class CalculationResponse(BaseModel):
 
     # Infrastructure
     infrastructure_type: str
+
+    # CN sensitivity analysis (SCS-CN method only)
+    cn_sensitivity: Optional[list[CNSensitivityPoint]] = None

@@ -17,6 +17,7 @@ from app.services.tc_service import calculate_all_tc
 from app.models.schemas import (
     CalculationRequest,
     CalculationResponse,
+    CNSensitivityPoint,
     MethodResult,
     RiskRecommendations,
     TcFormulaResult,
@@ -231,6 +232,54 @@ def scs_cn_method(
     }
 
 
+# ── CN sensitivity analysis ───────────────────────────────────────────────────
+
+def compute_cn_sensitivity(
+    cn_base: float,
+    P_mm: float,
+    A_km2: float,
+    tc_hours: float,
+    use_pampa_lambda: bool,
+) -> list[CNSensitivityPoint]:
+    """
+    Compute peak flow for CN-5, CN, and CN+5.
+    CN is clamped to [30, 98] to stay within physical bounds.
+
+    Returns:
+        List of three CNSensitivityPoint objects (low, base, high).
+    """
+    deltas = [(-5, "CN-5"), (0, "CN"), (5, "CN+5")]
+    raw: list[dict] = []
+    base_q = 0.0
+
+    for delta, label in deltas:
+        cn = round(max(30.0, min(98.0, cn_base + delta)), 1)
+        scs = scs_cn_method(cn, P_mm, A_km2, tc_hours, use_pampa_lambda)
+        q = round(scs["Qp_m3s"], 4)
+        if label == "CN":
+            base_q = q
+        raw.append({"label": label, "cn": cn, "peak_flow_m3s": q})
+
+    result: list[CNSensitivityPoint] = []
+    for p in raw:
+        if p["label"] == "CN":
+            var_pct = 0.0
+        elif base_q > 0:
+            var_pct = round((p["peak_flow_m3s"] - base_q) / base_q * 100, 1)
+        else:
+            var_pct = 0.0
+        result.append(
+            CNSensitivityPoint(
+                label=p["label"],
+                cn=p["cn"],
+                peak_flow_m3s=p["peak_flow_m3s"],
+                variation_pct=var_pct,
+            )
+        )
+
+    return result
+
+
 # ── Precipitation depth from intensity ───────────────────────────────────────
 
 def intensity_to_precipitation(i_mm_hr: float, duration_min: float) -> float:
@@ -338,6 +387,13 @@ def run_calculation(payload: dict) -> dict:
         extra["s_mm"] = scs["S_mm"]
         extra["ia_mm"] = scs["Ia_mm"]
         extra["runoff_depth_mm"] = scs["Q_mm"]
+        extra["cn_sensitivity"] = compute_cn_sensitivity(
+            cn_base=cn_value,  # type: ignore[arg-type]
+            P_mm=P_mm,
+            A_km2=req.area_km2,
+            tc_hours=tc_adopted_hr,
+            use_pampa_lambda=req.use_pampa_lambda,
+        )
 
     specific_flow = Q_primary / req.area_km2 if req.area_km2 > 0 else 0.0
 

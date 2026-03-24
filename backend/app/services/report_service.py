@@ -552,6 +552,74 @@ class MemoriaCalculoGenerator:
 
         return story
 
+    # ── Section 6b: CN Sensitivity ────────────────────────────────────────
+
+    def _build_section_sensibilidad(self, data: dict[str, Any]) -> list:
+        S = self.styles
+        story = [Paragraph("6.4 ANÁLISIS DE SENSIBILIDAD DEL CN", S["h2"])]
+
+        story.append(
+            Paragraph(
+                "Este análisis muestra cómo varía el caudal pico ante cambios de ±5 unidades "
+                "en el Número de Curva. El CN es el parámetro con mayor incertidumbre en el "
+                "método SCS-CN; variaciones de ±5 unidades son habituales en la práctica y "
+                "pueden producir diferencias significativas en el caudal de diseño.",
+                S["body"],
+            )
+        )
+
+        sensitivity = data.get("cn_sensitivity", [])
+        if not sensitivity:
+            return story
+
+        rows = [["Número de Curva", "Q pico (m³/s)", "Variación"]]
+        for s in sensitivity:
+            label_cn = f"{s['label']} ({s['cn']:.0f})"
+            q_str = f"{s['peak_flow_m3s']:.3f}"
+            if s["label"] == "CN":
+                var_str = "Base"
+            else:
+                sign = "+" if s["variation_pct"] > 0 else ""
+                var_str = f"{sign}{s['variation_pct']:.1f}%"
+            rows.append([label_cn, q_str, var_str])
+
+        col_w = [6 * cm, 4 * cm, 4 * cm]
+        tbl = Table(rows, colWidths=col_w, repeatRows=1)
+        tbl.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), _NAVY),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 9),
+                    ("ALIGN", (1, 0), (2, -1), "CENTER"),
+                    ("ALIGN", (0, 0), (0, -1), "LEFT"),
+                    # Base row (row index 2 = "CN")
+                    ("BACKGROUND", (0, 2), (-1, 2), _LIGHT_BLUE),
+                    ("FONTNAME", (0, 2), (-1, 2), "Helvetica-Bold"),
+                    ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, _LIGHT_GRAY]),
+                    ("BACKGROUND", (0, 2), (-1, 2), _LIGHT_BLUE),
+                    ("FONTNAME", (0, 2), (-1, 2), "Helvetica-Bold"),
+                    ("GRID", (0, 0), (-1, -1), 0.3, _GRAY),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("TOPPADDING", (0, 0), (-1, -1), 5),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                ]
+            )
+        )
+        story.append(tbl)
+
+        story.append(Spacer(1, 0.3 * cm))
+        story.append(
+            Paragraph(
+                "NOTA: Se recomienda adoptar el CN base como valor de diseño y usar CN+5 "
+                "como escenario conservador de verificación.",
+                S["disclaimer"],
+            )
+        )
+        return story
+
     # ── Section 7: Análisis ────────────────────────────────────────────────
 
     def _build_section_analisis(
@@ -784,6 +852,8 @@ class MemoriaCalculoGenerator:
         story.extend(self._build_section_metodologia(calculation_data, ai_sections))
         story.append(PageBreak())
         story.extend(self._build_section_calculos(calculation_data))
+        if calculation_data.get("cn_sensitivity"):
+            story.extend(self._build_section_sensibilidad(calculation_data))
         story.append(PageBreak())
         story.extend(self._build_section_analisis(calculation_data, ai_interpretation, ai_sections))
         story.extend(self._build_section_conclusiones(calculation_data, ai_sections))
