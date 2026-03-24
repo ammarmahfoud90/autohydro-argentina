@@ -1,6 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { HydrologyInput } from '../../types';
+
+const INPUT_CLASS =
+  'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm ' +
+  'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500';
+
+// Allow only characters that can appear in a positive decimal number.
+const DECIMAL_RE = /^\d*\.?\d*$/;
 
 interface Props {
   formData: HydrologyInput;
@@ -29,70 +36,101 @@ function Field({ label, unit, required, hint, children }: FieldProps) {
   );
 }
 
-function NumInput({
-  value,
-  onChange,
-  min,
-  step: _step = 'any', // kept for API compatibility
-  placeholder,
-}: {
-  value: number | null | '';
-  onChange: (v: number | null) => void;
-  min?: number;
-  step?: string | number;
-  placeholder?: string;
-}) {
-  const [raw, setRaw] = useState<string>(
-    value === null || value === '' ? '' : String(value),
-  );
-  const [isFocused, setIsFocused] = useState(false);
-
-  // Sync external value changes back into raw only when the field is not active
-  useEffect(() => {
-    if (!isFocused) {
-      setRaw(value === null || value === '' ? '' : String(value));
-    }
-  }, [value, isFocused]);
-
-  return (
-    <input
-      type="text"
-      inputMode="decimal"
-      value={raw}
-      placeholder={placeholder}
-      onChange={(e) => {
-        const v = e.target.value;
-        // Reject characters that can never form a valid decimal number
-        if (v !== '' && !/^-?\d*\.?\d*$/.test(v)) return;
-        setRaw(v);
-        // Push a numeric value to the parent for all complete numbers;
-        // leave intermediate states like "0." alone so typing isn't interrupted
-        if (v === '') {
-          onChange(null);
-        } else if (!v.endsWith('.')) {
-          const n = parseFloat(v);
-          if (!isNaN(n)) onChange(n);
-        }
-      }}
-      onFocus={() => setIsFocused(true)}
-      onBlur={() => {
-        setIsFocused(false);
-        const n = parseFloat(raw);
-        if (raw === '' || isNaN(n)) {
-          onChange(null);
-          setRaw('');
-        } else {
-          onChange(n);
-          setRaw(String(n));
-        }
-      }}
-      className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-    />
-  );
+/** Convert a number/null to a display string. 0 shows as empty so the placeholder is visible. */
+function numToStr(v: number | null | undefined): string {
+  if (v == null || v === 0) return '';
+  return String(v);
 }
 
 export function BasinInputs({ formData, onChange }: Props) {
   const { t } = useTranslation();
+
+  // ── Local string state (source of truth for what the user sees) ───────────
+  // These are NEVER overwritten by re-renders from the parent — the parent's
+  // numeric values are only used to initialise on mount and to handle external
+  // resets (e.g. "New Calculation").
+  const [area, setArea] = useState(() => numToStr(formData.area_km2));
+  const [length, setLength] = useState(() => numToStr(formData.length_km));
+  const [slope, setSlope] = useState(() => numToStr(formData.slope));
+  const [elevDiff, setElevDiff] = useState(() => numToStr(formData.elevation_diff_m));
+  const [avgElev, setAvgElev] = useState(() => numToStr(formData.avg_elevation_m));
+
+  // Flag: did the LAST formData change come from our own onChange call?
+  // If yes, skip syncing local strings from the parent (the user is typing).
+  // If no (external reset), sync so the form shows the reset values.
+  const isOwnChange = useRef(false);
+
+  useEffect(() => {
+    if (!isOwnChange.current) {
+      // External change — resync display strings from parent (e.g. form reset).
+      setArea(numToStr(formData.area_km2));
+      setLength(numToStr(formData.length_km));
+      setSlope(numToStr(formData.slope));
+      setElevDiff(numToStr(formData.elevation_diff_m));
+      setAvgElev(numToStr(formData.avg_elevation_m));
+    }
+    isOwnChange.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.area_km2, formData.length_km, formData.slope, formData.elevation_diff_m, formData.avg_elevation_m]);
+
+  // ── Generic handlers ───────────────────────────────────────────────────────
+
+  /**
+   * Build an onChange handler for a decimal text input.
+   * - Rejects characters that can never form a valid decimal.
+   * - Updates local string state immediately (so the user sees what they type).
+   * - Pushes a numeric value to the parent only for complete numbers (not "0.", "").
+   */
+  function handleChange(
+    setter: (s: string) => void,
+    parentUpdate: (n: number | null) => void,
+  ) {
+    return (e: React.ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value;
+
+      // Reject anything that isn't a valid partial decimal (letters, multiple dots…)
+      if (raw !== '' && !DECIMAL_RE.test(raw)) return;
+
+      setter(raw);
+
+      if (raw === '') {
+        isOwnChange.current = true;
+        parentUpdate(null);
+      } else if (!raw.endsWith('.')) {
+        // Only push complete numbers; "0.", "0.0" etc. are valid intermediate states.
+        const n = parseFloat(raw);
+        if (!isNaN(n)) {
+          isOwnChange.current = true;
+          parentUpdate(n);
+        }
+      }
+      // Intermediate states ("0.", "0.0", …) do NOT call parentUpdate —
+      // there's nothing to report yet, and the display is controlled by local state.
+    };
+  }
+
+  /**
+   * Build an onBlur handler that normalises the displayed string and ensures the
+   * parent has the final numeric value (handles the "0." → 0 case on blur).
+   */
+  function handleBlur(
+    setter: (s: string) => void,
+    parentUpdate: (n: number | null) => void,
+  ) {
+    return (e: React.FocusEvent<HTMLInputElement>) => {
+      const raw = e.target.value;
+      const n = parseFloat(raw);
+      if (raw === '' || isNaN(n)) {
+        setter('');
+        isOwnChange.current = true;
+        parentUpdate(null);
+      } else {
+        setter(String(n));        // normalise e.g. "0.0035 " → "0.0035"
+        isOwnChange.current = true;
+        parentUpdate(n);
+      }
+    };
+  }
 
   return (
     <div className="space-y-5">
@@ -103,61 +141,69 @@ export function BasinInputs({ formData, onChange }: Props) {
           value={formData.location_description}
           placeholder={t('calculator.locationPlaceholder')}
           onChange={(e) => onChange({ location_description: e.target.value })}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className={INPUT_CLASS}
         />
       </Field>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Area */}
         <Field label={t('calculator.area')} unit={t('calculator.areaUnit')} required>
-          <NumInput
-            value={formData.area_km2 || ''}
-            onChange={(v) => onChange({ area_km2: v ?? 0 })}
-            min={0.001}
-            step={0.01}
+          <input
+            type="text"
+            inputMode="decimal"
+            value={area}
             placeholder="Ej: 2.5"
+            onChange={handleChange(setArea, (n) => onChange({ area_km2: n ?? 0 }))}
+            onBlur={handleBlur(setArea, (n) => onChange({ area_km2: n ?? 0 }))}
+            className={INPUT_CLASS}
           />
         </Field>
 
         {/* Channel length */}
         <Field label={t('calculator.channelLength')} unit={t('calculator.channelLengthUnit')} required>
-          <NumInput
-            value={formData.length_km || ''}
-            onChange={(v) => onChange({ length_km: v ?? 0 })}
-            min={0.01}
-            step={0.01}
+          <input
+            type="text"
+            inputMode="decimal"
+            value={length}
             placeholder="Ej: 3.2"
+            onChange={handleChange(setLength, (n) => onChange({ length_km: n ?? 0 }))}
+            onBlur={handleBlur(setLength, (n) => onChange({ length_km: n ?? 0 }))}
+            className={INPUT_CLASS}
           />
         </Field>
 
-        {/* Slope */}
+        {/* Slope — the field that triggered this rewrite */}
         <Field
           label={t('calculator.avgSlope')}
           unit={t('calculator.avgSlopeUnit')}
           required
           hint="Ej: 0.005 = 0.5%"
         >
-          <NumInput
-            value={formData.slope || ''}
-            onChange={(v) => onChange({ slope: v ?? 0 })}
-            min={0.0001}
-            step="any"
+          <input
+            type="text"
+            inputMode="decimal"
+            value={slope}
             placeholder="Ej: 0.005"
+            onChange={handleChange(setSlope, (n) => onChange({ slope: n ?? 0 }))}
+            onBlur={handleBlur(setSlope, (n) => onChange({ slope: n ?? 0 }))}
+            className={INPUT_CLASS}
           />
         </Field>
 
-        {/* Elevation diff (optional — California formula) */}
+        {/* Elevation difference (optional — California formula) */}
         <Field
           label={t('calculator.elevationDiff')}
           unit={t('calculator.elevationDiffUnit')}
           hint={`${t('common.optional')} — fórmula California`}
         >
-          <NumInput
-            value={formData.elevation_diff_m}
-            onChange={(v) => onChange({ elevation_diff_m: v })}
-            min={0.1}
-            step={0.1}
+          <input
+            type="text"
+            inputMode="decimal"
+            value={elevDiff}
             placeholder="Ej: 45"
+            onChange={handleChange(setElevDiff, (n) => onChange({ elevation_diff_m: n }))}
+            onBlur={handleBlur(setElevDiff, (n) => onChange({ elevation_diff_m: n }))}
+            className={INPUT_CLASS}
           />
         </Field>
 
@@ -167,17 +213,19 @@ export function BasinInputs({ formData, onChange }: Props) {
           unit={t('calculator.avgElevationUnit')}
           hint={`${t('common.optional')} — fórmula Giandotti`}
         >
-          <NumInput
-            value={formData.avg_elevation_m}
-            onChange={(v) => onChange({ avg_elevation_m: v })}
-            min={0.1}
-            step={0.1}
+          <input
+            type="text"
+            inputMode="decimal"
+            value={avgElev}
             placeholder="Ej: 120"
+            onChange={handleChange(setAvgElev, (n) => onChange({ avg_elevation_m: n }))}
+            onBlur={handleBlur(setAvgElev, (n) => onChange({ avg_elevation_m: n }))}
+            className={INPUT_CLASS}
           />
         </Field>
       </div>
 
-      {/* Basin size warning */}
+      {/* Basin size advisory */}
       {formData.area_km2 > 0 && (
         <div
           className={`rounded-lg p-3 text-sm border ${
@@ -195,7 +243,9 @@ export function BasinInputs({ formData, onChange }: Props) {
             <span>Cuenca mediana (5–50 km²) — Racional Modificado o SCS-CN recomendado.</span>
           )}
           {formData.area_km2 > 50 && (
-            <span>Cuenca grande (&gt; 50 km²) — SCS-CN recomendado. Verificar con modelos distribuidos.</span>
+            <span>
+              Cuenca grande (&gt; 50 km²) — SCS-CN recomendado. Verificar con modelos distribuidos.
+            </span>
           )}
         </div>
       )}
