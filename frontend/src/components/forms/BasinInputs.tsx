@@ -107,7 +107,7 @@ export function BasinInputs({ formData, onChange }: Props) {
             value={formData.slope || ''}
             onChange={(v) => onChange({ slope: v ?? 0 })}
             min={0.0001}
-            step={0.0001}
+            step="any"
             placeholder="Ej: 0.005"
           />
         </Field>
