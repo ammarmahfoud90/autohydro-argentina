@@ -1,8 +1,7 @@
 import { Link } from 'react-router-dom';
 
 const GITHUB_URL = 'https://github.com/ammarmahfoud90/autohydro-argentina';
-// Update LINKEDIN_URL to your actual LinkedIn profile
-const LINKEDIN_URL = 'https://www.linkedin.com/in/ammarmahfoud';
+const LINKEDIN_URL = 'https://www.linkedin.com/in/ammar-mahfoud-499212118';
 
 function GitHubIcon() {
   return (
@@ -21,15 +20,15 @@ function LinkedInIcon() {
 }
 
 const TECH_STACK = [
-  { label: 'React 18 + TypeScript', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+  { label: 'React 18 + TypeScript', color: 'bg-[#EEF6FB] text-[#0055A4] border-[#74ACDF]/40' },
   { label: 'Tailwind CSS v4', color: 'bg-cyan-50 text-cyan-700 border-cyan-200' },
+  { label: 'Vite', color: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
   { label: 'FastAPI (Python)', color: 'bg-green-50 text-green-700 border-green-200' },
-  { label: 'Anthropic Claude API', color: 'bg-violet-50 text-violet-700 border-violet-200' },
+  { label: 'Anthropic Claude AI', color: 'bg-violet-50 text-violet-700 border-violet-200' },
   { label: 'ReportLab PDF', color: 'bg-red-50 text-red-700 border-red-200' },
   { label: 'python-docx Word', color: 'bg-blue-50 text-blue-700 border-blue-200' },
   { label: 'Recharts', color: 'bg-orange-50 text-orange-700 border-orange-200' },
   { label: 'Leaflet Maps', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  { label: 'Vite', color: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
 ];
 
 const REFERENCES = [
@@ -44,29 +43,39 @@ export function About() {
     <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6">
       <div className="max-w-3xl mx-auto space-y-5">
 
-        {/* Developer card */}
+        {/* ── Developer card ──────────────────────────────────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-          {/* Header band */}
-          <div className="h-20 bg-gradient-to-r from-[#1a365d] to-[#2a5298]" />
-          <div className="px-7 pb-7">
-            {/* Avatar */}
-            <div className="-mt-10 mb-4">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-700 text-white font-extrabold text-2xl flex items-center justify-center shadow-lg ring-4 ring-white">
-                AM
-              </div>
-            </div>
+          {/* Header band — Argentine flag colors */}
+          <div className="h-5 bg-[#74ACDF]" />
+          <div className="h-5 bg-white border-b border-gray-100" />
+          <div className="h-5 bg-[#74ACDF]" />
 
+          <div className="px-7 pt-5 pb-7">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Ing. Ammar Mahfoud</h1>
-                <p className="text-sm text-gray-500 mt-0.5">Ingeniero Civil · Hidrología e Hidráulica · Argentina</p>
+              {/* Avatar + name */}
+              <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-[#0055A4] text-white font-extrabold text-xl shrink-0 shadow-md">
+                  AM
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-gray-900">Ing. Ammar Mahfoud</h1>
+                  <p className="text-sm text-gray-500 mt-0.5 leading-snug">
+                    Ingeniero Civil | Especialista en Hidrología | Data Science
+                  </p>
+                  <p className="text-sm text-[#0055A4] font-medium mt-1 flex items-center gap-1">
+                    <span role="img" aria-label="Argentine flag">🇦🇷</span>
+                    Buenos Aires, Argentina
+                  </p>
+                </div>
               </div>
+
+              {/* Social links */}
               <div className="flex items-center gap-2 shrink-0">
                 <a
                   href={LINKEDIN_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#0077b5] text-white text-xs font-semibold hover:bg-[#006399] transition-colors"
                 >
                   <LinkedInIcon />
                   LinkedIn
@@ -75,7 +84,7 @@ export function About() {
                   href={GITHUB_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 hover:border-gray-400 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-gray-900 text-white text-xs font-semibold hover:bg-gray-700 transition-colors"
                 >
                   <GitHubIcon />
                   GitHub
@@ -83,58 +92,62 @@ export function About() {
               </div>
             </div>
 
-            <p className="text-sm text-gray-600 leading-relaxed mt-4">
-              Ingeniero civil con especialización en hidrología e hidráulica. AutoHydro Argentina fue desarrollado
-              para optimizar los flujos de trabajo de los ingenieros civiles argentinos en estudios hidrológicos,
-              combinando metodología técnica rigurosa con inteligencia artificial generativa para producir
-              resultados interpretables y memorias de cálculo listas para entregar.
+            <p className="text-sm text-gray-600 leading-relaxed mt-5">
+              Ingeniero civil con especialización en hidrología e hidráulica. AutoHydro Argentina fue
+              desarrollado para optimizar los flujos de trabajo de los profesionales argentinos en
+              estudios hidrológicos, combinando metodología técnica rigurosa con inteligencia
+              artificial generativa para producir resultados interpretables y memorias de cálculo
+              listas para entregar.
             </p>
           </div>
         </div>
 
-        {/* About the app */}
+        {/* ── About the project ───────────────────────────────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7">
-          <h2 className="text-base font-bold text-gray-900 mb-3">Acerca de AutoHydro Argentina</h2>
-          <p className="text-sm text-gray-600 leading-relaxed">
-            AutoHydro Argentina es una herramienta web de cálculo hidrológico orientada a la práctica profesional
-            en Argentina. Implementa los métodos Racional, Racional Modificado y SCS-CN con datos IDF
-            regionalizados para 15 ciudades según la metodología de Caamaño Nelli et al. (1999) e información
-            del INA. Los resultados incluyen comparación multi-método, análisis de sensibilidad del Número de
-            Curva, y generación automática de memorias de cálculo en PDF y Word.
+          <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <span className="w-1 h-5 rounded-full bg-[#74ACDF] inline-block" />
+            Sobre AutoHydro Argentina
+          </h2>
+          <p className="text-sm text-gray-600 leading-relaxed mb-3">
+            AutoHydro Argentina es un proyecto{' '}
+            <span className="font-semibold text-gray-800">open source</span> de cálculo hidrológico
+            para la práctica profesional en Argentina. Implementa los métodos Racional, Racional
+            Modificado y SCS-CN con datos IDF regionalizados para 33 ciudades, análisis de
+            sensibilidad del Número de Curva, generación de reportes PDF/Word y delimitación de
+            cuencas mediante dibujo interactivo en mapa.
           </p>
-          <div className="mt-4 flex">
+          <p className="text-sm text-gray-600 leading-relaxed">
+            Construido con <strong>React + FastAPI + Claude AI + Leaflet</strong>. Las contribuciones,
+            reportes de error y sugerencias son bienvenidas en el repositorio de GitHub.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
             <Link
               to="/calculator"
-              className="inline-flex items-center gap-2 bg-[#1a365d] hover:bg-[#22406f] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
+              className="inline-flex items-center gap-2 bg-[#0055A4] hover:bg-[#004a91] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
             >
               Ir a la calculadora
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </Link>
+            <a
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-gray-50 transition-colors"
+            >
+              <GitHubIcon />
+              Ver código fuente
+            </a>
           </div>
         </div>
 
-        {/* Methodology */}
+        {/* ── Tech stack ──────────────────────────────────────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7">
-          <h2 className="text-base font-bold text-gray-900 mb-3">Metodología y Referencias</h2>
-          <p className="text-sm text-gray-600 leading-relaxed mb-4">
-            Las curvas IDF están basadas en la regionalización de Caamaño Nelli et al. (1999) y publicaciones
-            del INA. Los métodos de cálculo siguen la práctica establecida en Argentina.
-          </p>
-          <ul className="space-y-2">
-            {REFERENCES.map((ref) => (
-              <li key={ref} className="flex gap-2 text-sm text-gray-600">
-                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />
-                {ref}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Tech stack */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7">
-          <h2 className="text-base font-bold text-gray-900 mb-3">Stack Tecnológico</h2>
+          <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <span className="w-1 h-5 rounded-full bg-[#74ACDF] inline-block" />
+            Stack Tecnológico
+          </h2>
           <div className="flex flex-wrap gap-2">
             {TECH_STACK.map(({ label, color }) => (
               <span
@@ -147,12 +160,35 @@ export function About() {
           </div>
         </div>
 
-        {/* Contact / Feedback */}
+        {/* ── Methodology ─────────────────────────────────────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7">
-          <h2 className="text-base font-bold text-gray-900 mb-2">Contacto y Feedback</h2>
+          <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <span className="w-1 h-5 rounded-full bg-[#74ACDF] inline-block" />
+            Metodología y Referencias
+          </h2>
           <p className="text-sm text-gray-600 leading-relaxed mb-4">
-            ¿Encontraste un error, tenés una sugerencia o querés colaborar? Podés abrir un issue en el
-            repositorio de GitHub o contactarme directamente por LinkedIn.
+            Las curvas IDF están basadas en la regionalización de Caamaño Nelli et al. (1999) y
+            publicaciones del INA. Los métodos de cálculo siguen la práctica establecida en Argentina.
+          </p>
+          <ul className="space-y-2">
+            {REFERENCES.map((ref) => (
+              <li key={ref} className="flex gap-2.5 text-sm text-gray-600">
+                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#74ACDF] shrink-0" />
+                {ref}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* ── Contact ─────────────────────────────────────────────────────── */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7">
+          <h2 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
+            <span className="w-1 h-5 rounded-full bg-[#74ACDF] inline-block" />
+            Contacto y Feedback
+          </h2>
+          <p className="text-sm text-gray-600 leading-relaxed mb-4">
+            ¿Encontraste un error, tenés una sugerencia o querés colaborar en el proyecto?
+            Podés abrir un issue en GitHub o contactarme directamente por LinkedIn.
           </p>
           <div className="flex gap-3 flex-wrap">
             <a
@@ -178,7 +214,7 @@ export function About() {
 
         {/* Version */}
         <p className="text-center text-xs text-gray-400 pb-2">
-          AutoHydro Argentina v1.0.0 — MVP · © 2026 Ing. Ammar Mahfoud
+          AutoHydro Argentina v1.0.0 — MVP · © 2026 Ing. Ammar Mahfoud 🇦🇷
         </p>
       </div>
     </div>

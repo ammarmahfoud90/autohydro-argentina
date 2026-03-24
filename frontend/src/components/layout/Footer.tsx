@@ -1,6 +1,7 @@
+import { ArgentinaMap } from '../ArgentinaMap';
+
 const GITHUB_URL = 'https://github.com/ammarmahfoud90/autohydro-argentina';
-// Update LINKEDIN_URL to your actual profile
-const LINKEDIN_URL = 'https://www.linkedin.com/in/ammarmahfoud';
+const LINKEDIN_URL = 'https://www.linkedin.com/in/ammar-mahfoud-499212118';
 
 function GitHubIcon() {
   return (
@@ -20,49 +21,65 @@ function LinkedInIcon() {
 
 export function Footer() {
   return (
-    <footer className="bg-[#1a365d] text-blue-200 mt-auto">
+    <footer className="bg-[#0055A4] text-white mt-auto">
+      {/* Argentine flag stripe at top */}
+      <div className="h-1 bg-[#74ACDF]" />
+
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          {/* Brand */}
-          <div className="text-center sm:text-left">
-            <p className="font-semibold text-white text-sm">AutoHydro Argentina</p>
-            <p className="text-xs text-blue-300 mt-0.5">
-              Desarrollado por <span className="text-blue-200 font-medium">Ing. Ammar Mahfoud</span>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+
+          {/* Brand + "Hecho en Argentina" */}
+          <div className="flex items-center gap-4">
+            {/* Small Argentina map silhouette */}
+            <div className="opacity-30">
+              <ArgentinaMap fill="white" className="w-8 h-auto" />
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5 font-bold text-sm text-white">
+                AutoHydro Argentina
+                <span role="img" aria-label="Argentine flag">🇦🇷</span>
+              </div>
+              <p className="text-[#74ACDF] text-xs mt-0.5">Hecho en Argentina 🇦🇷</p>
+            </div>
+          </div>
+
+          {/* Center: copyright */}
+          <div className="text-center">
+            <p className="text-white/90 text-xs font-medium">
+              © 2026 AutoHydro Argentina
+            </p>
+            <p className="text-[#74ACDF] text-xs mt-0.5">
+              Desarrollado por Ing. Ammar Mahfoud
             </p>
           </div>
 
           {/* Links */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <a
               href={GITHUB_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-xs text-blue-300 hover:text-white transition-colors"
+              className="flex items-center gap-1.5 text-xs text-white/70 hover:text-white transition-colors"
             >
               <GitHubIcon />
               GitHub
             </a>
-            <span className="text-blue-700">|</span>
+            <span className="text-white/20">|</span>
             <a
               href={LINKEDIN_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-xs text-blue-300 hover:text-white transition-colors"
+              className="flex items-center gap-1.5 text-xs text-white/70 hover:text-white transition-colors"
             >
               <LinkedInIcon />
               LinkedIn
             </a>
           </div>
-
-          {/* Copyright */}
-          <p className="text-xs text-blue-400 text-center sm:text-right">
-            © 2026 AutoHydro Argentina
-            <br className="hidden sm:block" />
-            <span className="sm:hidden"> · </span>
-            Herramienta de estimación hidrológica
-          </p>
         </div>
       </div>
+
+      {/* Bottom stripe */}
+      <div className="h-1 bg-[#74ACDF]" />
     </footer>
   );
 }
