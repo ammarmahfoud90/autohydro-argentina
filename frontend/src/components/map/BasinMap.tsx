@@ -1,9 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
-import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import 'leaflet-draw/dist/leaflet.draw.css';
-import 'leaflet-draw';
+import 'leaflet-draw'; // provides L.GeometryUtil.geodesicArea
 
 // Fix Leaflet default marker icons for Vite bundler
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
@@ -13,133 +12,281 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-// ── DrawControl ───────────────────────────────────────────────────────────────
-// Must be rendered inside MapContainer to access the map context via useMap().
+type DrawMode = 'idle' | 'drawing' | 'done';
 
-interface DrawControlProps {
-  onAreaCalculated: (km2: number) => void;
+function geodesicAreaKm2(latlngs: L.LatLng[]): number {
+  return L.GeometryUtil.geodesicArea(latlngs) / 1_000_000;
 }
 
-function DrawControl({ onAreaCalculated }: DrawControlProps) {
+// ── DrawController ─────────────────────────────────────────────────────────
+// Manages all Leaflet layers and map event handling. Must live inside MapContainer.
+
+interface DrawControllerProps {
+  mode: DrawMode;
+  vertices: L.LatLng[];
+  onAddVertex: (ll: L.LatLng) => void;
+  onClose: () => void;
+  onVertexDrag: (index: number, ll: L.LatLng) => void;
+}
+
+function DrawController({ mode, vertices, onAddVertex, onClose, onVertexDrag }: DrawControllerProps) {
   const map = useMap();
-  const drawnItems = useRef<L.FeatureGroup>(new L.FeatureGroup());
-  // Use a ref so the event handlers always call the latest callback
-  // without needing to re-register them on every render.
-  const onAreaRef = useRef(onAreaCalculated);
-  onAreaRef.current = onAreaCalculated;
+  const layerGroup = useRef(new L.LayerGroup());
+  const guideLineRef = useRef<L.Polyline | null>(null);
 
+  // Keep refs so event handlers always see latest values without re-registration
+  const modeRef = useRef(mode);
+  const vertsRef = useRef(vertices);
+  const onAddVertexRef = useRef(onAddVertex);
+  const onCloseRef = useRef(onClose);
+  const onVertexDragRef = useRef(onVertexDrag);
+  modeRef.current = mode;
+  vertsRef.current = vertices;
+  onAddVertexRef.current = onAddVertex;
+  onCloseRef.current = onClose;
+  onVertexDragRef.current = onVertexDrag;
+
+  // Add layer group to map once
   useEffect(() => {
-    const items = drawnItems.current;
-    map.addLayer(items);
+    const lg = layerGroup.current;
+    map.addLayer(lg);
+    return () => { map.removeLayer(lg); };
+  }, [map]);
 
-    // ── Spanish labels ──────────────────────────────────────────────────────
-    L.drawLocal.draw.toolbar.buttons.polygon = 'Dibujar polígono';
-    L.drawLocal.draw.toolbar.actions.text = 'Cancelar';
-    L.drawLocal.draw.toolbar.actions.title = 'Cancelar dibujo';
-    L.drawLocal.draw.toolbar.finish.text = 'Finalizar';
-    L.drawLocal.draw.toolbar.finish.title = 'Finalizar dibujo';
-    L.drawLocal.draw.toolbar.undo.text = 'Borrar último punto';
-    L.drawLocal.draw.toolbar.undo.title = 'Borrar el último punto dibujado';
-    L.drawLocal.draw.handlers.polygon.tooltip.start =
-      'Clic para comenzar a dibujar la cuenca.';
-    L.drawLocal.draw.handlers.polygon.tooltip.cont =
-      'Clic para continuar dibujando.';
-    L.drawLocal.draw.handlers.polygon.tooltip.end =
-      'Clic en el primer punto para cerrar el polígono.';
-    L.drawLocal.edit.toolbar.actions.save.text = 'Guardar';
-    L.drawLocal.edit.toolbar.actions.save.title = 'Guardar cambios';
-    L.drawLocal.edit.toolbar.actions.cancel.text = 'Cancelar';
-    L.drawLocal.edit.toolbar.actions.cancel.title = 'Cancelar edición';
-    L.drawLocal.edit.toolbar.actions.clearAll.text = 'Eliminar todo';
-    L.drawLocal.edit.toolbar.actions.clearAll.title = 'Eliminar todo';
-    L.drawLocal.edit.toolbar.buttons.edit = 'Editar capas';
-    L.drawLocal.edit.toolbar.buttons.editDisabled = 'Sin capas para editar';
-    L.drawLocal.edit.toolbar.buttons.remove = 'Eliminar';
-    L.drawLocal.edit.toolbar.buttons.removeDisabled = 'Sin capas para eliminar';
-
-    // ── Draw control ────────────────────────────────────────────────────────
-    const drawControl = new L.Control.Draw({
-      position: 'topright',
-      draw: {
-        polygon: {
-          shapeOptions: {
-            color: '#2563eb',
-            fillColor: '#3b82f6',
-            fillOpacity: 0.3,
-            weight: 2,
-          },
-          showArea: true,
-          allowIntersection: false,
-        },
-        polyline: false,
-        rectangle: false,
-        circle: false,
-        circlemarker: false,
-        marker: false,
-      },
-      edit: {
-        featureGroup: items,
-        remove: true,
-      },
-    });
-
-    map.addControl(drawControl);
-
-    // ── Event handlers ──────────────────────────────────────────────────────
-
-    function computeArea(polygon: L.Polygon): number {
-      const latLngs = polygon.getLatLngs()[0] as L.LatLng[];
-      const areaM2 = L.GeometryUtil.geodesicArea(latLngs);
-      return areaM2 / 1_000_000; // m² → km²
+  // Cursor style and double-click zoom based on mode
+  useEffect(() => {
+    const container = map.getContainer();
+    if (mode === 'drawing') {
+      map.doubleClickZoom.disable();
+      container.style.cursor = 'crosshair';
+    } else {
+      map.doubleClickZoom.enable();
+      container.style.cursor = '';
     }
+  }, [mode, map]);
 
-    function onCreated(e: L.DrawEvents.Created) {
-      items.clearLayers();
-      items.addLayer(e.layer);
-      if (e.layer instanceof L.Polygon) {
-        onAreaRef.current(computeArea(e.layer));
+  // Debounce dblclick: ignore the 2nd click of a double-click
+  const lastClickTimeRef = useRef(0);
+
+  useMapEvents({
+    click(e) {
+      if (modeRef.current !== 'drawing') return;
+
+      // Ignore rapid clicks that are part of a dblclick (< 300 ms gap)
+      const now = Date.now();
+      if (now - lastClickTimeRef.current < 300) {
+        lastClickTimeRef.current = 0;
+        return;
       }
-    }
+      lastClickTimeRef.current = now;
 
-    function onEdited(e: L.DrawEvents.Edited) {
-      e.layers.eachLayer((layer) => {
-        if (layer instanceof L.Polygon) {
-          onAreaRef.current(computeArea(layer));
+      const verts = vertsRef.current;
+
+      // Click near first vertex (red) closes the polygon
+      if (verts.length >= 3) {
+        const p1 = map.latLngToContainerPoint(verts[0]);
+        const p2 = map.latLngToContainerPoint(e.latlng);
+        if (p1.distanceTo(p2) < 15) {
+          onCloseRef.current();
+          return;
         }
+      }
+
+      onAddVertexRef.current(e.latlng);
+    },
+
+    dblclick() {
+      if (modeRef.current !== 'drawing') return;
+      lastClickTimeRef.current = 0;
+      if (vertsRef.current.length >= 3) {
+        onCloseRef.current();
+      }
+    },
+
+    mousemove(e) {
+      if (modeRef.current !== 'drawing' || vertsRef.current.length === 0) return;
+      // Only update the guide line, no full redraw
+      if (guideLineRef.current) {
+        const last = vertsRef.current[vertsRef.current.length - 1];
+        guideLineRef.current.setLatLngs([last, e.latlng]);
+      }
+    },
+  });
+
+  // Rebuild layers when mode or vertices change
+  useEffect(() => {
+    const lg = layerGroup.current;
+    lg.clearLayers();
+    guideLineRef.current = null;
+
+    if (mode === 'drawing') {
+      // Solid line between placed vertices
+      if (vertices.length >= 2) {
+        lg.addLayer(L.polyline(vertices, { color: '#1d4ed8', weight: 2.5, interactive: false }));
+      }
+
+      // Dashed guide line from last vertex to cursor (updated live in mousemove)
+      if (vertices.length >= 1) {
+        const last = vertices[vertices.length - 1];
+        const guide = L.polyline([last, last], {
+          color: '#1d4ed8',
+          weight: 1.5,
+          dashArray: '6 5',
+          opacity: 0.75,
+          interactive: false,
+        });
+        lg.addLayer(guide);
+        guideLineRef.current = guide;
+      }
+
+      // Vertex markers (first one is red as the "close" target)
+      vertices.forEach((v, i) => {
+        const isFirst = i === 0;
+        lg.addLayer(L.circleMarker(v, {
+          radius: isFirst ? 8 : 5,
+          color: isFirst ? '#dc2626' : '#1d4ed8',
+          fillColor: isFirst ? '#ef4444' : '#3b82f6',
+          fillOpacity: 1,
+          weight: 2,
+          interactive: false,
+        }));
+      });
+    } else if (mode === 'done') {
+      // Final filled polygon
+      lg.addLayer(L.polygon(vertices, {
+        color: '#1d4ed8',
+        fillColor: '#3b82f6',
+        fillOpacity: 0.3,
+        weight: 2.5,
+        interactive: false,
+      }));
+
+      // Draggable vertex handles for editing
+      vertices.forEach((v, i) => {
+        const icon = L.divIcon({
+          className: '',
+          html: `<div style="
+            width: 12px; height: 12px;
+            background: #1d4ed8;
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: move;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+          "></div>`,
+          iconSize: [12, 12],
+          iconAnchor: [6, 6],
+        });
+        const marker = L.marker(v, { icon, draggable: true });
+        marker.on('drag', () => onVertexDragRef.current(i, marker.getLatLng()));
+        lg.addLayer(marker);
       });
     }
-
-    function onDeleted() {
-      onAreaRef.current(0);
-    }
-
-    map.on(L.Draw.Event.CREATED, onCreated as L.LeafletEventHandlerFn);
-    map.on(L.Draw.Event.EDITED, onEdited as L.LeafletEventHandlerFn);
-    map.on(L.Draw.Event.DELETED, onDeleted);
-
-    return () => {
-      map.removeControl(drawControl);
-      map.removeLayer(items);
-      map.off(L.Draw.Event.CREATED, onCreated as L.LeafletEventHandlerFn);
-      map.off(L.Draw.Event.EDITED, onEdited as L.LeafletEventHandlerFn);
-      map.off(L.Draw.Event.DELETED, onDeleted);
-    };
-  }, [map]);
+  }, [mode, vertices]);
 
   return null;
 }
 
-// ── BasinMap ──────────────────────────────────────────────────────────────────
+// ── BasinMap ───────────────────────────────────────────────────────────────
 
 interface Props {
   onUseArea: (areaKm2: number) => void;
 }
 
 export function BasinMap({ onUseArea }: Props) {
-  const [calculatedArea, setCalculatedArea] = useState<number | null>(null);
+  const [mode, setMode] = useState<DrawMode>('idle');
+  const [vertices, setVertices] = useState<L.LatLng[]>([]);
+  const [area, setArea] = useState<number | null>(null);
+
+  const handleAddVertex = useCallback((ll: L.LatLng) => {
+    setVertices(prev => [...prev, ll]);
+  }, []);
+
+  const handleClose = useCallback(() => {
+    setVertices(prev => {
+      if (prev.length >= 3) setArea(geodesicAreaKm2(prev));
+      return prev;
+    });
+    setMode('done');
+  }, []);
+
+  const handleVertexDrag = useCallback((index: number, ll: L.LatLng) => {
+    setVertices(prev => {
+      const next = [...prev];
+      next[index] = ll;
+      if (next.length >= 3) setArea(geodesicAreaKm2(next));
+      return next;
+    });
+  }, []);
+
+  const handleClear = useCallback(() => {
+    setMode('idle');
+    setVertices([]);
+    setArea(null);
+  }, []);
+
+  const handleFinalize = useCallback(() => {
+    if (vertices.length >= 3) handleClose();
+  }, [vertices.length, handleClose]);
 
   return (
     <div className="space-y-3">
+      {/* Toolbar above the map */}
+      <div className="flex items-center justify-between gap-2 flex-wrap min-h-[36px]">
+        {mode === 'idle' && (
+          <button
+            type="button"
+            onClick={() => setMode('drawing')}
+            className="px-4 py-1.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Iniciar dibujo
+          </button>
+        )}
+
+        {mode === 'drawing' && (
+          <>
+            <span className="text-sm text-gray-600">
+              Vertices: <strong>{vertices.length}</strong>
+              {vertices.length < 3 && (
+                <span className="text-gray-400 font-normal"> (minimo 3)</span>
+              )}
+            </span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleFinalize}
+                disabled={vertices.length < 3}
+                className="px-4 py-1.5 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                Finalizar
+              </button>
+              <button
+                type="button"
+                onClick={handleClear}
+                className="px-4 py-1.5 bg-gray-200 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Limpiar
+              </button>
+            </div>
+          </>
+        )}
+
+        {mode === 'done' && (
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-sm text-gray-600">
+              Poligono cerrado &middot; <strong>{vertices.length} vertices</strong>
+            </span>
+            <button
+              type="button"
+              onClick={handleClear}
+              className="px-4 py-1.5 bg-gray-200 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-300 transition-colors"
+            >
+              Limpiar
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Map */}
       <div
         style={{ height: '400px' }}
         className="rounded-lg overflow-hidden border border-gray-300 shadow-sm"
@@ -149,35 +296,47 @@ export function BasinMap({ onUseArea }: Props) {
           zoom={5}
           style={{ height: '100%', width: '100%' }}
           scrollWheelZoom
+          doubleClickZoom={false}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <DrawControl onAreaCalculated={setCalculatedArea} />
+          <DrawController
+            mode={mode}
+            vertices={vertices}
+            onAddVertex={handleAddVertex}
+            onClose={handleClose}
+            onVertexDrag={handleVertexDrag}
+          />
         </MapContainer>
       </div>
 
+      {/* Area result / instructions */}
       <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
-        {calculatedArea !== null && calculatedArea > 0 ? (
+        {area !== null && area > 0 ? (
           <div className="flex items-center justify-between flex-wrap gap-3">
             <p className="text-sm text-blue-800 font-medium">
-              Área calculada:{' '}
-              <strong>{calculatedArea.toFixed(4)} km²</strong>
+              Area calculada: <strong>{area.toFixed(4)} km²</strong>
             </p>
             <button
               type="button"
-              onClick={() => onUseArea(calculatedArea)}
+              onClick={() => onUseArea(area)}
               className="px-4 py-1.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors"
             >
-              Usar esta área
+              Usar esta area
             </button>
           </div>
         ) : (
           <p className="text-sm text-blue-700">
-            Usá el botón{' '}
-            <strong>"Dibujar polígono"</strong> (arriba a la derecha del mapa)
-            para delinear la cuenca y calcular el área automáticamente.
+            {mode === 'idle' &&
+              'Hace clic en "Iniciar dibujo" para delinear la cuenca y calcular el area.'}
+            {mode === 'drawing' && vertices.length === 0 &&
+              'Hace clic en el mapa para agregar el primer vertice.'}
+            {mode === 'drawing' && vertices.length > 0 && vertices.length < 3 &&
+              `Agrega ${3 - vertices.length} vertice${3 - vertices.length > 1 ? 's' : ''} mas para poder finalizar.`}
+            {mode === 'drawing' && vertices.length >= 3 &&
+              'Doble clic, clic en el primer vertice (rojo) o "Finalizar" para cerrar el poligono.'}
           </p>
         )}
       </div>
