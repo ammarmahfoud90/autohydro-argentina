@@ -360,7 +360,15 @@ export function Calculator() {
             {/* Map mode: polygon drawing with area calculation */}
             {basinMode === 'map' && (
               <div className="mb-5">
-                <BasinMap onUseArea={(km2) => update({ area_km2: km2 })} />
+                <BasinMap
+                  onUseData={(d) =>
+                    update({
+                      area_km2: d.area_km2,
+                      ...(d.slope != null ? { slope: d.slope } : {}),
+                      ...(d.length_km != null ? { length_km: d.length_km } : {}),
+                    })
+                  }
+                />
               </div>
             )}
 

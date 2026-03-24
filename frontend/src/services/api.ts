@@ -117,3 +117,20 @@ export async function getCities(): Promise<
 > {
   return request('/api/cities');
 }
+
+export interface WatershedResult {
+  geojson: object;
+  area_km2: number;
+  slope: number;
+  length_km: number;
+}
+
+export async function delineateWatershed(
+  latitude: number,
+  longitude: number,
+): Promise<WatershedResult> {
+  return request<WatershedResult>('/api/watershed/delineate', {
+    method: 'POST',
+    body: JSON.stringify({ latitude, longitude }),
+  });
+}
