@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { HydrologyInput } from '../../types';
 
@@ -32,7 +33,7 @@ function NumInput({
   value,
   onChange,
   min,
-  step = 'any',
+  step: _step = 'any', // kept for API compatibility
   placeholder,
 }: {
   value: number | null | '';
@@ -41,16 +42,49 @@ function NumInput({
   step?: string | number;
   placeholder?: string;
 }) {
+  const [raw, setRaw] = useState<string>(
+    value === null || value === '' ? '' : String(value),
+  );
+  const [isFocused, setIsFocused] = useState(false);
+
+  // Sync external value changes back into raw only when the field is not active
+  useEffect(() => {
+    if (!isFocused) {
+      setRaw(value === null || value === '' ? '' : String(value));
+    }
+  }, [value, isFocused]);
+
   return (
     <input
-      type="number"
-      value={value === null ? '' : value}
-      min={min}
-      step={step}
+      type="text"
+      inputMode="decimal"
+      value={raw}
       placeholder={placeholder}
       onChange={(e) => {
         const v = e.target.value;
-        onChange(v === '' ? null : Number(v));
+        // Reject characters that can never form a valid decimal number
+        if (v !== '' && !/^-?\d*\.?\d*$/.test(v)) return;
+        setRaw(v);
+        // Push a numeric value to the parent for all complete numbers;
+        // leave intermediate states like "0." alone so typing isn't interrupted
+        if (v === '') {
+          onChange(null);
+        } else if (!v.endsWith('.')) {
+          const n = parseFloat(v);
+          if (!isNaN(n)) onChange(n);
+        }
+      }}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => {
+        setIsFocused(false);
+        const n = parseFloat(raw);
+        if (raw === '' || isNaN(n)) {
+          onChange(null);
+          setRaw('');
+        } else {
+          onChange(n);
+          setRaw(String(n));
+        }
       }}
       className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
     />
