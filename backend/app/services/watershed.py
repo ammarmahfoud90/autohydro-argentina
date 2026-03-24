@@ -61,7 +61,7 @@ def _download_dem(lat: float, lon: float, buffer: float = _DEM_BUFFER_DEG) -> by
             "y agregá OPENTOPOGRAPHY_API_KEY en el archivo .env del backend."
         )
 
-    if not resp.ok:
+    if not resp.is_success:
         raise RuntimeError(
             f"El servidor DEM devolvió un error {resp.status_code}. "
             "Verificá que las coordenadas estén dentro del rango de SRTM "
