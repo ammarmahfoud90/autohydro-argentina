@@ -9,6 +9,7 @@ import { CNSelector } from '../components/forms/CNSelector';
 import { TcCalculator } from '../components/forms/TcCalculator';
 import { ReportOptions } from '../components/forms/ReportOptions';
 import { ResultsPanel } from '../components/results/ResultsPanel';
+import { BasinMap } from '../components/map/BasinMap';
 import type { HydrologyInput, HydrologyResult, SoilGroup, LandUseCategory, TcFormulaKey } from '../types';
 import { DEFAULT_FORM } from '../types';
 
@@ -187,6 +188,7 @@ function CalculatingOverlay() {
 export function Calculator() {
   const { t } = useTranslation();
   const [step, setStep] = useState(1);
+  const [basinMode, setBasinMode] = useState<'manual' | 'map'>('manual');
   const [formData, setFormData] = useState<HydrologyInput>(DEFAULT_FORM);
   const [results, setResults] = useState<HydrologyResult | null>(null);
 
@@ -325,6 +327,43 @@ export function Calculator() {
         {/* ── Step 2: Basin ────────────────────────────────────────────── */}
         {step === 2 && (
           <Card title={t('calculator.basinTitle')}>
+            {/* Input mode toggle */}
+            <div className="flex gap-2 mb-5">
+              <button
+                type="button"
+                onClick={() => setBasinMode('manual')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  basinMode === 'manual'
+                    ? 'bg-blue-600 text-white'
+                    : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                Ingresar manualmente
+              </button>
+              <button
+                type="button"
+                onClick={() => setBasinMode('map')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
+                  basinMode === 'map'
+                    ? 'bg-blue-600 text-white'
+                    : 'border border-gray-300 text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                </svg>
+                Dibujar en mapa
+              </button>
+            </div>
+
+            {/* Map mode: polygon drawing with area calculation */}
+            {basinMode === 'map' && (
+              <div className="mb-5">
+                <BasinMap onUseArea={(km2) => update({ area_km2: km2 })} />
+              </div>
+            )}
+
             <BasinInputs formData={formData} onChange={update} />
             <NavButtons
               onBack={() => setStep(1)}
