@@ -35,6 +35,7 @@ export async function calculateHydrology(
     use_pampa_lambda: input.use_pampa_lambda,
     infrastructure_type: input.infrastructure_type,
     tc_formulas: input.tc_formulas,
+    cn_override: input.cn_override ?? undefined,
   };
   return request<HydrologyResult>('/api/calculate', {
     method: 'POST',
@@ -61,6 +62,7 @@ export async function generateReport(
     language: string;
     aiInterpretation?: string;
     basinPolygon?: [number, number][];
+    comparisonData?: HydrologyResult | null;
   },
 ): Promise<Blob> {
   const res = await fetch(`${BASE}/api/report`, {
@@ -75,6 +77,7 @@ export async function generateReport(
       aiInterpretation: options.aiInterpretation ?? '',
       fetchAISections: true,
       basinPolygon: options.basinPolygon ?? null,
+      comparisonData: options.comparisonData ?? null,
     }),
   });
   if (!res.ok) {
@@ -93,6 +96,7 @@ export async function generateDocxReport(
     language: string;
     aiInterpretation?: string;
     basinPolygon?: [number, number][];
+    comparisonData?: HydrologyResult | null;
   },
 ): Promise<Blob> {
   const res = await fetch(`${BASE}/api/report/docx`, {
@@ -107,6 +111,32 @@ export async function generateDocxReport(
       aiInterpretation: options.aiInterpretation ?? '',
       fetchAISections: true,
       basinPolygon: options.basinPolygon ?? null,
+      comparisonData: options.comparisonData ?? null,
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(body.detail ?? `HTTP ${res.status}`);
+  }
+  return res.blob();
+}
+
+export async function generateExcelReport(
+  calculationData: HydrologyResult,
+  options: {
+    projectName: string;
+    location: string;
+    clientName?: string;
+  },
+): Promise<Blob> {
+  const res = await fetch(`${BASE}/api/report/excel`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      calculationData,
+      projectName: options.projectName,
+      location: options.location,
+      clientName: options.clientName,
     }),
   });
   if (!res.ok) {

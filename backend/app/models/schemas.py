@@ -95,6 +95,11 @@ class CalculationRequest(BaseModel):
         description="List of Tc formula keys to use",
     )
 
+    # Scenario comparison override
+    cn_override: Optional[float] = Field(
+        None, ge=1.0, le=100.0, description="Direct CN override (skips composite CN from land use)"
+    )
+
     # Report options
     language: str = Field("es", description="es | en")
 
@@ -136,13 +141,13 @@ class CalculationRequest(BaseModel):
                 raise ValueError(
                     "runoff_coeff is required for rational and modified_rational methods"
                 )
-        if self.method == "scs_cn":
+        if self.method == "scs_cn" and self.cn_override is None:
             if not self.land_use_categories:
                 raise ValueError(
-                    "land_use_categories is required for scs_cn method"
+                    "land_use_categories is required for scs_cn method (unless cn_override is provided)"
                 )
             if self.soil_group is None:
-                raise ValueError("soil_group is required for scs_cn method")
+                raise ValueError("soil_group is required for scs_cn method (unless cn_override is provided)")
         return self
 
 

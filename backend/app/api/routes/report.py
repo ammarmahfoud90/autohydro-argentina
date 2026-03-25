@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from app.services.report_service import MemoriaCalculoGenerator
 from app.services.docx_service import MemoriaCalculoDocxGenerator
+from app.services.excel_service import ExcelReportGenerator
 from app.services.ai_service import generate_report_sections
 
 router = APIRouter()
@@ -29,6 +30,7 @@ def generate_report(payload: dict) -> StreamingResponse:
     ai_interpretation = payload.get("aiInterpretation", "")
     fetch_ai = payload.get("fetchAISections", True)
     basin_polygon = payload.get("basinPolygon")  # list of [lat, lng] or None
+    comparison_data = payload.get("comparisonData")  # optional second scenario
 
     if not calculation_data:
         raise HTTPException(
@@ -60,6 +62,7 @@ def generate_report(payload: dict) -> StreamingResponse:
             ai_interpretation=ai_interpretation,
             ai_recommendations=ai_sections,
             basin_polygon=basin_polygon,
+            comparison_data=comparison_data,
         )
     except Exception as exc:
         raise HTTPException(
@@ -138,5 +141,47 @@ def generate_report_docx(payload: dict) -> StreamingResponse:
     return StreamingResponse(
         buffer,
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.post("/report/excel")
+def generate_report_excel(payload: dict) -> StreamingResponse:
+    """
+    Generate Excel (.xlsx) Memoria de Cálculo Hidrológico.
+
+    Accepts the same request body as POST /report (PDF).
+    Returns a professional multi-sheet workbook.
+    """
+    calculation_data = payload.get("calculationData", {})
+    project_name = payload.get("projectName", "Proyecto Hidrológico")
+    location = payload.get("location", calculation_data.get("city", "Argentina"))
+    client_name = payload.get("clientName")
+
+    if not calculation_data:
+        raise HTTPException(status_code=422, detail="calculationData is required")
+
+    try:
+        generator = ExcelReportGenerator(
+            project_name=project_name,
+            location=location,
+            client=client_name,
+        )
+        buffer = generator.generate(calculation_data=calculation_data)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al generar el Excel: {str(exc)}",
+        ) from exc
+
+    safe_name = "".join(
+        c if c.isalnum() or c in (" ", "-", "_") else "_"
+        for c in project_name[:40]
+    ).strip()
+    filename = f"memoria_calculo_{safe_name}.xlsx"
+
+    return StreamingResponse(
+        buffer,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )

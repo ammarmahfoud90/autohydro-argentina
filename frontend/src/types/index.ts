@@ -46,6 +46,7 @@ export interface HydrologyInput {
   project_name: string;
   client_name: string;
   language: string;
+  cn_override?: number | null;
 }
 
 // ── Response types ────────────────────────────────────────────────────────────

@@ -394,17 +394,20 @@ def run_calculation(payload: dict) -> dict:
     # ── 4. CN (if SCS-CN) ────────────────────────────────────────────────
     cn_value: Optional[float] = None
     if req.method == "scs_cn":
-        cn_value = calculate_composite_cn(
-            categories=[
-                {
-                    "land_use": cat.land_use,
-                    "area_percent": cat.area_percent,
-                    "condition": cat.condition,
-                }
-                for cat in req.land_use_categories  # type: ignore[union-attr]
-            ],
-            soil_group=req.soil_group,  # type: ignore[arg-type]
-        )
+        if req.cn_override is not None:
+            cn_value = req.cn_override
+        else:
+            cn_value = calculate_composite_cn(
+                categories=[
+                    {
+                        "land_use": cat.land_use,
+                        "area_percent": cat.area_percent,
+                        "condition": cat.condition,
+                    }
+                    for cat in req.land_use_categories  # type: ignore[union-attr]
+                ],
+                soil_group=req.soil_group,  # type: ignore[arg-type]
+            )
 
     # ── 5. Precipitation depth ───────────────────────────────────────────
     # Use adopted Tc as duration for SCS; use requested duration for Rational

@@ -68,6 +68,12 @@ _METHOD_NAMES = {
     "scs_cn": "Método SCS-CN (Soil Conservation Service)",
 }
 
+_METHOD_NAMES_SHORT = {
+    "rational": "Racional",
+    "modified_rational": "Racional Modif.",
+    "scs_cn": "SCS-CN",
+}
+
 _INFRASTRUCTURE_NAMES = {
     "alcantarilla_menor": "Alcantarilla menor (< 1 m)",
     "alcantarilla_mayor": "Alcantarilla mayor (1–3 m)",
@@ -849,6 +855,91 @@ class MemoriaCalculoGenerator:
         )
         return story
 
+    # ── Section: Scenario Comparison ──────────────────────────────────────
+
+    def _build_section_comparacion(
+        self, data1: dict[str, Any], data2: dict[str, Any]
+    ) -> list:
+        S = self.styles
+        story = [Paragraph("COMPARACIÓN DE ESCENARIOS", S["h1"])]
+        story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=8))
+        story.append(
+            Paragraph(
+                "La siguiente tabla compara los resultados del escenario base con el escenario "
+                "alternativo calculado.",
+                S["body"],
+            )
+        )
+        story.append(Spacer(1, 0.3 * cm))
+
+        def _pct_diff(v1, v2):
+            try:
+                v1, v2 = float(v1), float(v2)
+                if v1 == 0:
+                    return "—"
+                d = (v2 - v1) / abs(v1) * 100
+                sign = "+" if d >= 0 else ""
+                return f"{sign}{d:.1f}%"
+            except Exception:
+                return "—"
+
+        rows = [["Parámetro", "Escenario 1", "Escenario 2", "Diferencia"]]
+        params = [
+            ("Período de retorno (T)", "return_period", "{} años"),
+            ("Método", "method", None),
+            ("CN / C", None, None),
+            ("Intensidad (i)", "intensity_mm_hr", "{:.1f} mm/hr"),
+            ("Tc adoptado", "tc_adopted_minutes", "{:.0f} min"),
+            ("Caudal pico (Q)", "peak_flow_m3s", "{:.3f} m³/s"),
+            ("Caudal específico (q)", "specific_flow_m3s_km2", "{:.4f} m³/s/km²"),
+            ("Nivel de riesgo", "risk_level", None),
+        ]
+
+        for label, key, fmt in params:
+            if key is None and label == "CN / C":
+                # Special handling
+                if data1.get("cn") is not None:
+                    v1 = f"{data1['cn']:.1f}"
+                    v2 = f"{data2.get('cn', '—')}" if data2.get("cn") is None else f"{data2['cn']:.1f}"
+                elif data1.get("runoff_coeff") is not None:
+                    v1 = f"C = {data1['runoff_coeff']:.3f}"
+                    v2 = f"C = {data2.get('runoff_coeff', '—')}" if data2.get("runoff_coeff") is None else f"C = {data2['runoff_coeff']:.3f}"
+                else:
+                    continue
+                rows.append([label, v1, v2, _pct_diff(
+                    data1.get("cn") or data1.get("runoff_coeff"),
+                    data2.get("cn") or data2.get("runoff_coeff"),
+                )])
+                continue
+
+            v1_raw = data1.get(key, "—")
+            v2_raw = data2.get(key, "—")
+
+            if key == "method":
+                v1 = _METHOD_NAMES_SHORT.get(str(v1_raw), str(v1_raw))
+                v2 = _METHOD_NAMES_SHORT.get(str(v2_raw), str(v2_raw))
+                diff = "—"
+            elif key == "risk_level":
+                v1 = _RISK_LABELS_ES.get(str(v1_raw), str(v1_raw))
+                v2 = _RISK_LABELS_ES.get(str(v2_raw), str(v2_raw))
+                diff = "—"
+            elif fmt:
+                try:
+                    v1 = fmt.format(v1_raw) if isinstance(v1_raw, (int, float)) else str(v1_raw)
+                    v2 = fmt.format(v2_raw) if isinstance(v2_raw, (int, float)) else str(v2_raw)
+                except Exception:
+                    v1, v2 = str(v1_raw), str(v2_raw)
+                diff = _pct_diff(v1_raw, v2_raw)
+            else:
+                v1, v2, diff = str(v1_raw), str(v2_raw), "—"
+
+            rows.append([label, v1, v2, diff])
+
+        story.append(
+            self._make_table(rows, col_widths=[5.5 * cm, 3.5 * cm, 3.5 * cm, 3 * cm])
+        )
+        return story
+
     # ── Annex: Detailed calculation sheet ─────────────────────────────────
 
     def _build_annex(self, data: dict[str, Any]) -> list:
@@ -944,6 +1035,7 @@ class MemoriaCalculoGenerator:
         ai_interpretation: str = "",
         ai_recommendations: str = "",
         basin_polygon: Optional[list[list[float]]] = None,
+        comparison_data: Optional[dict[str, Any]] = None,
     ) -> BytesIO:
         """
         Generate the complete PDF report.
@@ -995,6 +1087,8 @@ class MemoriaCalculoGenerator:
             story.extend(self._build_section_sensibilidad(calculation_data))
         if calculation_data.get("hydrograph_times"):
             story.extend(self._build_section_hidrograma(calculation_data))
+        if comparison_data:
+            story.extend(self._build_section_comparacion(calculation_data, comparison_data))
         story.append(PageBreak())
         story.extend(self._build_section_analisis(calculation_data, ai_interpretation, ai_sections))
         story.extend(self._build_section_conclusiones(calculation_data, ai_sections))

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -16,7 +16,7 @@ import {
   Cell,
 } from 'recharts';
 import type { HydrologyResult, HydrologyInput, CNSensitivityPoint } from '../../types';
-import { interpretResults, generateReport, generateDocxReport } from '../../services/api';
+import { interpretResults, generateReport, generateDocxReport, generateExcelReport, calculateHydrology } from '../../services/api';
 
 const RISK_STYLES: Record<string, string> = {
   muy_bajo: 'bg-green-100 text-green-800 border-green-300',
@@ -70,12 +70,30 @@ function Metric({
   );
 }
 
+type CompareState = 'idle' | 'form' | 'loading' | 'done';
+
+const RETURN_PERIODS = [2, 5, 10, 25, 50, 100, 200, 500, 1000];
+
 export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCalculation }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [isDownloading, setIsDownloading] = useState(false);
   const [isDownloadingDocx, setIsDownloadingDocx] = useState(false);
+  const [isDownloadingExcel, setIsDownloadingExcel] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
+
+  // Scenario comparison
+  const [compareState, setCompareState] = useState<CompareState>('idle');
+  const [returnPeriod2, setReturnPeriod2] = useState<number>(
+    RETURN_PERIODS.find((t) => t > results.return_period) ?? results.return_period * 2,
+  );
+  const [cnOverride2, setCnOverride2] = useState<string>('');
+  const [cOverride2, setCOverride2] = useState<string>(
+    results.runoff_coeff != null ? String(results.runoff_coeff) : '',
+  );
+  const [results2, setResults2] = useState<HydrologyResult | null>(null);
+  const [compareError, setCompareError] = useState<string | null>(null);
+  const compareRef = useRef<HTMLDivElement>(null);
 
   // AI interpretation — fires automatically when the panel mounts
   const interpretQuery = useQuery({
@@ -110,6 +128,7 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
         language: formData.language || 'es',
         aiInterpretation: interpretQuery.data?.interpretation,
         basinPolygon,
+        comparisonData: results2,
       });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -135,6 +154,7 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
         language: formData.language || 'es',
         aiInterpretation: interpretQuery.data?.interpretation,
         basinPolygon,
+        comparisonData: results2,
       });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -146,6 +166,54 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
       setReportError('Error al generar el Word. Intente nuevamente.');
     } finally {
       setIsDownloadingDocx(false);
+    }
+  }
+
+  async function handleDownloadExcel() {
+    setIsDownloadingExcel(true);
+    setReportError(null);
+    try {
+      const blob = await generateExcelReport(results, {
+        projectName: formData.project_name || 'Análisis Hidrológico',
+        location: formData.location_description || results.city,
+        clientName: formData.client_name || undefined,
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `autohydro_${results.city.replace(/\s+/g, '_')}_T${results.return_period}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setReportError('Error al generar el Excel. Intente nuevamente.');
+    } finally {
+      setIsDownloadingExcel(false);
+    }
+  }
+
+  async function handleRunComparison() {
+    setCompareState('loading');
+    setCompareError(null);
+    try {
+      const payload = {
+        ...formData,
+        return_period: returnPeriod2,
+        cn_override:
+          formData.method === 'scs_cn' && cnOverride2.trim() !== ''
+            ? parseFloat(cnOverride2)
+            : null,
+        runoff_coeff:
+          formData.method !== 'scs_cn' && cOverride2.trim() !== ''
+            ? parseFloat(cOverride2)
+            : formData.runoff_coeff,
+      };
+      const r2 = await calculateHydrology(payload);
+      setResults2(r2);
+      setCompareState('done');
+      setTimeout(() => compareRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+    } catch (err: unknown) {
+      setCompareError(err instanceof Error ? err.message : 'Error al calcular el escenario 2.');
+      setCompareState('form');
     }
   }
 
@@ -208,6 +276,231 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
           )}
         </div>
       </div>
+
+      {/* ── Scenario Comparison trigger ──────────────────────────────────── */}
+      {compareState === 'idle' && (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => setCompareState('form')}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-violet-400 text-violet-700 text-sm font-semibold hover:bg-violet-50 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+            </svg>
+            Comparar con otro escenario
+          </button>
+        </div>
+      )}
+
+      {/* ── Scenario Comparison form ──────────────────────────────────────── */}
+      {(compareState === 'form' || compareState === 'loading') && (
+        <div className="bg-white rounded-xl shadow-sm border border-violet-200 p-6">
+          <h3 className="font-semibold text-violet-800 mb-1">Escenario de Comparación</h3>
+          <p className="text-xs text-gray-500 mb-4">
+            Modificá los parámetros del segundo escenario. El resto de los datos de la cuenca se
+            mantienen iguales.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Período de retorno (T)
+              </label>
+              <select
+                value={returnPeriod2}
+                onChange={(e) => setReturnPeriod2(Number(e.target.value))}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+              >
+                {RETURN_PERIODS.filter((tp) => tp !== results.return_period).map((tp) => (
+                  <option key={tp} value={tp}>
+                    T = {tp} años
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {formData.method === 'scs_cn' ? (
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  CN alternativo (opcional)
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  max={100}
+                  step={1}
+                  value={cnOverride2}
+                  onChange={(e) => setCnOverride2(e.target.value)}
+                  placeholder={`CN base = ${results.cn?.toFixed(1) ?? '—'}`}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                />
+                <p className="text-[10px] text-gray-400 mt-0.5">
+                  Dejar vacío para usar los mismos usos de suelo
+                </p>
+              </div>
+            ) : (
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Coeficiente C alternativo
+                </label>
+                <input
+                  type="number"
+                  min={0.01}
+                  max={1.0}
+                  step={0.01}
+                  value={cOverride2}
+                  onChange={(e) => setCOverride2(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+                />
+              </div>
+            )}
+          </div>
+
+          {compareError && (
+            <p className="text-sm text-red-600 mb-3">{compareError}</p>
+          )}
+
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={handleRunComparison}
+              disabled={compareState === 'loading'}
+              className="px-5 py-2 rounded-lg bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 disabled:opacity-50 transition-colors flex items-center gap-2"
+            >
+              {compareState === 'loading' ? (
+                <>
+                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                  </svg>
+                  Calculando...
+                </>
+              ) : (
+                'Calcular escenario 2'
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setCompareState('idle'); setResults2(null); }}
+              className="px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Scenario Comparison results ───────────────────────────────────── */}
+      {compareState === 'done' && results2 && (() => {
+        const r1 = results;
+        const r2 = results2;
+        const pctDiff = (a: number, b: number) => {
+          if (a === 0) return '—';
+          const d = (b - a) / Math.abs(a) * 100;
+          return `${d >= 0 ? '+' : ''}${d.toFixed(1)}%`;
+        };
+        const compRows: [string, string, string, string][] = [
+          ['T (años)', String(r1.return_period), String(r2.return_period), '—'],
+          ['Método', r1.method, r2.method, '—'],
+          ['i (mm/hr)', r1.intensity_mm_hr.toFixed(1), r2.intensity_mm_hr.toFixed(1),
+            pctDiff(r1.intensity_mm_hr, r2.intensity_mm_hr)],
+          ['Tc (min)', r1.tc_adopted_minutes.toFixed(1), r2.tc_adopted_minutes.toFixed(1),
+            pctDiff(r1.tc_adopted_minutes, r2.tc_adopted_minutes)],
+          ['Q pico (m³/s)', r1.peak_flow_m3s.toFixed(3), r2.peak_flow_m3s.toFixed(3),
+            pctDiff(r1.peak_flow_m3s, r2.peak_flow_m3s)],
+          ['q (m³/s/km²)', r1.specific_flow_m3s_km2.toFixed(4), r2.specific_flow_m3s_km2.toFixed(4),
+            pctDiff(r1.specific_flow_m3s_km2, r2.specific_flow_m3s_km2)],
+          ['Riesgo', r1.risk_level.replace(/_/g, ' '), r2.risk_level.replace(/_/g, ' '), '—'],
+        ];
+        if (r1.cn != null) {
+          compRows.splice(2, 0, [
+            'CN',
+            r1.cn.toFixed(1),
+            (r2.cn ?? r1.cn).toFixed(1),
+            pctDiff(r1.cn, r2.cn ?? r1.cn),
+          ]);
+        }
+        if (r1.runoff_coeff != null) {
+          compRows.splice(2, 0, [
+            'C (escorrentía)',
+            r1.runoff_coeff.toFixed(3),
+            (r2.runoff_coeff ?? r1.runoff_coeff).toFixed(3),
+            pctDiff(r1.runoff_coeff, r2.runoff_coeff ?? r1.runoff_coeff),
+          ]);
+        }
+
+        const barData = [
+          { name: `Esc. 1 (T=${r1.return_period})`, flow: r1.peak_flow_m3s },
+          { name: `Esc. 2 (T=${r2.return_period})`, flow: r2.peak_flow_m3s },
+        ];
+
+        return (
+          <div ref={compareRef} className="bg-white rounded-xl shadow-sm border border-violet-200 p-6">
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="font-semibold text-violet-800">Comparación de Escenarios</h3>
+              <button
+                type="button"
+                onClick={() => { setCompareState('form'); setResults2(null); }}
+                className="text-xs text-violet-500 hover:text-violet-700 underline"
+              >
+                Modificar
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mb-4">
+              Escenario 1: T={r1.return_period} años (base) vs. Escenario 2: T={r2.return_period} años
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {/* Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-gray-700">
+                  <thead>
+                    <tr className="bg-violet-50 border-b border-violet-200">
+                      <th className="text-left py-2 px-2 font-semibold text-violet-700">Parámetro</th>
+                      <th className="text-right py-2 px-2 font-semibold text-violet-700">Esc. 1</th>
+                      <th className="text-right py-2 px-2 font-semibold text-violet-700">Esc. 2</th>
+                      <th className="text-right py-2 px-2 font-semibold text-violet-700">Diferencia</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {compRows.map(([param, v1, v2, diff], idx) => {
+                      const isQRow = param.startsWith('Q pico');
+                      const diffNum = parseFloat(diff);
+                      const diffColor = isNaN(diffNum) ? 'text-gray-400'
+                        : diffNum > 0 ? 'text-orange-600 font-semibold'
+                        : diffNum < 0 ? 'text-blue-600 font-semibold'
+                        : 'text-gray-400';
+                      return (
+                        <tr key={idx} className={`border-b border-gray-50 ${isQRow ? 'bg-violet-50 font-semibold' : ''}`}>
+                          <td className="py-1.5 px-2">{param}</td>
+                          <td className="text-right py-1.5 px-2">{v1}</td>
+                          <td className="text-right py-1.5 px-2">{v2}</td>
+                          <td className={`text-right py-1.5 px-2 ${diffColor}`}>{diff}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Bar chart */}
+              <ResponsiveContainer width="100%" height={180}>
+                <BarChart data={barData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                  <YAxis tickFormatter={(v: number) => v.toFixed(2)} tick={{ fontSize: 10 }}
+                    label={{ value: 'm³/s', angle: -90, position: 'insideLeft', style: { fontSize: 10 } }} />
+                  <Tooltip formatter={(v) => [`${Number(v).toFixed(3)} m³/s`, 'Q pico']} />
+                  <Bar dataKey="flow" radius={[4, 4, 0, 0]}>
+                    <Cell fill="#7c3aed" />
+                    <Cell fill="#a78bfa" />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Method comparison ────────────────────────────────────────────── */}
       {results.method_comparison.length > 1 && (
@@ -703,6 +996,31 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
                     />
                   </svg>
                   Descargar en Word (.docx)
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleDownloadExcel}
+              disabled={isDownloadingExcel}
+              className="px-5 py-2 rounded-lg border border-green-500 text-green-700 text-sm font-semibold hover:bg-green-50 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+            >
+              {isDownloadingExcel ? (
+                <>
+                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                  </svg>
+                  Generando Excel...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round"
+                      d="M3 10h18M3 14h18M10 3v18M6 3h12a1 1 0 011 1v16a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1z" />
+                  </svg>
+                  Descargar Excel (.xlsx)
                 </>
               )}
             </button>
