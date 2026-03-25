@@ -456,6 +456,7 @@ def run_calculation(payload: dict) -> dict:
         location_description=req.location_description,
         intensity_mm_hr=round(intensity, 3),
         idf_source=city_data["source"],
+        idf_verified=city_data["verified"],
         tc_results=tc_results,
         tc_adopted_hours=round(tc_adopted_hr, 4),
         tc_adopted_minutes=round(tc_adopted_min, 2),

@@ -435,10 +435,13 @@ class MemoriaCalculoGenerator:
         )
         story.append(Paragraph(intro, S["body"]))
 
+        idf_verified = data.get("idf_verified", True)
+        idf_source = data.get("idf_source", "—") if idf_verified else "Estimación regional (requiere validación local)"
+
         idf_data = [
             ["Parámetro", "Valor"],
             ["Estación de referencia", data["city"]],
-            ["Fuente / Bibliografía", data.get("idf_source", "—")],
+            ["Fuente / Bibliografía", idf_source],
             ["Período de retorno (T)", f"{data['return_period']} años"],
             ["Duración de tormenta (t)", f"{data['duration_min']} minutos"],
             ["Intensidad de diseño (i)", f"{data['intensity_mm_hr']:.2f} mm/hr"],
@@ -446,6 +449,17 @@ class MemoriaCalculoGenerator:
 
         tbl = self._make_table(idf_data)
         story.append(tbl)
+
+        if not idf_verified:
+            story.append(Spacer(1, 0.3 * cm))
+            story.append(
+                Paragraph(
+                    "<b>⚠ AVISO:</b> Los datos IDF para esta localidad son estimaciones regionales "
+                    "interpoladas y no han sido validados contra registros pluviográficos locales. "
+                    "Para diseños definitivos, verificar con registros locales del SMN/INA.",
+                    S["body"],
+                )
+            )
 
         story.append(Spacer(1, 0.5 * cm))
         story.append(

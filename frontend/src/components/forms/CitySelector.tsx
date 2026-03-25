@@ -82,6 +82,12 @@ export function CitySelector({ value, returnPeriod, duration, onChange }: Props)
             <span className="font-medium">{t('common.source')}:</span> {selected.source}
           </div>
 
+          {!selected.verified && (
+            <div className="rounded bg-amber-50 border border-amber-300 px-3 py-2 text-xs text-amber-800">
+              ⚠️ Datos IDF estimados. Para diseños definitivos, verificar con registros locales del SMN/INA.
+            </div>
+          )}
+
           {preview !== null && (
             <div className="mt-1 rounded bg-white border border-blue-200 px-3 py-2 flex items-center justify-between">
               <span className="text-xs text-gray-600">

@@ -34,6 +34,7 @@ class IDFCity(TypedDict):
     c: float
     d: float
     source: str
+    verified: bool
     validRange: ValidRange
 
 
@@ -46,6 +47,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 13.0,
         "d": 0.846,
         "source": "Caamaño Nelli et al. (1999) / INA",
+        "verified": True,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     {
@@ -56,6 +58,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 12.0,
         "d": 0.820,
         "source": "Caamaño Nelli et al. (1999)",
+        "verified": True,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     {
@@ -66,6 +69,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 15.0,
         "d": 0.900,
         "source": "Rühle (1966) / Actualización INA",
+        "verified": True,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     {
@@ -76,6 +80,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 12.0,
         "d": 0.850,
         "source": "INA - Centro Regional Litoral",
+        "verified": True,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     {
@@ -86,6 +91,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 10.0,
         "d": 0.750,
         "source": "INA - Centro Regional Andino",
+        "verified": True,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 50},
     },
     {
@@ -96,6 +102,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 14.0,
         "d": 0.880,
         "source": "SMN / Estudios regionales NOA",
+        "verified": True,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     {
@@ -106,6 +113,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 12.0,
         "d": 0.860,
         "source": "INA - Centro Regional NEA",
+        "verified": True,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     {
@@ -116,6 +124,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 12.0,
         "d": 0.855,
         "source": "INA - Centro Regional Litoral",
+        "verified": True,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     {
@@ -126,6 +135,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 10.0,
         "d": 0.720,
         "source": "INA - Centro Regional Comahue",
+        "verified": True,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 50},
     },
     {
@@ -136,6 +146,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 11.0,
         "d": 0.800,
         "source": "Caamaño Nelli et al. (1999)",
+        "verified": True,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     {
@@ -146,6 +157,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 14.0,
         "d": 0.875,
         "source": "SMN / Estudios regionales NOA",
+        "verified": True,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     {
@@ -156,6 +168,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 13.0,
         "d": 0.870,
         "source": "INA - Centro Regional NEA",
+        "verified": True,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     {
@@ -166,6 +179,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 8.0,
         "d": 0.680,
         "source": "INA - Centro Regional Patagonia",
+        "verified": True,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 50},
     },
     {
@@ -176,6 +190,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 12.5,
         "d": 0.840,
         "source": "UNLP - Departamento de Hidráulica",
+        "verified": True,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     {
@@ -186,6 +201,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 11.5,
         "d": 0.825,
         "source": "Caamaño Nelli et al. (1999)",
+        "verified": True,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     # NOA
@@ -197,6 +213,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 14.0,
         "d": 0.870,
         "source": "Regionalización INA/SMN - Estimaciones para uso preliminar",
+        "verified": False,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     {
@@ -207,6 +224,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 13.0,
         "d": 0.855,
         "source": "Regionalización INA/SMN - Estimaciones para uso preliminar",
+        "verified": False,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     {
@@ -217,6 +235,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 12.0,
         "d": 0.820,
         "source": "Regionalización INA/SMN - Estimaciones para uso preliminar",
+        "verified": False,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     {
@@ -227,6 +246,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 11.0,
         "d": 0.790,
         "source": "Regionalización INA/SMN - Estimaciones para uso preliminar",
+        "verified": False,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     # NEA
@@ -238,6 +258,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 13.0,
         "d": 0.865,
         "source": "Regionalización INA/SMN - Estimaciones para uso preliminar",
+        "verified": False,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     {
@@ -248,6 +269,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 12.0,
         "d": 0.860,
         "source": "Regionalización INA/SMN - Estimaciones para uso preliminar",
+        "verified": False,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     # Cuyo
@@ -259,6 +281,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 10.0,
         "d": 0.740,
         "source": "Regionalización INA/SMN - Estimaciones para uso preliminar",
+        "verified": False,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 50},
     },
     {
@@ -269,6 +292,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 11.0,
         "d": 0.810,
         "source": "Regionalización INA/SMN - Estimaciones para uso preliminar",
+        "verified": False,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 50},
     },
     # Patagonia
@@ -280,6 +304,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 8.0,
         "d": 0.690,
         "source": "Regionalización INA/SMN - Estimaciones para uso preliminar",
+        "verified": False,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 50},
     },
     {
@@ -290,6 +315,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 9.0,
         "d": 0.700,
         "source": "Regionalización INA/SMN - Estimaciones para uso preliminar",
+        "verified": False,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 50},
     },
     {
@@ -300,6 +326,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 7.0,
         "d": 0.650,
         "source": "Regionalización INA/SMN - Estimaciones para uso preliminar",
+        "verified": False,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 50},
     },
     {
@@ -310,6 +337,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 8.0,
         "d": 0.670,
         "source": "Regionalización INA/SMN - Estimaciones para uso preliminar",
+        "verified": False,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 50},
     },
     # Centro / Litoral
@@ -321,6 +349,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 12.0,
         "d": 0.855,
         "source": "Regionalización INA/SMN - Estimaciones para uso preliminar",
+        "verified": False,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     {
@@ -331,6 +360,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 12.0,
         "d": 0.860,
         "source": "Regionalización INA/SMN - Estimaciones para uso preliminar",
+        "verified": False,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     # Buenos Aires Interior
@@ -342,6 +372,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 12.0,
         "d": 0.835,
         "source": "Regionalización INA/SMN - Estimaciones para uso preliminar",
+        "verified": False,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     {
@@ -352,6 +383,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 12.0,
         "d": 0.830,
         "source": "Regionalización INA/SMN - Estimaciones para uso preliminar",
+        "verified": False,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     {
@@ -362,6 +394,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 12.0,
         "d": 0.840,
         "source": "Regionalización INA/SMN - Estimaciones para uso preliminar",
+        "verified": False,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
     {
@@ -372,6 +405,7 @@ IDF_ARGENTINA: list[IDFCity] = [
         "c": 12.0,
         "d": 0.845,
         "source": "Regionalización INA/SMN - Estimaciones para uso preliminar",
+        "verified": False,
         "validRange": {"tMin": 5, "tMax": 120, "TMin": 2, "TMax": 100},
     },
 ]

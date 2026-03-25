@@ -23,6 +23,7 @@ export interface IDFCoefficients {
   c: number;
   d: number;
   source: string;
+  verified: boolean;
   validRange: { tMin: number; tMax: number; TMin: number; TMax: number };
 }
 
@@ -35,6 +36,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 13.0,
     d: 0.846,
     source: "Caamaño Nelli et al. (1999) / INA",
+    verified: true,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   {
@@ -45,6 +47,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 12.0,
     d: 0.820,
     source: "Caamaño Nelli et al. (1999)",
+    verified: true,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   {
@@ -55,6 +58,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 15.0,
     d: 0.900,
     source: "Rühle (1966) / Actualización INA",
+    verified: true,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   {
@@ -65,6 +69,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 12.0,
     d: 0.850,
     source: "INA - Centro Regional Litoral",
+    verified: true,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   {
@@ -75,6 +80,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 10.0,
     d: 0.750,
     source: "INA - Centro Regional Andino",
+    verified: true,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 50 },
   },
   {
@@ -85,6 +91,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 14.0,
     d: 0.880,
     source: "SMN / Estudios regionales NOA",
+    verified: true,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   {
@@ -95,6 +102,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 12.0,
     d: 0.860,
     source: "INA - Centro Regional NEA",
+    verified: true,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   {
@@ -105,6 +113,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 12.0,
     d: 0.855,
     source: "INA - Centro Regional Litoral",
+    verified: true,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   {
@@ -115,6 +124,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 10.0,
     d: 0.720,
     source: "INA - Centro Regional Comahue",
+    verified: true,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 50 },
   },
   {
@@ -125,6 +135,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 11.0,
     d: 0.800,
     source: "Caamaño Nelli et al. (1999)",
+    verified: true,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   {
@@ -135,6 +146,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 14.0,
     d: 0.875,
     source: "SMN / Estudios regionales NOA",
+    verified: true,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   {
@@ -145,6 +157,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 13.0,
     d: 0.870,
     source: "INA - Centro Regional NEA",
+    verified: true,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   {
@@ -155,6 +168,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 8.0,
     d: 0.680,
     source: "INA - Centro Regional Patagonia",
+    verified: true,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 50 },
   },
   {
@@ -165,6 +179,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 12.5,
     d: 0.840,
     source: "UNLP - Departamento de Hidráulica",
+    verified: true,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   {
@@ -175,6 +190,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 11.5,
     d: 0.825,
     source: "Caamaño Nelli et al. (1999)",
+    verified: true,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   // NOA
@@ -186,6 +202,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 14.0,
     d: 0.870,
     source: "Regionalización INA/SMN - Estimaciones para uso preliminar",
+    verified: false,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   {
@@ -196,6 +213,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 13.0,
     d: 0.855,
     source: "Regionalización INA/SMN - Estimaciones para uso preliminar",
+    verified: false,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   {
@@ -206,6 +224,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 12.0,
     d: 0.820,
     source: "Regionalización INA/SMN - Estimaciones para uso preliminar",
+    verified: false,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   {
@@ -216,6 +235,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 11.0,
     d: 0.790,
     source: "Regionalización INA/SMN - Estimaciones para uso preliminar",
+    verified: false,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   // NEA
@@ -227,6 +247,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 13.0,
     d: 0.865,
     source: "Regionalización INA/SMN - Estimaciones para uso preliminar",
+    verified: false,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   {
@@ -237,6 +258,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 12.0,
     d: 0.860,
     source: "Regionalización INA/SMN - Estimaciones para uso preliminar",
+    verified: false,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   // Cuyo
@@ -248,6 +270,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 10.0,
     d: 0.740,
     source: "Regionalización INA/SMN - Estimaciones para uso preliminar",
+    verified: false,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 50 },
   },
   {
@@ -258,6 +281,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 11.0,
     d: 0.810,
     source: "Regionalización INA/SMN - Estimaciones para uso preliminar",
+    verified: false,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 50 },
   },
   // Patagonia
@@ -269,6 +293,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 8.0,
     d: 0.690,
     source: "Regionalización INA/SMN - Estimaciones para uso preliminar",
+    verified: false,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 50 },
   },
   {
@@ -279,6 +304,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 9.0,
     d: 0.700,
     source: "Regionalización INA/SMN - Estimaciones para uso preliminar",
+    verified: false,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 50 },
   },
   {
@@ -289,6 +315,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 7.0,
     d: 0.650,
     source: "Regionalización INA/SMN - Estimaciones para uso preliminar",
+    verified: false,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 50 },
   },
   {
@@ -299,6 +326,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 8.0,
     d: 0.670,
     source: "Regionalización INA/SMN - Estimaciones para uso preliminar",
+    verified: false,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 50 },
   },
   // Centro / Litoral
@@ -310,6 +338,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 12.0,
     d: 0.855,
     source: "Regionalización INA/SMN - Estimaciones para uso preliminar",
+    verified: false,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   {
@@ -320,6 +349,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 12.0,
     d: 0.860,
     source: "Regionalización INA/SMN - Estimaciones para uso preliminar",
+    verified: false,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   // Buenos Aires Interior
@@ -331,6 +361,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 12.0,
     d: 0.835,
     source: "Regionalización INA/SMN - Estimaciones para uso preliminar",
+    verified: false,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   {
@@ -341,6 +372,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 12.0,
     d: 0.830,
     source: "Regionalización INA/SMN - Estimaciones para uso preliminar",
+    verified: false,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   {
@@ -351,6 +383,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 12.0,
     d: 0.840,
     source: "Regionalización INA/SMN - Estimaciones para uso preliminar",
+    verified: false,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
   {
@@ -361,6 +394,7 @@ export const IDF_ARGENTINA: IDFCoefficients[] = [
     c: 12.0,
     d: 0.845,
     source: "Regionalización INA/SMN - Estimaciones para uso preliminar",
+    verified: false,
     validRange: { tMin: 5, tMax: 120, TMin: 2, TMax: 100 },
   },
 ];

@@ -193,6 +193,7 @@ class CalculationResponse(BaseModel):
     # IDF result
     intensity_mm_hr: float
     idf_source: str
+    idf_verified: bool
 
     # Tc results
     tc_results: list[TcFormulaResult]

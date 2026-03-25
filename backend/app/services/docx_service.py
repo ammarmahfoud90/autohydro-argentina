@@ -480,20 +480,31 @@ class MemoriaCalculoDocxGenerator:
         )
         self._body(doc, intro)
 
+        idf_verified = data.get("idf_verified", True)
+        idf_source = data.get("idf_source", "—") if idf_verified else "Estimación regional (requiere validación local)"
+
         idf_data = [
-            ["Par\u00e1metro", "Valor"],
-            ["Estaci\u00f3n de referencia", data["city"]],
-            ["Fuente / Bibliograf\u00eda", data.get("idf_source", "\u2014")],
-            ["Per\u00edodo de retorno (T)", f"{data['return_period']} a\u00f1os"],
-            ["Duraci\u00f3n de tormenta (t)", f"{data['duration_min']} minutos"],
-            ["Intensidad de dise\u00f1o (i)", f"{data['intensity_mm_hr']:.2f} mm/hr"],
+            ["Parámetro", "Valor"],
+            ["Estación de referencia", data["city"]],
+            ["Fuente / Bibliografía", idf_source],
+            ["Período de retorno (T)", f"{data['return_period']} años"],
+            ["Duración de tormenta (t)", f"{data['duration_min']} minutos"],
+            ["Intensidad de diseño (i)", f"{data['intensity_mm_hr']:.2f} mm/hr"],
         ]
         self._make_table(doc, idf_data)
 
-        self._body(doc, "F\u00f3rmula IDF aplicada:  i = (a \u00d7 T^b) / (t + c)^d", justify=False)
+        if not idf_verified:
+            self._body(
+                doc,
+                "⚠ AVISO: Los datos IDF para esta localidad son estimaciones regionales "
+                "interpoladas y no han sido validados contra registros pluviográficos locales. "
+                "Para diseños definitivos, verificar con registros locales del SMN/INA.",
+            )
+
+        self._body(doc, "Fórmula IDF aplicada:  i = (a × T^b) / (t + c)^d", justify=False)
         self._body(
             doc,
-            "donde i [mm/hr], T [a\u00f1os], t [minutos] y a, b, c, d son coeficientes regionales.",
+            "donde i [mm/hr], T [años], t [minutos] y a, b, c, d son coeficientes regionales.",
         )
 
     # ── Section 4: Tc ─────────────────────────────────────────────────────────
