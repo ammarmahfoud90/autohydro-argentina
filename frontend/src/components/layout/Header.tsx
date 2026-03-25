@@ -16,7 +16,7 @@ const CALC_ITEMS = [
   },
   {
     to: '/calculadora/manning',
-    label: 'Hidráulica — Manning',
+    label: 'Hidráulica (Manning)',
     desc: 'Capacidad de canales abiertos',
     icon: (
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -48,7 +48,7 @@ export function Header() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const isCalcActive = pathname.startsWith('/calculator') || pathname.startsWith('/calculadora');
+  const isCalcActive = pathname.startsWith('/calculator') || pathname.startsWith('/calculadora') || pathname === '/manning';
 
   const linkClass = (to: string) =>
     `px-3 py-1.5 rounded-md text-sm font-medium transition-colors relative ${
