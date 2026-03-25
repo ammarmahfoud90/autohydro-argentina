@@ -224,3 +224,10 @@ class CalculationResponse(BaseModel):
 
     # CN sensitivity analysis (SCS-CN method only)
     cn_sensitivity: Optional[list[CNSensitivityPoint]] = None
+
+    # SCS Unit Hydrograph (SCS-CN method only)
+    hydrograph_times: Optional[list[float]] = None    # hours from start
+    hydrograph_flows: Optional[list[float]] = None    # m³/s
+    runoff_volume_m3: Optional[float] = None
+    time_to_peak_hr: Optional[float] = None
+    base_time_hr: Optional[float] = None

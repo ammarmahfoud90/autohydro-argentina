@@ -684,6 +684,79 @@ class MemoriaCalculoGenerator:
         )
         return story
 
+    # ── Section 7b: Hidrograma Unitario SCS ──────────────────────────────────
+
+    def _build_section_hidrograma(self, data: dict[str, Any]) -> list:
+        S = self.styles
+        story = [Paragraph("7.5 HIDROGRAMA UNITARIO SCS", S["h2"])]
+
+        Tp = data.get("time_to_peak_hr", 0)
+        Tb = data.get("base_time_hr", 0)
+        vol = data.get("runoff_volume_m3", 0)
+        Qp = data.get("peak_flow_m3s", 0)
+
+        story.append(
+            Paragraph(
+                "El hidrograma de escorrentía directa se generó aplicando el Hidrograma Unitario "
+                "Adimensional SCS (USDA-SCS, National Engineering Handbook, Section 4, 1986). "
+                "El hidrograma muestra la variación temporal del caudal durante el evento de "
+                "tormenta; el volumen total de escorrentía corresponde al área bajo la curva.",
+                S["body"],
+            )
+        )
+
+        # Summary table
+        summary_rows = [
+            ["Parámetro", "Valor", "Unidad"],
+            ["Caudal pico (Qp)", f"{Qp:.3f}", "m³/s"],
+            ["Tiempo al pico (Tp)", f"{Tp:.3f}", "hr"],
+            ["Tiempo base (Tb)", f"{Tb:.3f}", "hr"],
+            ["Volumen de escorrentía", f"{vol:,.0f}", "m³"],
+        ]
+        story.append(self._make_table(summary_rows, highlight_last=False))
+        story.append(Spacer(1, 0.3 * cm))
+
+        # Time–flow table
+        times = data.get("hydrograph_times", [])
+        flows = data.get("hydrograph_flows", [])
+        if times and flows:
+            story.append(Paragraph("Ordenadas del hidrograma:", S["h2"]))
+            rows = [["t (hr)", "t/Tp", "Q (m³/s)"]]
+            for t, q in zip(times, flows):
+                t_ratio = f"{t / Tp:.2f}" if Tp > 0 else "—"
+                rows.append([f"{t:.3f}", t_ratio, f"{q:.5f}"])
+
+            col_w = [4 * cm, 4 * cm, 4 * cm]
+            tbl = Table(rows, colWidths=col_w, repeatRows=1)
+            tbl.setStyle(
+                TableStyle(
+                    [
+                        ("BACKGROUND", (0, 0), (-1, 0), _NAVY),
+                        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                        ("FONTSIZE", (0, 0), (-1, -1), 8),
+                        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, _LIGHT_GRAY]),
+                        ("GRID", (0, 0), (-1, -1), 0.3, _GRAY),
+                        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                        ("TOPPADDING", (0, 0), (-1, -1), 3),
+                        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+                    ]
+                )
+            )
+            story.append(tbl)
+
+        story.append(Spacer(1, 0.3 * cm))
+        story.append(
+            Paragraph(
+                "NOTA: El volumen de escorrentía calculado representa la respuesta del sistema "
+                "ante la lluvia de diseño adoptada. Para diseño de obras de retención o "
+                "laminación, verificar con hidrograma de período de retorno de proyecto.",
+                S["disclaimer"],
+            )
+        )
+        return story
+
     # ── Section 7: Análisis ────────────────────────────────────────────────
 
     def _build_section_analisis(
@@ -920,6 +993,8 @@ class MemoriaCalculoGenerator:
         story.extend(self._build_section_calculos(calculation_data))
         if calculation_data.get("cn_sensitivity"):
             story.extend(self._build_section_sensibilidad(calculation_data))
+        if calculation_data.get("hydrograph_times"):
+            story.extend(self._build_section_hidrograma(calculation_data))
         story.append(PageBreak())
         story.extend(self._build_section_analisis(calculation_data, ai_interpretation, ai_sections))
         story.extend(self._build_section_conclusiones(calculation_data, ai_sections))

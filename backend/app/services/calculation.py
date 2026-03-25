@@ -232,6 +232,64 @@ def scs_cn_method(
     }
 
 
+# ── SCS Unit Hydrograph ───────────────────────────────────────────────────────
+
+# Standard SCS dimensionless curvilinear unit hydrograph
+# Source: USDA-SCS, National Engineering Handbook, Section 4 (1972/1986)
+# Coordinates: (t/Tp, q/Qp)
+_SCS_DIM_UH: list[tuple[float, float]] = [
+    (0.0, 0.000),
+    (0.1, 0.015), (0.2, 0.075), (0.3, 0.160), (0.4, 0.280),
+    (0.5, 0.430), (0.6, 0.600), (0.7, 0.770), (0.8, 0.890),
+    (0.9, 0.970), (1.0, 1.000),
+    (1.1, 0.980), (1.2, 0.920), (1.3, 0.840), (1.4, 0.750),
+    (1.5, 0.660), (1.6, 0.560), (1.7, 0.460), (1.8, 0.390),
+    (1.9, 0.330), (2.0, 0.280),
+    (2.2, 0.207), (2.4, 0.147), (2.6, 0.107), (2.8, 0.077),
+    (3.0, 0.055), (3.2, 0.040), (3.4, 0.029), (3.6, 0.021),
+    (3.8, 0.015), (4.0, 0.011),
+    (4.5, 0.005), (5.0, 0.000),
+]
+
+
+def scs_unit_hydrograph(
+    Qp: float,
+    Tp: float,
+) -> dict:
+    """
+    Generate the SCS curvilinear unit hydrograph for a storm event.
+
+    Args:
+        Qp:  Peak discharge (m³/s) from scs_cn_method
+        Tp:  Time to peak (hours) = 0.6 * Tc
+
+    Returns dict with:
+        times_hr:       list of time values (hours)
+        flows_m3s:      list of discharge values (m³/s)
+        runoff_volume:  total volume under hydrograph (m³)
+        base_time_hr:   time base (hours) ≈ 5 × Tp for curvilinear
+        time_to_peak_hr: Tp
+    """
+    times = [ratio * Tp for ratio, _ in _SCS_DIM_UH]
+    flows = [ratio * Qp for _, ratio in _SCS_DIM_UH]
+
+    # Trapezoidal integration for volume (m³)
+    volume = 0.0
+    for i in range(1, len(times)):
+        dt = (times[i] - times[i - 1]) * 3600.0  # convert hr → s
+        volume += 0.5 * (flows[i] + flows[i - 1]) * dt
+
+    base_time = times[-1]  # last point = 5 × Tp
+
+    return {
+        "times_hr": [round(t, 4) for t in times],
+        "flows_m3s": [round(q, 5) for q in flows],
+        "runoff_volume_m3": round(volume, 1),
+        "base_time_hr": round(base_time, 4),
+        "time_to_peak_hr": round(Tp, 4),
+    }
+
+
 # ── CN sensitivity analysis ───────────────────────────────────────────────────
 
 def compute_cn_sensitivity(
@@ -394,6 +452,14 @@ def run_calculation(payload: dict) -> dict:
             tc_hours=tc_adopted_hr,
             use_pampa_lambda=req.use_pampa_lambda,
         )
+        # Unit hydrograph (only when there is actual runoff)
+        if scs["Qp_m3s"] > 0 and scs["Tp_hr"] > 0:
+            uh = scs_unit_hydrograph(Qp=scs["Qp_m3s"], Tp=scs["Tp_hr"])
+            extra["hydrograph_times"] = uh["times_hr"]
+            extra["hydrograph_flows"] = uh["flows_m3s"]
+            extra["runoff_volume_m3"] = uh["runoff_volume_m3"]
+            extra["time_to_peak_hr"] = uh["time_to_peak_hr"]
+            extra["base_time_hr"] = uh["base_time_hr"]
 
     specific_flow = Q_primary / req.area_km2 if req.area_km2 > 0 else 0.0
 

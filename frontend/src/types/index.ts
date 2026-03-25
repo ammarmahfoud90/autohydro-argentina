@@ -101,6 +101,13 @@ export interface HydrologyResult {
   risk_recommendations: RiskRecommendations;
   infrastructure_type: string;
   cn_sensitivity?: CNSensitivityPoint[];
+  // SCS Unit Hydrograph
+  hydrograph_times?: number[];
+  hydrograph_flows?: number[];
+  runoff_volume_m3?: number;
+  time_to_peak_hr?: number;
+  base_time_hr?: number;
+  idf_verified?: boolean;
 }
 
 export interface CNSensitivityPoint {
