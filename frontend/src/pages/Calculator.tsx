@@ -6,6 +6,7 @@ import { CitySelector } from '../components/forms/CitySelector';
 import { BasinInputs } from '../components/forms/BasinInputs';
 import { MethodSelector } from '../components/forms/MethodSelector';
 import { CNSelector } from '../components/forms/CNSelector';
+import { LandUseAssistant } from '../components/forms/LandUseAssistant';
 import { TcCalculator } from '../components/forms/TcCalculator';
 import { ReportOptions } from '../components/forms/ReportOptions';
 import { ResultsPanel } from '../components/results/ResultsPanel';
@@ -393,13 +394,26 @@ export function Calculator() {
 
             {formData.method === 'scs_cn' && (
               <Card title="Número de Curva (CN)">
-                <CNSelector
-                  categories={formData.land_use_categories}
-                  soilGroup={formData.soil_group}
-                  onChange={(cats: LandUseCategory[], sg: SoilGroup) =>
-                    update({ land_use_categories: cats, soil_group: sg })
-                  }
-                />
+                <div className="space-y-5">
+                  <LandUseAssistant
+                    soilGroup={formData.soil_group}
+                    onApply={(cats: LandUseCategory[], sg: SoilGroup) =>
+                      update({ land_use_categories: cats, soil_group: sg })
+                    }
+                  />
+                  <div className="flex items-center gap-3 text-xs text-gray-400">
+                    <div className="flex-1 h-px bg-gray-200" />
+                    <span>o ingresá manualmente</span>
+                    <div className="flex-1 h-px bg-gray-200" />
+                  </div>
+                  <CNSelector
+                    categories={formData.land_use_categories}
+                    soilGroup={formData.soil_group}
+                    onChange={(cats: LandUseCategory[], sg: SoilGroup) =>
+                      update({ land_use_categories: cats, soil_group: sg })
+                    }
+                  />
+                </div>
               </Card>
             )}
 

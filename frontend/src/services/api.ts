@@ -138,3 +138,28 @@ export async function delineateWatershed(
     body: JSON.stringify({ latitude, longitude }),
   });
 }
+
+export interface LandUseItem {
+  cn_key: string;
+  description_es: string;
+  area_percent: number;
+  condition: string;
+  cn_value: number | null;
+}
+
+export interface LandUseClassifyResult {
+  land_uses: LandUseItem[];
+  weighted_cn: number;
+  confidence: 'alta' | 'media' | 'baja';
+  notes: string;
+}
+
+export async function classifyLandUse(
+  description: string,
+  soilGroup: string,
+): Promise<LandUseClassifyResult> {
+  return request<LandUseClassifyResult>('/api/landuse/classify', {
+    method: 'POST',
+    body: JSON.stringify({ description, soil_group: soilGroup }),
+  });
+}
