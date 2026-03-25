@@ -6,6 +6,7 @@ from app.services.manning_service import (
     MANNING_N_REFERENCE,
     VELOCITY_LIMITS,
 )
+from app.services.culvert_service import calculate_culvert, get_reference_data
 
 router = APIRouter()
 
@@ -54,3 +55,37 @@ def manning_reference() -> dict:
         "manning_n": MANNING_N_REFERENCE,
         "velocity_limits": VELOCITY_LIMITS,
     }
+
+
+# ── Culvert endpoints ─────────────────────────────────────────────────────────
+
+class CulvertRequest(BaseModel):
+    design_flow_m3s: float
+    culvert_type: str               # circular | box
+    material: str = "hormigon"      # hormigon | pead | chapa_corrugada
+    length_m: float
+    slope: float                    # m/m
+    inlet_type: str = "sin_alas"    # key in INLET_KE
+    headwater_max_m: float
+    tailwater_m: float = 0.0
+
+
+@router.post("/hydraulics/culvert")
+def culvert(req: CulvertRequest) -> dict:
+    """Size a culvert using inlet/outlet control analysis."""
+    try:
+        result = calculate_culvert(req.model_dump())
+        return result
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error en dimensionamiento de alcantarilla: {str(exc)}",
+        ) from exc
+
+
+@router.get("/hydraulics/culvert/reference")
+def culvert_reference() -> dict:
+    """Return standard sizes, materials, and inlet type reference data."""
+    return get_reference_data()

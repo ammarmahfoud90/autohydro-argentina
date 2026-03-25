@@ -5,6 +5,7 @@ import { Home } from './pages/Home';
 import { Calculator } from './pages/Calculator';
 import { About } from './pages/About';
 import { Manning } from './pages/Manning';
+import { Culvert } from './pages/Culvert';
 
 function App() {
   return (
@@ -17,6 +18,8 @@ function App() {
             <Route path="/calculator" element={<Calculator />} />
             <Route path="/calculadora/manning" element={<Manning />} />
             <Route path="/manning" element={<Manning />} />
+            <Route path="/calculadora/alcantarilla" element={<Culvert />} />
+            <Route path="/alcantarilla" element={<Culvert />} />
             <Route path="/about" element={<About />} />
           </Routes>
         </main>

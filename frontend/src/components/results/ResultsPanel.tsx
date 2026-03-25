@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   BarChart,
@@ -67,6 +68,7 @@ function Metric({
 
 export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCalculation }: Props) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [isDownloading, setIsDownloading] = useState(false);
   const [isDownloadingDocx, setIsDownloadingDocx] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
@@ -555,6 +557,21 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
                   Descargar en Word (.docx)
                 </>
               )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                navigate('/calculadora/alcantarilla', {
+                  state: { flow: results.peak_flow_m3s },
+                })
+              }
+              className="px-5 py-2 rounded-lg bg-teal-600 text-white text-sm font-semibold hover:bg-teal-700 transition-colors flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              </svg>
+              Dimensionar alcantarilla
             </button>
 
             <button

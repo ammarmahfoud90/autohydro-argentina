@@ -25,6 +25,17 @@ const CALC_ITEMS = [
       </svg>
     ),
   },
+  {
+    to: '/calculadora/alcantarilla',
+    label: 'Alcantarillas',
+    desc: 'Dimensionamiento, control entrada/salida',
+    icon: (
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round"
+          d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+      </svg>
+    ),
+  },
 ];
 
 export function Header() {
@@ -48,7 +59,7 @@ export function Header() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const isCalcActive = pathname.startsWith('/calculator') || pathname.startsWith('/calculadora') || pathname === '/manning';
+  const isCalcActive = pathname.startsWith('/calculator') || pathname.startsWith('/calculadora') || pathname === '/manning' || pathname === '/alcantarilla';
 
   const linkClass = (to: string) =>
     `px-3 py-1.5 rounded-md text-sm font-medium transition-colors relative ${
