@@ -366,6 +366,28 @@ export function Manning() {
               )}
             </div>
 
+            {/* Lining type for velocity warnings */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+              <h2 className="text-sm font-semibold text-gray-700 mb-1">
+                Material del canal <span className="text-gray-400 font-normal">(opcional)</span>
+              </h2>
+              <p className="text-xs text-gray-500 mb-2">Para verificar velocidades admisibles de erosión y sedimentación.</p>
+              <select
+                value={liningType}
+                onChange={(e) => setLiningType(e.target.value)}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">— Sin verificar —</option>
+                <option value="hormigon">Hormigón</option>
+                <option value="tierra_arcillosa">Tierra arcillosa</option>
+                <option value="tierra_limosa">Tierra limosa</option>
+                <option value="tierra_arenosa">Tierra arenosa</option>
+                <option value="grava_fina">Grava fina</option>
+                <option value="grava_gruesa">Grava gruesa / canto rodado</option>
+                <option value="roca">Roca</option>
+              </select>
+            </div>
+
             {/* Design check (optional) */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
               <h2 className="text-sm font-semibold text-gray-700 mb-1">Verificar diseño <span className="text-gray-400 font-normal">(opcional)</span></h2>
