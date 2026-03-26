@@ -2,12 +2,6 @@ import { Link } from 'react-router-dom';
 import { IDF_ARGENTINA } from '../constants/idf-data';
 import { ArgentinaMap } from '../components/ArgentinaMap';
 
-const IconFlood = () => (
-  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round"
-      d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
-  </svg>
-);
 
 const IconHieto = () => (
   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -192,16 +186,6 @@ const FEATURES: FeatureCardProps[] = [
       'Banner de estado de conexión',
     ],
   },
-  {
-    icon: <IconFlood />,
-    title: 'Simulador de Inundaciones',
-    items: [
-      'Modelo 1D simplificado con Manning',
-      'Visualización del área inundable en mapa',
-      'Análisis de profundidades por zonas',
-      'Clasificación de riesgo (Bajo → Muy Alto)',
-    ],
-  },
 ];
 
 export function Home() {
@@ -235,7 +219,7 @@ export function Home() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-[#74ACDF] text-xs font-semibold px-3.5 py-1.5 rounded-full">
             <span className="w-1.5 h-1.5 rounded-full bg-[#74ACDF] animate-pulse" />
-            Ing. Ammar Mahfoud — AutoHydro Argentina v1.5
+            Ing. Ammar Mahfoud — AutoHydro Argentina v1.5.1
           </div>
 
           {/* Headline */}
@@ -294,9 +278,15 @@ export function Home() {
         <div className="max-w-5xl mx-auto space-y-4">
           {[
             {
-              version: 'v1.5',
+              version: 'v1.5.1',
               label: 'Nuevo',
               color: 'text-emerald-700 bg-emerald-100',
+              items: ['Advertencias mejoradas para datos IDF estimados', 'Selector de ciudad con indicadores verificado/estimado', 'Limpieza de interfaz — simulador de inundaciones ocultado hasta producción'],
+            },
+            {
+              version: 'v1.5',
+              label: '',
+              color: 'text-teal-700 bg-teal-100',
               items: ['Ajuste por cambio climático (RCP 4.5/8.5)', 'Generador de hietogramas de diseño', 'Memorias de cálculo hidráulico (Manning + Alcantarillas)'],
             },
             {
@@ -447,7 +437,7 @@ export function Home() {
               Ingeniero Civil · Hidrología e Hidráulica · Buenos Aires, Argentina
             </p>
             <p className="text-white/40 text-xs mt-1">
-              AutoHydro Argentina v1.5 · © 2026 | Código abierto bajo licencia MIT
+              AutoHydro Argentina v1.5.1 · © 2026 | Código abierto bajo licencia MIT
             </p>
           </div>
           <div className="sm:ml-auto">

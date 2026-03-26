@@ -6,7 +6,7 @@ import { Calculator } from './pages/Calculator';
 import { About } from './pages/About';
 import { Manning } from './pages/Manning';
 import { Culvert } from './pages/Culvert';
-import { FloodSimulator } from './pages/FloodSimulator';
+// import { FloodSimulator } from './pages/FloodSimulator'; // TODO: Re-enable when flood simulation is production-ready
 import { Hyetograph } from './pages/Hyetograph';
 
 function App() {
@@ -22,7 +22,8 @@ function App() {
             <Route path="/manning" element={<Manning />} />
             <Route path="/calculadora/alcantarilla" element={<Culvert />} />
             <Route path="/alcantarilla" element={<Culvert />} />
-            <Route path="/simulador-inundaciones" element={<FloodSimulator />} />
+            {/* <Route path="/simulador-inundaciones" element={<FloodSimulator />} /> */}
+            {/* TODO: Re-enable when flood simulation is production-ready */}
             <Route path="/calculadora/hietograma" element={<Hyetograph />} />
             <Route path="/about" element={<About />} />
           </Routes>
