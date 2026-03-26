@@ -6,6 +6,7 @@ import { Calculator } from './pages/Calculator';
 import { About } from './pages/About';
 import { Manning } from './pages/Manning';
 import { Culvert } from './pages/Culvert';
+import { FloodSimulator } from './pages/FloodSimulator';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <Route path="/manning" element={<Manning />} />
             <Route path="/calculadora/alcantarilla" element={<Culvert />} />
             <Route path="/alcantarilla" element={<Culvert />} />
+            <Route path="/simulador-inundaciones" element={<FloodSimulator />} />
             <Route path="/about" element={<About />} />
           </Routes>
         </main>

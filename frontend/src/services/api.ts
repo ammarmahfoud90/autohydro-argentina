@@ -221,6 +221,50 @@ export async function importShapefile(file: File): Promise<ShapefileImportResult
   return res.json();
 }
 
+export interface FloodSimulationRequest {
+  design_flow_m3s: number;
+  channel_geometry: {
+    type: string;
+    width: number;
+    depth: number;
+    slope: number;
+    manning_n: number;
+  };
+  floodplain_width_m: number;
+  simulation_length_m: number;
+  center_coordinates: [number, number];
+}
+
+export interface DepthZone {
+  level: string;
+  area_ha: number;
+  color: string;
+}
+
+export interface FloodSimulationResult {
+  flooded_area_ha: number;
+  max_depth_m: number;
+  avg_depth_m: number;
+  normal_depth_m: number;
+  channel_capacity_m3s: number;
+  flood_above_bank_m: number;
+  total_flood_width_m: number;
+  risk_level: string;
+  risk_description: string;
+  flood_polygon: object;
+  depth_zones: DepthZone[];
+  summary: string;
+}
+
+export async function simulateFlood(
+  req: FloodSimulationRequest,
+): Promise<FloodSimulationResult> {
+  return request<FloodSimulationResult>('/api/flood/simulate', {
+    method: 'POST',
+    body: JSON.stringify(req),
+  });
+}
+
 export async function classifyLandUse(
   description: string,
   soilGroup: string,
