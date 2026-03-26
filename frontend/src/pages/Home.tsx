@@ -29,24 +29,27 @@ const IconClimate = () => (
 interface FeatureCardProps {
   icon: React.ReactNode;
   title: string;
-  items: string[];
+  highlights: string[];
+  iconBg: string;
+  iconColor: string;
+  tagBg: string;
+  tagText: string;
 }
 
-function FeatureCard({ icon, title, items }: FeatureCardProps) {
+function FeatureCard({ icon, title, highlights, iconBg, iconColor, tagBg, tagText }: FeatureCardProps) {
   return (
-    <div className="group rounded-xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-      <div className="w-10 h-10 rounded-lg bg-[#EEF6FB] flex items-center justify-center mb-3 text-[#0055A4]">
+    <div className="rounded-lg border border-slate-200/80 bg-white p-5 hover:shadow-md hover:border-slate-300 transition-all">
+      <div className={`w-8 h-8 rounded-lg ${iconBg} ${iconColor} flex items-center justify-center mb-3`}>
         {icon}
       </div>
-      <h3 className="font-bold text-gray-800 mb-2 text-sm leading-snug">{title}</h3>
-      <ul className="space-y-1">
-        {items.map((item) => (
-          <li key={item} className="flex items-start gap-1.5 text-xs text-gray-500">
-            <span className="text-[#74ACDF] mt-0.5 shrink-0">›</span>
-            {item}
-          </li>
+      <h3 className="font-semibold text-gray-800 mb-2.5 text-sm leading-snug">{title}</h3>
+      <div className="flex flex-wrap gap-1.5">
+        {highlights.map((h) => (
+          <span key={h} className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${tagBg} ${tagText}`}>
+            {h}
+          </span>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
@@ -112,86 +115,74 @@ const FEATURES: FeatureCardProps[] = [
   {
     icon: <IconCalc />,
     title: 'Cálculo Hidrológico',
-    items: [
-      `${IDF_ARGENTINA.length} ciudades con datos IDF`,
-      'Métodos Racional, Racional Modificado, SCS-CN',
-      'Análisis de sensibilidad CN (±5)',
-      'Hidrograma Unitario SCS',
-      'Comparación de escenarios (T o CN)',
-      'Ajuste por cambio climático (RCP 4.5/8.5)',
-    ],
+    iconBg: 'bg-blue-50',
+    iconColor: 'text-blue-700',
+    tagBg: 'bg-blue-50',
+    tagText: 'text-blue-800',
+    highlights: ['Racional', 'SCS-CN', 'HU SCS', 'Sensibilidad CN', 'Comparación escenarios', 'Ajuste climático RCP'],
   },
   {
     icon: <IconHieto />,
     title: 'Hietogramas de Diseño',
-    items: [
-      'Bloques Alternos (método estándar Argentina)',
-      'SCS Tipo II (regiones húmedas)',
-      'Chicago (peak asimétrico, r = 0.4)',
-      'Distribución uniforme',
-      'Gráficos interactivos + exportar CSV',
-    ],
+    iconBg: 'bg-purple-50',
+    iconColor: 'text-purple-700',
+    tagBg: 'bg-purple-50',
+    tagText: 'text-purple-800',
+    highlights: ['Bloques alternos', 'SCS Tipo II', 'Chicago', 'Distribución uniforme', 'Exportar CSV'],
   },
   {
     icon: <IconClimate />,
     title: 'Cambio Climático',
-    items: [
-      'Ajuste IPCC AR6 sobre intensidades IDF',
-      'Escenarios RCP 4.5 y RCP 8.5',
-      'Horizontes 2030, 2050 y 2100',
-      'Corrección regional por provincia',
-      'Factor visible en resultados y reportes',
-    ],
+    iconBg: 'bg-orange-50',
+    iconColor: 'text-orange-700',
+    tagBg: 'bg-orange-50',
+    tagText: 'text-orange-800',
+    highlights: ['IPCC AR6', 'RCP 4.5/8.5', 'Horizontes 2030–2100', 'Corrección regional', 'Factor visible en reportes'],
   },
   {
     icon: <IconGIS />,
     title: 'Herramientas GIS',
-    items: [
-      'Mapa interactivo Leaflet',
-      'Dibujar polígono de cuenca',
-      'Importar cuenca desde Shapefile (.shp/.zip)',
-      'Exportar polígono a Shapefile con atributos',
-    ],
+    iconBg: 'bg-emerald-50',
+    iconColor: 'text-emerald-700',
+    tagBg: 'bg-emerald-50',
+    tagText: 'text-emerald-800',
+    highlights: ['Mapa Leaflet', 'Dibujar cuenca', 'Importar Shapefile', 'Exportar Shapefile'],
   },
   {
     icon: <IconHydro />,
     title: 'Cálculo Hidráulico',
-    items: [
-      'Ecuación de Manning (4 secciones)',
-      'Dimensionamiento de alcantarillas (FHWA HDS-5)',
-      'Verificación de velocidades y régimen',
-      'Memoria de cálculo PDF incluida',
-    ],
+    iconBg: 'bg-amber-50',
+    iconColor: 'text-amber-700',
+    tagBg: 'bg-amber-50',
+    tagText: 'text-amber-800',
+    highlights: ['Manning (4 secciones)', 'Alcantarillas FHWA HDS-5', 'Verificación régimen', 'Memoria PDF'],
   },
   {
     icon: <IconAI />,
     title: 'Inteligencia Artificial',
-    items: [
-      'Asistente IA para clasificar uso de suelo',
-      'Cálculo automático de CN desde descripción',
-      'Chat con Ingeniero IA (Claude Haiku)',
-      'Interpretación técnica profesional',
-    ],
+    iconBg: 'bg-pink-50',
+    iconColor: 'text-pink-700',
+    tagBg: 'bg-pink-50',
+    tagText: 'text-pink-800',
+    highlights: ['Claude Haiku', 'Clasificar uso de suelo', 'CN automático', 'Interpretación técnica'],
   },
   {
     icon: <IconReport />,
     title: 'Reportes Profesionales',
-    items: [
-      'Memoria de Cálculo hidrológica PDF/Word/Excel',
-      'Memoria de cálculo hidráulico (Manning + Alc.)',
-      'Mapas, hidrogramas e hidrogramas incluidos',
-      'Normas y metodología argentina',
-    ],
+    iconBg: 'bg-slate-100',
+    iconColor: 'text-slate-600',
+    tagBg: 'bg-slate-100',
+    tagText: 'text-slate-700',
+    highlights: ['Memoria PDF/Word/Excel', 'Memoria hidráulica', 'Mapas e hidrogramas', 'Normas argentinas'],
   },
   {
     icon: <IconOffline />,
     title: 'App Instalable (PWA)',
-    items: [
-      'Instalable como app en móvil y escritorio',
-      'Assets cacheados para carga rápida',
-      'Carga offline de la interfaz',
-      'Banner de estado de conexión',
-    ],
+    iconBg: 'bg-cyan-50',
+    iconColor: 'text-cyan-700',
+    tagBg: 'bg-cyan-50',
+    tagText: 'text-cyan-800',
+    highlights: ['Móvil y escritorio', 'Assets cacheados', 'Carga offline', 'Banner de conexión'],
   },
 ];
 
@@ -310,7 +301,7 @@ export function Home() {
             Una sola herramienta — metodología rigurosa, resultados exportables, normas argentinas.
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {FEATURES.map((f) => (
             <FeatureCard key={f.title} {...f} />
           ))}
