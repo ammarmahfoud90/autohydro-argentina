@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
+import { useLocation } from 'react-router-dom';
 import { calculateHydrology } from '../services/api';
 import { CitySelector } from '../components/forms/CitySelector';
 import { BasinInputs } from '../components/forms/BasinInputs';
@@ -189,9 +190,12 @@ function CalculatingOverlay() {
 
 export function Calculator() {
   const { t } = useTranslation();
+  const location = useLocation();
+  const caseStudyData = location.state?.caseStudyData as HydrologyInput | undefined;
+  const caseStudyName = location.state?.caseStudyName as string | undefined;
   const [step, setStep] = useState(1);
   const [basinMode, setBasinMode] = useState<'manual' | 'map'>('manual');
-  const [formData, setFormData] = useState<HydrologyInput>(DEFAULT_FORM);
+  const [formData, setFormData] = useState<HydrologyInput>(caseStudyData ?? DEFAULT_FORM);
   const [results, setResults] = useState<HydrologyResult | null>(null);
   const [basinPolygon, setBasinPolygon] = useState<[number, number][] | undefined>(undefined);
 
@@ -272,6 +276,20 @@ export function Calculator() {
       {mutation.isPending && <CalculatingOverlay />}
 
       <StepIndicator current={step} />
+
+      {caseStudyName && (
+        <div className="bg-[#0055A4] text-white px-4 py-2.5 flex items-center gap-3">
+          <svg className="w-4 h-4 shrink-0 text-[#74ACDF]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+          <p className="text-sm">
+            <span className="font-semibold">Caso de estudio cargado:</span>{' '}
+            <span className="text-blue-200">{caseStudyName}</span>
+            {' — '}
+            <span className="text-blue-200 text-xs">Modificá los parámetros según tu proyecto</span>
+          </p>
+        </div>
+      )}
 
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-4">
         {/* ── Step 1: Location ─────────────────────────────────────────── */}

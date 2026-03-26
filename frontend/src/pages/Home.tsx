@@ -2,6 +2,12 @@ import { Link } from 'react-router-dom';
 import { IDF_ARGENTINA } from '../constants/idf-data';
 import { ArgentinaMap } from '../components/ArgentinaMap';
 
+const CASE_PREVIEWS = [
+  { region: 'AMBA', regionColor: 'bg-blue-100 text-blue-700', title: 'Drenaje Pluvial — La Matanza', city: 'Buenos Aires (Ezeiza)', q: '28.5 m³/s', t: 'T=10 años, A=2.8 km²' },
+  { region: 'NEA', regionColor: 'bg-emerald-100 text-emerald-700', title: 'Alcantarilla Vial — Chaco', city: 'Resistencia', q: '45.2 m³/s', t: 'T=25 años, A=12.5 km²' },
+  { region: 'Cuyo', regionColor: 'bg-violet-100 text-violet-700', title: 'Canal de Riego — Valle de Uco', city: 'Mendoza (Aeropuerto)', q: '52.8 m³/s', t: 'T=50 años, A=8.3 km²' },
+];
+
 
 const IconHieto = () => (
   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -219,7 +225,7 @@ export function Home() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-[#74ACDF] text-xs font-semibold px-3.5 py-1.5 rounded-full">
             <span className="w-1.5 h-1.5 rounded-full bg-[#74ACDF] animate-pulse" />
-            Ing. Ammar Mahfoud — AutoHydro Argentina v1.5.1
+            Ing. Ammar Mahfoud — AutoHydro Argentina v1.6
           </div>
 
           {/* Headline */}
@@ -278,9 +284,15 @@ export function Home() {
         <div className="max-w-5xl mx-auto space-y-4">
           {[
             {
-              version: 'v1.5.1',
+              version: 'v1.6',
               label: 'Nuevo',
               color: 'text-emerald-700 bg-emerald-100',
+              items: ['3 casos de estudio reales documentados (AMBA, NEA, Cuyo)', 'Función "Cargar caso en calculadora" con parámetros pre-llenados', 'Nueva sección de casos de estudio en el inicio'],
+            },
+            {
+              version: 'v1.5.1',
+              label: '',
+              color: 'text-teal-700 bg-teal-100',
               items: ['Advertencias mejoradas para datos IDF estimados', 'Selector de ciudad con indicadores verificado/estimado', 'Limpieza de interfaz — simulador de inundaciones ocultado hasta producción'],
             },
             {
@@ -354,6 +366,47 @@ export function Home() {
           {FEATURES.map((f) => (
             <FeatureCard key={f.title} {...f} />
           ))}
+        </div>
+      </section>
+
+      {/* ── Case Studies Preview ────────────────────────────────────────── */}
+      <section className="bg-gradient-to-r from-[#0055A4]/5 to-blue-50 border-y border-blue-100 py-10 px-4 sm:px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Casos de Estudio Reales</h2>
+              <p className="text-gray-500 text-sm mt-0.5">AutoHydro en acción — ejemplos documentados con datos IDF verificados</p>
+            </div>
+            <Link
+              to="/casos-de-estudio"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0055A4] hover:text-[#004a91] transition-colors"
+            >
+              Ver todos los casos
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </Link>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-4">
+            {CASE_PREVIEWS.map((c) => (
+              <Link
+                key={c.title}
+                to="/casos-de-estudio"
+                className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md hover:-translate-y-0.5 transition-all block"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${c.regionColor}`}>{c.region}</span>
+                  <span className="text-xs text-gray-400">✅ IDF verificado</span>
+                </div>
+                <h3 className="text-sm font-bold text-gray-800 leading-snug mb-1">{c.title}</h3>
+                <p className="text-xs text-gray-500 mb-3">{c.city} · {c.t}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-500">Caudal pico</span>
+                  <span className="font-extrabold text-[#0055A4] text-base">{c.q}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -437,7 +490,7 @@ export function Home() {
               Ingeniero Civil · Hidrología e Hidráulica · Buenos Aires, Argentina
             </p>
             <p className="text-white/40 text-xs mt-1">
-              AutoHydro Argentina v1.5.1 · © 2026 | Código abierto bajo licencia MIT
+              AutoHydro Argentina v1.6 · © 2026 | Código abierto bajo licencia MIT
             </p>
           </div>
           <div className="sm:ml-auto">

@@ -8,6 +8,7 @@ import { Manning } from './pages/Manning';
 import { Culvert } from './pages/Culvert';
 // import { FloodSimulator } from './pages/FloodSimulator'; // TODO: Re-enable when flood simulation is production-ready
 import { Hyetograph } from './pages/Hyetograph';
+import { CaseStudies } from './pages/CaseStudies';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
             {/* <Route path="/simulador-inundaciones" element={<FloodSimulator />} /> */}
             {/* TODO: Re-enable when flood simulation is production-ready */}
             <Route path="/calculadora/hietograma" element={<Hyetograph />} />
+            <Route path="/casos-de-estudio" element={<CaseStudies />} />
             <Route path="/about" element={<About />} />
           </Routes>
         </main>
