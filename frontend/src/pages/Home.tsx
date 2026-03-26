@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { IDF_ARGENTINA } from '../constants/idf-data';
 import { ArgentinaMap } from '../components/ArgentinaMap';
+import { ChangelogTimeline } from '../components/ChangelogTimeline';
 
 const CASE_PREVIEWS = [
   { region: 'AMBA', regionColor: 'bg-blue-100 text-blue-700', title: 'Drenaje Pluvial — La Matanza', city: 'Buenos Aires (Ezeiza)', q: '28.5 m³/s', t: 'T=10 años, A=2.8 km²' },
@@ -295,82 +296,8 @@ export function Home() {
       </section>
 
       {/* ── Changelog ─────────────────────────────────────────────────────── */}
-      <section className="bg-gradient-to-r from-violet-50 to-blue-50 border-y border-violet-100 py-6 px-4 sm:px-6">
-        <div className="max-w-5xl mx-auto space-y-4">
-          {[
-            {
-              version: 'v1.6.1',
-              label: 'Nuevo',
-              color: 'text-emerald-700 bg-emerald-100',
-              items: ['Validación técnica contra HEC-HMS (U.S. Army Corps of Engineers)', 'Diferencias < 5% en los 3 casos de prueba', 'Página de validación completa con tablas de comparación'],
-            },
-            {
-              version: 'v1.6',
-              label: '',
-              color: 'text-teal-700 bg-teal-100',
-              items: ['3 casos de estudio reales documentados (AMBA, NEA, Cuyo)', 'Función "Cargar caso en calculadora" con parámetros pre-llenados', 'Nueva sección de casos de estudio en el inicio'],
-            },
-            {
-              version: 'v1.5.1',
-              label: '',
-              color: 'text-teal-700 bg-teal-100',
-              items: ['Advertencias mejoradas para datos IDF estimados', 'Selector de ciudad con indicadores verificado/estimado', 'Limpieza de interfaz — simulador de inundaciones ocultado hasta producción'],
-            },
-            {
-              version: 'v1.5',
-              label: '',
-              color: 'text-teal-700 bg-teal-100',
-              items: ['Ajuste por cambio climático (RCP 4.5/8.5)', 'Generador de hietogramas de diseño', 'Memorias de cálculo hidráulico (Manning + Alcantarillas)'],
-            },
-            {
-              version: 'v1.4',
-              label: '',
-              color: 'text-violet-700 bg-violet-100',
-              items: ['Simulador de Inundaciones', 'Cálculo de área inundable y profundidades', 'Clasificación de riesgo hídrico'],
-            },
-            {
-              version: 'v1.3',
-              label: '',
-              color: 'text-violet-700 bg-violet-100',
-              items: ['Chat con Ingeniero IA (Haiku)', 'App instalable (PWA)', 'Importar/Exportar Shapefile'],
-            },
-            {
-              version: 'v1.2',
-              label: '',
-              color: 'text-blue-700 bg-blue-100',
-              items: ['Hidrograma Unitario SCS', 'Comparación de escenarios', 'Exportar a Excel (.xlsx)', 'Dimensionamiento de alcantarillas'],
-            },
-            {
-              version: 'v1.1',
-              label: '',
-              color: 'text-gray-600 bg-gray-100',
-              items: ['Cálculo de Manning', 'Mapa de cuenca en reportes'],
-            },
-            {
-              version: 'v1.0',
-              label: '',
-              color: 'text-gray-500 bg-gray-100',
-              items: ['Lanzamiento inicial — Cálculo hidrológico, IDF 33 ciudades'],
-            },
-          ].map(({ version, label, color, items }) => (
-            <div key={version} className="flex flex-wrap items-start gap-x-4 gap-y-1">
-              <span className={`text-xs font-bold px-3 py-1 rounded-full shrink-0 ${color}`}>
-                {version}{label ? ` · ${label}` : ''}
-              </span>
-              <div className="flex flex-wrap gap-x-4 gap-y-1">
-                {items.map((item) => (
-                  <span key={item} className="flex items-center gap-1.5 text-xs text-gray-600">
-                    <svg className="w-3 h-3 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    {item}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+      <section className="bg-gradient-to-r from-violet-50 to-blue-50 border-y border-violet-100">
+        <ChangelogTimeline />
       </section>
 
       {/* ── Features ──────────────────────────────────────────────────────── */}
