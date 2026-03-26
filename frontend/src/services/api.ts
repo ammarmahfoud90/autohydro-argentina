@@ -184,6 +184,43 @@ export interface LandUseClassifyResult {
   notes: string;
 }
 
+export async function exportShapefile(
+  polygon: [number, number][],
+  attributes: Record<string, unknown>,
+  name?: string,
+): Promise<Blob> {
+  const res = await fetch(`${BASE}/api/gis/export-shapefile`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ polygon, attributes, name }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(body.detail ?? `HTTP ${res.status}`);
+  }
+  return res.blob();
+}
+
+export interface ShapefileImportResult {
+  polygon: [number, number][];
+  area_km2: number;
+  attributes: Record<string, unknown>;
+}
+
+export async function importShapefile(file: File): Promise<ShapefileImportResult> {
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetch(`${BASE}/api/gis/import-shapefile`, {
+    method: 'POST',
+    body: form,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(body.detail ?? `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
 export async function classifyLandUse(
   description: string,
   soilGroup: string,

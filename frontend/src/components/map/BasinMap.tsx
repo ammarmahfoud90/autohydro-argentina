@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { importShapefile } from '../../services/api';
 import { MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -157,6 +158,9 @@ export function BasinMap({ onUseData }: Props) {
   const [drawMode, setDrawMode] = useState<DrawMode>('idle');
   const [vertices, setVertices] = useState<L.LatLng[]>([]);
   const [polyArea, setPolyArea] = useState<number | null>(null);
+  const [importState, setImportState] = useState<'idle' | 'loading' | 'error'>('idle');
+  const [importError, setImportError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddVertex = useCallback((ll: L.LatLng) => setVertices(p => [...p, ll]), []);
 
@@ -185,18 +189,80 @@ export function BasinMap({ onUseData }: Props) {
     if (vertices.length >= 3) handleClose();
   }, [vertices.length, handleClose]);
 
+  async function handleShapefileImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImportState('loading');
+    setImportError(null);
+    try {
+      const result = await importShapefile(file);
+      if (!result.polygon || result.polygon.length < 3) {
+        throw new Error('El archivo no contiene un polígono válido');
+      }
+      // Set vertices from imported polygon
+      const latlngs = result.polygon.map(([lat, lng]) => L.latLng(lat, lng));
+      setVertices(latlngs);
+      setPolyArea(result.area_km2);
+      setDrawMode('done');
+      setImportState('idle');
+    } catch (err: unknown) {
+      setImportError(err instanceof Error ? err.message : 'Error al importar el archivo');
+      setImportState('error');
+    } finally {
+      // Reset file input so the same file can be re-selected
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  }
+
   return (
     <div className="space-y-3">
+      {/* Shapefile import */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".zip,.shp"
+        className="hidden"
+        onChange={handleShapefileImport}
+      />
+
       {/* Polygon toolbar */}
       <div className="flex items-center justify-between gap-2 flex-wrap min-h-[36px]">
         {drawMode === 'idle' && (
-          <button
-            type="button"
-            onClick={() => setDrawMode('drawing')}
-            className="px-4 py-1.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Iniciar dibujo
-          </button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setDrawMode('drawing')}
+              className="px-4 py-1.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Iniciar dibujo
+            </button>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importState === 'loading'}
+              className="px-4 py-1.5 border border-orange-400 text-orange-700 text-sm font-semibold rounded-lg hover:bg-orange-50 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+            >
+              {importState === 'loading' ? (
+                <>
+                  <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                  </svg>
+                  Importando...
+                </>
+              ) : (
+                <>
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  Importar Shapefile
+                </>
+              )}
+            </button>
+            {importError && (
+              <span className="text-xs text-red-600">{importError}</span>
+            )}
+          </div>
         )}
         {drawMode === 'drawing' && (
           <>

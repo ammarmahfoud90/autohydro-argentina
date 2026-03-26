@@ -16,7 +16,7 @@ import {
   Cell,
 } from 'recharts';
 import type { HydrologyResult, HydrologyInput, CNSensitivityPoint } from '../../types';
-import { interpretResults, generateReport, generateDocxReport, generateExcelReport, calculateHydrology } from '../../services/api';
+import { interpretResults, generateReport, generateDocxReport, generateExcelReport, calculateHydrology, exportShapefile } from '../../services/api';
 
 const RISK_STYLES: Record<string, string> = {
   muy_bajo: 'bg-green-100 text-green-800 border-green-300',
@@ -80,6 +80,7 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
   const [isDownloading, setIsDownloading] = useState(false);
   const [isDownloadingDocx, setIsDownloadingDocx] = useState(false);
   const [isDownloadingExcel, setIsDownloadingExcel] = useState(false);
+  const [isExportingShp, setIsExportingShp] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
 
   // Scenario comparison
@@ -188,6 +189,36 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
       setReportError('Error al generar el Excel. Intente nuevamente.');
     } finally {
       setIsDownloadingExcel(false);
+    }
+  }
+
+  async function handleExportShapefile() {
+    if (!basinPolygon || basinPolygon.length < 3) {
+      setReportError('No hay polígono de cuenca para exportar. Dibujá la cuenca en el mapa.');
+      return;
+    }
+    setIsExportingShp(true);
+    setReportError(null);
+    try {
+      const blob = await exportShapefile(basinPolygon, {
+        project_name: formData.project_name || 'Cuenca',
+        return_period: results.return_period,
+        method: results.method,
+        cn: results.cn ?? null,
+        runoff_coeff: results.runoff_coeff ?? null,
+        peak_flow_m3s: results.peak_flow_m3s,
+        risk_level: results.risk_level,
+      }, formData.project_name?.replace(/\s+/g, '_') || 'cuenca');
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cuenca_${results.city.replace(/\s+/g, '_')}_T${results.return_period}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err: unknown) {
+      setReportError(err instanceof Error ? err.message : 'Error al exportar el Shapefile.');
+    } finally {
+      setIsExportingShp(false);
     }
   }
 
@@ -1024,6 +1055,33 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
                 </>
               )}
             </button>
+
+            {basinPolygon && basinPolygon.length >= 3 && (
+              <button
+                type="button"
+                onClick={handleExportShapefile}
+                disabled={isExportingShp}
+                className="px-5 py-2 rounded-lg border border-orange-400 text-orange-700 text-sm font-semibold hover:bg-orange-50 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+              >
+                {isExportingShp ? (
+                  <>
+                    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                    </svg>
+                    Exportando...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round"
+                        d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
+                    Exportar Shapefile
+                  </>
+                )}
+              </button>
+            )}
 
             <button
               type="button"

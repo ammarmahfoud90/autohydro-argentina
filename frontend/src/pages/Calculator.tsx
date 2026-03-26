@@ -11,6 +11,7 @@ import { TcCalculator } from '../components/forms/TcCalculator';
 import { ReportOptions } from '../components/forms/ReportOptions';
 import { ResultsPanel } from '../components/results/ResultsPanel';
 import { BasinMap } from '../components/map/BasinMap';
+import { EngineerChat } from '../components/chat/EngineerChat';
 import type { HydrologyInput, HydrologyResult, SoilGroup, LandUseCategory, TcFormulaKey } from '../types';
 import { DEFAULT_FORM } from '../types';
 
@@ -470,6 +471,9 @@ export function Calculator() {
           />
         )}
       </div>
+
+      {/* Floating AI Engineer Chat — only shown when results are available */}
+      {step === 4 && results && <EngineerChat results={results} />}
     </div>
   );
 }

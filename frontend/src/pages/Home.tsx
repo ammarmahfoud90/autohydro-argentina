@@ -79,6 +79,13 @@ const IconReport = () => (
 
 // ── Home ────────────────────────────────────────────────────────────────────
 
+const IconOffline = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round"
+      d="M12 18h.01M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32" />
+  </svg>
+);
+
 const FEATURES: FeatureCardProps[] = [
   {
     icon: <IconCalc />,
@@ -97,8 +104,8 @@ const FEATURES: FeatureCardProps[] = [
     items: [
       'Mapa interactivo Leaflet',
       'Dibujar polígono de cuenca',
-      'Cálculo automático de área geodésico',
-      'Mapas de cuenca en reportes',
+      'Importar cuenca desde Shapefile (.shp/.zip)',
+      'Exportar polígono a Shapefile con atributos',
     ],
   },
   {
@@ -117,8 +124,8 @@ const FEATURES: FeatureCardProps[] = [
     items: [
       'Asistente IA para clasificar uso de suelo',
       'Cálculo automático de CN desde descripción',
+      'Chat con Ingeniero IA (Claude Haiku)',
       'Interpretación técnica profesional',
-      'Secciones narrativas en reportes',
     ],
   },
   {
@@ -129,6 +136,16 @@ const FEATURES: FeatureCardProps[] = [
       'Exportar a Word (.docx)',
       'Exportar a Excel (.xlsx) — múltiples hojas',
       'Mapas e hidrogramas incluidos',
+    ],
+  },
+  {
+    icon: <IconOffline />,
+    title: 'App Instalable (PWA)',
+    items: [
+      'Instalable como app en móvil y escritorio',
+      'Assets cacheados para carga rápida',
+      'Carga offline de la interfaz',
+      'Banner de estado de conexión',
     ],
   },
 ];
@@ -164,7 +181,7 @@ export function Home() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-[#74ACDF] text-xs font-semibold px-3.5 py-1.5 rounded-full">
             <span className="w-1.5 h-1.5 rounded-full bg-[#74ACDF] animate-pulse" />
-            Ing. Ammar Mahfoud — AutoHydro Argentina v1.2
+            Ing. Ammar Mahfoud — AutoHydro Argentina v1.3
           </div>
 
           {/* Headline */}
@@ -218,28 +235,52 @@ export function Home() {
         </div>
       </section>
 
-      {/* ── What's new v1.2 ───────────────────────────────────────────────── */}
+      {/* ── Changelog ─────────────────────────────────────────────────────── */}
       <section className="bg-gradient-to-r from-violet-50 to-blue-50 border-y border-violet-100 py-6 px-4 sm:px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            <span className="text-xs font-bold text-violet-700 bg-violet-100 px-3 py-1 rounded-full shrink-0">
-              Novedades v1.2
-            </span>
-            {[
-              'Hidrograma Unitario SCS',
-              'Comparación de escenarios',
-              'Exportar a Excel (.xlsx)',
-              'Dimensionamiento de alcantarillas',
-            ].map((item) => (
-              <span key={item} className="flex items-center gap-1.5 text-xs text-gray-700">
-                <svg className="w-3.5 h-3.5 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-                {item}
+        <div className="max-w-5xl mx-auto space-y-4">
+          {[
+            {
+              version: 'v1.3',
+              label: 'Nuevo',
+              color: 'text-violet-700 bg-violet-100',
+              items: ['Chat con Ingeniero IA (Haiku)', 'App instalable (PWA)', 'Importar/Exportar Shapefile'],
+            },
+            {
+              version: 'v1.2',
+              label: '',
+              color: 'text-blue-700 bg-blue-100',
+              items: ['Hidrograma Unitario SCS', 'Comparación de escenarios', 'Exportar a Excel (.xlsx)', 'Dimensionamiento de alcantarillas'],
+            },
+            {
+              version: 'v1.1',
+              label: '',
+              color: 'text-gray-600 bg-gray-100',
+              items: ['Cálculo de Manning', 'Mapa de cuenca en reportes'],
+            },
+            {
+              version: 'v1.0',
+              label: '',
+              color: 'text-gray-500 bg-gray-100',
+              items: ['Lanzamiento inicial — Cálculo hidrológico, IDF 33 ciudades'],
+            },
+          ].map(({ version, label, color, items }) => (
+            <div key={version} className="flex flex-wrap items-start gap-x-4 gap-y-1">
+              <span className={`text-xs font-bold px-3 py-1 rounded-full shrink-0 ${color}`}>
+                {version}{label ? ` · ${label}` : ''}
               </span>
-            ))}
-          </div>
+              <div className="flex flex-wrap gap-x-4 gap-y-1">
+                {items.map((item) => (
+                  <span key={item} className="flex items-center gap-1.5 text-xs text-gray-600">
+                    <svg className="w-3 h-3 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -313,7 +354,7 @@ export function Home() {
             <p className="text-[#74ACDF] text-sm mt-0.5">
               Ingeniero Civil · Hidrología e Hidráulica · Buenos Aires, Argentina
             </p>
-            <p className="text-white/40 text-xs mt-0.5">AutoHydro Argentina v1.2</p>
+            <p className="text-white/40 text-xs mt-0.5">AutoHydro Argentina v1.3</p>
           </div>
           <div className="sm:ml-auto">
             <Link

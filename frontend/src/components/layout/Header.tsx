@@ -1,6 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
+import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 
 const CALC_ITEMS = [
   {
@@ -44,6 +50,23 @@ export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [calcOpen, setCalcOpen] = useState(false);
   const calcRef = useRef<HTMLDivElement>(null);
+  const isOnline = useOnlineStatus();
+
+  // PWA install prompt
+  const [installPrompt, setInstallPrompt] = useState<Event | null>(null);
+  const [showInstall, setShowInstall] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: Event) => { e.preventDefault(); setInstallPrompt(e); setShowInstall(true); };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  function handleInstall() {
+    if (!installPrompt) return;
+    (installPrompt as BeforeInstallPromptEvent).prompt();
+    setShowInstall(false);
+  }
 
   const toggleLang = () =>
     i18n.changeLanguage(i18n.language === 'es' ? 'en' : 'es');
@@ -70,6 +93,16 @@ export function Header() {
 
   return (
     <header className="bg-[#0055A4] text-white shadow-[0_2px_16px_rgba(0,0,0,0.35)] relative z-20">
+      {/* Offline banner */}
+      {!isOnline && (
+        <div className="bg-amber-500 text-white text-xs font-semibold text-center py-1.5 px-4 flex items-center justify-center gap-2">
+          <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round"
+              d="M18.364 5.636a9 9 0 010 12.728m-2.829-2.829a5 5 0 010-7.07M9.172 9.172a5 5 0 000 7.07m-2.829-2.829A9 9 0 015.636 5.636M3 3l18 18" />
+          </svg>
+          Sin conexión — Modo offline · Las calculaciones requieren internet
+        </div>
+      )}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
         {/* Brand */}
         <Link to="/" className="flex items-center gap-3 group" onClick={() => setMenuOpen(false)}>
@@ -152,6 +185,18 @@ export function Header() {
           </Link>
 
           <div className="w-px h-5 bg-white/20 mx-2" />
+          {showInstall && (
+            <button
+              onClick={handleInstall}
+              className="px-3 py-1 rounded-md border border-[#74ACDF]/60 text-xs font-semibold text-[#74ACDF] hover:bg-white/10 transition-colors flex items-center gap-1.5"
+              title="Instalar como aplicación"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Instalar App
+            </button>
+          )}
           <button
             onClick={toggleLang}
             className="px-2.5 py-1 rounded-md border border-white/25 text-xs font-semibold text-blue-100 hover:bg-white/10 hover:text-white transition-colors"
