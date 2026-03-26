@@ -195,6 +195,13 @@ export function Header() {
             )}
           </Link>
 
+          <Link to="/validacion" className={linkClass('/validacion')}>
+            Validación
+            {pathname === '/validacion' && (
+              <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-[#74ACDF] rounded-full" />
+            )}
+          </Link>
+
           <Link to="/about" className={linkClass('/about')}>
             {t('nav.about')}
             {pathname === '/about' && (
@@ -271,6 +278,9 @@ export function Header() {
           ))}
           <Link to="/casos-de-estudio" onClick={() => setMenuOpen(false)} className={`block ${linkClass('/casos-de-estudio')}`}>
             Casos de Estudio
+          </Link>
+          <Link to="/validacion" onClick={() => setMenuOpen(false)} className={`block ${linkClass('/validacion')}`}>
+            Validación
           </Link>
           <Link to="/about" onClick={() => setMenuOpen(false)} className={`block ${linkClass('/about')}`}>
             {t('nav.about')}

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { ArgentinaMap } from '../ArgentinaMap';
 
 const GITHUB_URL = 'https://github.com/ammarmahfoud90/autohydro-argentina';
@@ -54,7 +55,11 @@ export function Footer() {
           </div>
 
           {/* Links */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap justify-center">
+            <Link to="/validacion" className="text-xs text-white/70 hover:text-white transition-colors">
+              Validación Técnica
+            </Link>
+            <span className="text-white/20">|</span>
             <a
               href={GITHUB_URL}
               target="_blank"

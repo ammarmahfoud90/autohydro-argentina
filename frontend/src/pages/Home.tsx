@@ -225,7 +225,7 @@ export function Home() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-[#74ACDF] text-xs font-semibold px-3.5 py-1.5 rounded-full">
             <span className="w-1.5 h-1.5 rounded-full bg-[#74ACDF] animate-pulse" />
-            Ing. Ammar Mahfoud — AutoHydro Argentina v1.6
+            Ing. Ammar Mahfoud — AutoHydro Argentina v1.6.1
           </div>
 
           {/* Headline */}
@@ -268,6 +268,21 @@ export function Home() {
           </div>
         </div>
 
+        {/* HEC-HMS credibility badge */}
+        <div className="relative border-t border-white/10 bg-green-900/30">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2 text-green-300 text-xs font-semibold">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              Validado contra HEC-HMS (USACE) — Diferencias &lt; 5% en todos los casos
+            </div>
+            <Link to="/validacion" className="text-xs text-green-200 underline underline-offset-2 hover:text-white transition-colors">
+              Ver validación completa
+            </Link>
+          </div>
+        </div>
+
         {/* Stats bar */}
         <div className="relative border-t border-white/10 bg-[#004a91]/60">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 py-5 grid grid-cols-4 divide-x divide-white/10">
@@ -284,9 +299,15 @@ export function Home() {
         <div className="max-w-5xl mx-auto space-y-4">
           {[
             {
-              version: 'v1.6',
+              version: 'v1.6.1',
               label: 'Nuevo',
               color: 'text-emerald-700 bg-emerald-100',
+              items: ['Validación técnica contra HEC-HMS (U.S. Army Corps of Engineers)', 'Diferencias < 5% en los 3 casos de prueba', 'Página de validación completa con tablas de comparación'],
+            },
+            {
+              version: 'v1.6',
+              label: '',
+              color: 'text-teal-700 bg-teal-100',
               items: ['3 casos de estudio reales documentados (AMBA, NEA, Cuyo)', 'Función "Cargar caso en calculadora" con parámetros pre-llenados', 'Nueva sección de casos de estudio en el inicio'],
             },
             {
@@ -490,7 +511,7 @@ export function Home() {
               Ingeniero Civil · Hidrología e Hidráulica · Buenos Aires, Argentina
             </p>
             <p className="text-white/40 text-xs mt-1">
-              AutoHydro Argentina v1.6 · © 2026 | Código abierto bajo licencia MIT
+              AutoHydro Argentina v1.6.1 · © 2026 | Código abierto bajo licencia MIT
             </p>
           </div>
           <div className="sm:ml-auto">

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+// Note: Link is used for internal navigation
 
 const GITHUB_URL = 'https://github.com/ammarmahfoud90/autohydro-argentina';
 const LINKEDIN_URL = 'https://www.linkedin.com/in/ammar-mahfoud-499212118';
@@ -180,6 +181,35 @@ export function About() {
           </ul>
         </div>
 
+        {/* ── Validation ──────────────────────────────────────────────────── */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7">
+          <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <span className="w-1 h-5 rounded-full bg-green-500 inline-block" />
+            Validación Técnica
+          </h2>
+          <p className="text-sm text-gray-600 leading-relaxed mb-4">
+            Los resultados de AutoHydro han sido comparados con <strong>HEC-HMS 4.11</strong> (U.S. Army Corps of Engineers),
+            el software de referencia mundial para análisis hidrológico. En los 3 casos de prueba evaluados
+            (cuenca urbana AMBA, rural NEA y de montaña Cuyo), todas las diferencias son menores al 5%.
+          </p>
+          <div className="flex flex-wrap gap-3 mb-4">
+            {['✅ 3/3 casos validados', '< 5% diferencia máxima', '0% diferencia en intensidades IDF'].map((badge) => (
+              <span key={badge} className="text-xs font-semibold text-green-700 bg-green-100 border border-green-200 px-2.5 py-1 rounded-full">
+                {badge}
+              </span>
+            ))}
+          </div>
+          <Link
+            to="/validacion"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-[#0055A4] hover:text-[#004a91] transition-colors"
+          >
+            Ver validación completa
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </Link>
+        </div>
+
         {/* ── Contact ─────────────────────────────────────────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7">
           <h2 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
@@ -214,7 +244,7 @@ export function About() {
 
         {/* Version */}
         <p className="text-center text-xs text-gray-400 pb-2">
-          AutoHydro Argentina v1.0.0 — MVP · © 2026 Ing. Ammar Mahfoud 🇦🇷
+          AutoHydro Argentina v1.6.1 · © 2026 Ing. Ammar Mahfoud 🇦🇷
         </p>
       </div>
     </div>
