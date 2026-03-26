@@ -242,9 +242,53 @@ export function About() {
           </div>
         </div>
 
+        {/* ── Contribuir ──────────────────────────────────────────────────── */}
+        <div className="bg-blue-50 rounded-2xl border border-blue-200 p-7">
+          <h2 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
+            <span className="w-1 h-5 rounded-full bg-[#0055A4] inline-block" />
+            ¿Querés contribuir?
+          </h2>
+          <p className="text-sm text-gray-700 leading-relaxed mb-4">
+            AutoHydro es open source. Podés contribuir con código, datos IDF, o reportando errores.
+          </p>
+          <div className="flex gap-3 flex-wrap">
+            <a
+              href={`${GITHUB_URL}/issues`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white text-xs font-semibold hover:bg-gray-700 transition-colors"
+            >
+              <GitHubIcon />
+              Ver issues en GitHub
+            </a>
+            <a
+              href={LINKEDIN_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#0055A4] text-[#0055A4] text-xs font-semibold hover:bg-[#0055A4] hover:text-white transition-colors"
+            >
+              Enviar feedback
+            </a>
+          </div>
+        </div>
+
+        {/* ── Testimonials placeholder ─────────────────────────────────────── */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7">
+          <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <span className="w-1 h-5 rounded-full bg-[#74ACDF] inline-block" />
+            Lo que dicen los usuarios
+          </h2>
+          <div className="rounded-xl bg-gray-50 border border-dashed border-gray-300 p-6 text-center">
+            <p className="text-sm text-gray-400 italic">
+              Próximamente: testimonios de ingenieros que usan AutoHydro
+            </p>
+            <p className="text-xs text-gray-300 mt-1">Contactanos para compartir tu experiencia</p>
+          </div>
+        </div>
+
         {/* Version */}
         <p className="text-center text-xs text-gray-400 pb-2">
-          AutoHydro Argentina v1.6.1 · © 2026 Ing. Ammar Mahfoud 🇦🇷
+          AutoHydro Argentina v1.7 · © 2026 Ing. Ammar Mahfoud 🇦🇷
         </p>
       </div>
     </div>

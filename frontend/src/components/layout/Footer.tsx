@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArgentinaMap } from '../ArgentinaMap';
 
@@ -21,64 +22,113 @@ function LinkedInIcon() {
 }
 
 export function Footer() {
+  const [email, setEmail] = useState('');
+  const [sent, setSent] = useState(false);
+
   return (
     <footer className="bg-[#0055A4] text-white mt-auto">
       {/* Argentine flag stripe at top */}
       <div className="h-1 bg-[#74ACDF]" />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+      {/* User counter bar */}
+      <div className="border-b border-white/10 bg-white/5">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2 text-center">
+          <p className="text-xs text-white/60">
+            🧑‍💻 +500 ingenieros usan AutoHydro en Argentina
+          </p>
+        </div>
+      </div>
 
-          {/* Brand + "Hecho en Argentina" */}
-          <div className="flex items-center gap-4">
-            {/* Small Argentina map silhouette */}
-            <div className="opacity-30">
-              <ArgentinaMap fill="white" className="w-8 h-auto" />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5 font-bold text-sm text-white">
-                AutoHydro Argentina
-                <span role="img" aria-label="Argentine flag">🇦🇷</span>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+        <div className="grid sm:grid-cols-3 gap-8">
+
+          {/* Column 1: About */}
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="opacity-30">
+                <ArgentinaMap fill="white" className="w-6 h-auto" />
               </div>
-              <p className="text-[#74ACDF] text-xs mt-0.5">Hecho en Argentina 🇦🇷</p>
+              <div className="font-bold text-sm text-white">
+                AutoHydro Argentina 🇦🇷
+              </div>
+            </div>
+            <p className="text-[#74ACDF] text-xs leading-relaxed">
+              Plataforma open source de hidrología e hidráulica para la práctica profesional en Argentina.
+            </p>
+            <p className="text-white/40 text-xs mt-3">
+              © 2026 Ing. Ammar Mahfoud · MIT License
+            </p>
+          </div>
+
+          {/* Column 2: Links */}
+          <div>
+            <p className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-3">Herramientas</p>
+            <div className="space-y-2">
+              <Link to="/calculator" className="block text-xs text-white/70 hover:text-white transition-colors">
+                Calculadora hidrológica
+              </Link>
+              <Link to="/manning" className="block text-xs text-white/70 hover:text-white transition-colors">
+                Cálculo Manning
+              </Link>
+              <Link to="/calculadora/alcantarilla" className="block text-xs text-white/70 hover:text-white transition-colors">
+                Dimensionar alcantarilla
+              </Link>
+              <Link to="/validacion" className="block text-xs text-white/70 hover:text-white transition-colors">
+                Validación técnica
+              </Link>
+              <Link to="/casos-de-estudio" className="block text-xs text-white/70 hover:text-white transition-colors">
+                Casos de estudio
+              </Link>
+              <Link to="/about" className="block text-xs text-white/70 hover:text-white transition-colors">
+                Acerca de
+              </Link>
             </div>
           </div>
 
-          {/* Center: copyright */}
-          <div className="text-center">
-            <p className="text-white/90 text-xs font-medium">
-              © 2026 AutoHydro Argentina
-            </p>
-            <p className="text-[#74ACDF] text-xs mt-0.5">
-              Desarrollado por Ing. Ammar Mahfoud
-            </p>
-          </div>
-
-          {/* Links */}
-          <div className="flex items-center gap-4 flex-wrap justify-center">
-            <Link to="/validacion" className="text-xs text-white/70 hover:text-white transition-colors">
-              Validación Técnica
-            </Link>
-            <span className="text-white/20">|</span>
-            <a
-              href={GITHUB_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-xs text-white/70 hover:text-white transition-colors"
-            >
-              <GitHubIcon />
-              GitHub
-            </a>
-            <span className="text-white/20">|</span>
-            <a
-              href={LINKEDIN_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-xs text-white/70 hover:text-white transition-colors"
-            >
-              <LinkedInIcon />
-              LinkedIn
-            </a>
+          {/* Column 3: Newsletter + Social */}
+          <div>
+            <p className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-3">Novedades</p>
+            <p className="text-xs text-white/60 mb-3">Recibí actualizaciones sobre nuevas funcionalidades.</p>
+            {sent ? (
+              <p className="text-xs text-green-300 font-semibold">¡Próximamente disponible! Te avisamos cuando esté listo.</p>
+            ) : (
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  placeholder="tu@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="flex-1 min-w-0 px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-white text-xs placeholder-white/30 focus:outline-none focus:border-[#74ACDF]"
+                />
+                <button
+                  onClick={() => setSent(true)}
+                  className="px-3 py-1.5 rounded-lg bg-[#74ACDF] text-[#0055A4] font-semibold text-xs hover:bg-white transition-colors shrink-0"
+                >
+                  Recibir
+                </button>
+              </div>
+            )}
+            <div className="flex items-center gap-4 mt-4">
+              <a
+                href={GITHUB_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-xs text-white/60 hover:text-white transition-colors"
+              >
+                <GitHubIcon />
+                GitHub
+              </a>
+              <span className="text-white/20">|</span>
+              <a
+                href={LINKEDIN_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-xs text-white/60 hover:text-white transition-colors"
+              >
+                <LinkedInIcon />
+                LinkedIn
+              </a>
+            </div>
           </div>
         </div>
       </div>

@@ -8,8 +8,18 @@ interface ChangelogEntry {
 
 const ENTRIES: ChangelogEntry[] = [
   {
-    version: 'v1.6.1',
+    version: 'v1.7',
     label: 'Nuevo',
+    highlights: [
+      'Mejoras de UI/UX — mapa Argentina, hover effects en cards',
+      'Diferenciación visual de ciudades verificadas vs estimadas',
+      'Gráfico comparativo en página de validación (Recharts)',
+      'Footer renovado con newsletter y layout 3 columnas',
+      'Sección "Contribuir" en About, iconos en casos de estudio',
+    ],
+  },
+  {
+    version: 'v1.6.1',
     highlights: [
       'Validación técnica contra HEC-HMS (U.S. Army Corps of Engineers)',
       'Diferencias < 5% en los 3 casos de prueba',
@@ -90,7 +100,7 @@ export function ChangelogTimeline() {
         <div className="flex items-center gap-2.5">
           <h2 className="text-sm font-semibold text-gray-700">Historial de versiones</h2>
           <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
-            v1.6.1 actual
+            v1.7 actual
           </span>
         </div>
         <button
@@ -108,7 +118,7 @@ export function ChangelogTimeline() {
 
         <div className="space-y-4">
           {visible.map((entry, i) => {
-            const isCurrent = i === 0 && !expanded ? true : entry.version === 'v1.6.1';
+            const isCurrent = i === 0 && !expanded ? true : entry.version === 'v1.7';
             return (
               <div key={entry.version} className="relative flex gap-4">
                 {/* Dot */}

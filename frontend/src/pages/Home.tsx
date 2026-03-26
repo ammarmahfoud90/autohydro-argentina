@@ -4,9 +4,9 @@ import { ArgentinaMap } from '../components/ArgentinaMap';
 import { ChangelogTimeline } from '../components/ChangelogTimeline';
 
 const CASE_PREVIEWS = [
-  { region: 'AMBA', regionColor: 'bg-blue-100 text-blue-700', title: 'Drenaje Pluvial — La Matanza', city: 'Buenos Aires (Ezeiza)', q: '28.5 m³/s', t: 'T=10 años, A=2.8 km²' },
-  { region: 'NEA', regionColor: 'bg-emerald-100 text-emerald-700', title: 'Alcantarilla Vial — Chaco', city: 'Resistencia', q: '45.2 m³/s', t: 'T=25 años, A=12.5 km²' },
-  { region: 'Cuyo', regionColor: 'bg-violet-100 text-violet-700', title: 'Canal de Riego — Valle de Uco', city: 'Mendoza (Aeropuerto)', q: '52.8 m³/s', t: 'T=50 años, A=8.3 km²' },
+  { region: 'AMBA', icon: '🏙️', regionColor: 'bg-blue-100 text-blue-700', title: 'Drenaje Pluvial — La Matanza', city: 'Buenos Aires (Ezeiza)', q: '28.5 m³/s', t: 'T=10 años, A=2.8 km²' },
+  { region: 'NEA', icon: '🌾', regionColor: 'bg-emerald-100 text-emerald-700', title: 'Alcantarilla Vial — Chaco', city: 'Resistencia', q: '45.2 m³/s', t: 'T=25 años, A=12.5 km²' },
+  { region: 'Cuyo', icon: '⛰️', regionColor: 'bg-violet-100 text-violet-700', title: 'Canal de Riego — Valle de Uco', city: 'Mendoza (Aeropuerto)', q: '52.8 m³/s', t: 'T=50 años, A=8.3 km²' },
 ];
 
 
@@ -34,11 +34,13 @@ interface FeatureCardProps {
   iconColor: string;
   tagBg: string;
   tagText: string;
+  href?: string;
+  isPrimary?: boolean;
 }
 
-function FeatureCard({ icon, title, highlights, iconBg, iconColor, tagBg, tagText }: FeatureCardProps) {
+function FeatureCard({ icon, title, highlights, iconBg, iconColor, tagBg, tagText, href, isPrimary }: FeatureCardProps) {
   return (
-    <div className="rounded-lg border border-slate-200/80 bg-white p-5 hover:shadow-md hover:border-slate-300 transition-all">
+    <div className={`group relative rounded-lg border bg-white p-5 hover:shadow-xl hover:scale-[1.02] hover:border-blue-200 transition-all duration-300 ${isPrimary ? 'border-blue-200 bg-gradient-to-b from-blue-50/30 to-white' : 'border-slate-200/80'}`}>
       <div className={`w-8 h-8 rounded-lg ${iconBg} ${iconColor} flex items-center justify-center mb-3`}>
         {icon}
       </div>
@@ -50,6 +52,13 @@ function FeatureCard({ icon, title, highlights, iconBg, iconColor, tagBg, tagTex
           </span>
         ))}
       </div>
+      {href && (
+        <div className="mt-3 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <Link to={href} className="text-xs font-semibold text-[#0055A4] hover:text-[#004a91]">
+            Ir →
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
@@ -120,6 +129,8 @@ const FEATURES: FeatureCardProps[] = [
     tagBg: 'bg-blue-50',
     tagText: 'text-blue-800',
     highlights: ['Racional', 'SCS-CN', 'HU SCS', 'Sensibilidad CN', 'Comparación escenarios', 'Ajuste climático RCP'],
+    href: '/calculator',
+    isPrimary: true,
   },
   {
     icon: <IconHieto />,
@@ -129,6 +140,8 @@ const FEATURES: FeatureCardProps[] = [
     tagBg: 'bg-purple-50',
     tagText: 'text-purple-800',
     highlights: ['Bloques alternos', 'SCS Tipo II', 'Chicago', 'Distribución uniforme', 'Exportar CSV'],
+    href: '/calculadora/hietograma',
+    isPrimary: true,
   },
   {
     icon: <IconClimate />,
@@ -138,6 +151,8 @@ const FEATURES: FeatureCardProps[] = [
     tagBg: 'bg-orange-50',
     tagText: 'text-orange-800',
     highlights: ['IPCC AR6', 'RCP 4.5/8.5', 'Horizontes 2030–2100', 'Corrección regional', 'Factor visible en reportes'],
+    href: '/calculator',
+    isPrimary: true,
   },
   {
     icon: <IconGIS />,
@@ -147,6 +162,7 @@ const FEATURES: FeatureCardProps[] = [
     tagBg: 'bg-emerald-50',
     tagText: 'text-emerald-800',
     highlights: ['Mapa Leaflet', 'Dibujar cuenca', 'Importar Shapefile', 'Exportar Shapefile'],
+    href: '/calculator',
   },
   {
     icon: <IconHydro />,
@@ -156,6 +172,7 @@ const FEATURES: FeatureCardProps[] = [
     tagBg: 'bg-amber-50',
     tagText: 'text-amber-800',
     highlights: ['Manning (4 secciones)', 'Alcantarillas FHWA HDS-5', 'Verificación régimen', 'Memoria PDF'],
+    href: '/manning',
   },
   {
     icon: <IconAI />,
@@ -165,6 +182,7 @@ const FEATURES: FeatureCardProps[] = [
     tagBg: 'bg-pink-50',
     tagText: 'text-pink-800',
     highlights: ['Claude Haiku', 'Clasificar uso de suelo', 'CN automático', 'Interpretación técnica'],
+    href: '/calculator',
   },
   {
     icon: <IconReport />,
@@ -174,6 +192,7 @@ const FEATURES: FeatureCardProps[] = [
     tagBg: 'bg-slate-100',
     tagText: 'text-slate-700',
     highlights: ['Memoria PDF/Word/Excel', 'Memoria hidráulica', 'Mapas e hidrogramas', 'Normas argentinas'],
+    href: '/calculator',
   },
   {
     icon: <IconOffline />,
@@ -217,7 +236,7 @@ export function Home() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-[#74ACDF] text-xs font-semibold px-3.5 py-1.5 rounded-full">
             <span className="w-1.5 h-1.5 rounded-full bg-[#74ACDF] animate-pulse" />
-            Ing. Ammar Mahfoud — AutoHydro Argentina v1.6.1
+            Ing. Ammar Mahfoud — AutoHydro Argentina v1.7
           </div>
 
           {/* Headline */}
@@ -238,7 +257,7 @@ export function Home() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
             <Link
               to="/calculator"
-              className="inline-flex items-center gap-2 bg-[#74ACDF] hover:bg-[#5a98d0] text-[#0055A4] font-extrabold px-8 py-3.5 rounded-xl text-base transition-all shadow-lg hover:shadow-[#74ACDF]/30 hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 bg-[#74ACDF] hover:bg-[#5a98d0] text-[#0055A4] font-extrabold px-8 py-4 rounded-xl text-base transition-all duration-300 shadow-lg hover:shadow-[#74ACDF]/30 hover:-translate-y-0.5 hover:scale-105"
             >
               Iniciar Cálculo Hidrológico
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -334,7 +353,10 @@ export function Home() {
                 className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md hover:-translate-y-0.5 transition-all block"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${c.regionColor}`}>{c.region}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-base leading-none">{c.icon}</span>
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${c.regionColor}`}>{c.region}</span>
+                  </div>
                   <span className="text-xs text-gray-400">✅ IDF verificado</span>
                 </div>
                 <h3 className="text-sm font-bold text-gray-800 leading-snug mb-1">{c.title}</h3>
@@ -352,20 +374,51 @@ export function Home() {
       {/* ── Cities ────────────────────────────────────────────────────────── */}
       <section className="bg-white border-y border-gray-200 py-10 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-base font-bold text-gray-800 mb-4">
+          <h2 className="text-base font-bold text-gray-800 mb-5">
             Ciudades disponibles{' '}
             <span className="text-[#0055A4] font-extrabold">({IDF_ARGENTINA.length})</span>
           </h2>
-          <div className="flex flex-wrap gap-2">
-            {IDF_ARGENTINA.map((c) => (
-              <span
-                key={c.city}
-                className="inline-flex items-center gap-1.5 bg-[#EEF6FB] border border-[#74ACDF]/40 text-[#0055A4] text-xs font-medium px-2.5 py-1 rounded-full"
-              >
-                {c.city}
-                <span className="text-[#74ACDF] text-[10px]">{c.province}</span>
-              </span>
-            ))}
+
+          {/* Verified cities */}
+          <div className="mb-5">
+            <p className="text-xs font-semibold text-green-700 mb-2.5 flex items-center gap-2">
+              ✅ Verificados
+              <span className="font-normal text-gray-400">— datos IDF validados (INA / Caamaño Nelli)</span>
+              <span className="ml-auto text-green-600 font-bold">{IDF_ARGENTINA.filter(c => c.verified).length}</span>
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {IDF_ARGENTINA.filter(c => c.verified).map((c) => (
+                <span
+                  key={c.city}
+                  title="Datos IDF verificados (INA/Caamaño Nelli)"
+                  className="inline-flex items-center gap-1.5 bg-green-50 border border-green-200 text-green-800 text-xs font-medium px-2.5 py-1 rounded-full"
+                >
+                  ✓ {c.city}
+                  <span className="text-green-500 text-[10px]">{c.province}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Estimated cities */}
+          <div>
+            <p className="text-xs font-semibold text-amber-700 mb-2.5 flex items-center gap-2">
+              ⚠️ Estimados
+              <span className="font-normal text-gray-400">— verificar con fuentes locales antes del diseño final</span>
+              <span className="ml-auto text-amber-600 font-bold">{IDF_ARGENTINA.filter(c => !c.verified).length}</span>
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {IDF_ARGENTINA.filter(c => !c.verified).map((c) => (
+                <span
+                  key={c.city}
+                  title="Datos IDF estimados - verificar con fuentes locales"
+                  className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-800/80 text-xs font-medium px-2.5 py-1 rounded-full"
+                >
+                  ~ {c.city}
+                  <span className="text-amber-500 text-[10px]">{c.province}</span>
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -429,7 +482,7 @@ export function Home() {
               Ingeniero Civil · Hidrología e Hidráulica · Buenos Aires, Argentina
             </p>
             <p className="text-white/40 text-xs mt-1">
-              AutoHydro Argentina v1.6.1 · © 2026 | Código abierto bajo licencia MIT
+              AutoHydro Argentina v1.7 · © 2026 | Código abierto bajo licencia MIT
             </p>
           </div>
           <div className="sm:ml-auto">
