@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { generateManningPdf } from '../services/api';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -175,6 +176,7 @@ export function Manning() {
   const [result, setResult] = useState<ManningResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   function selectPreset(label: string) {
     setNPreset(label);
@@ -182,6 +184,41 @@ export function Manning() {
     if (preset && preset.n > 0) {
       setManningN(preset.n);
       setCustomN(String(preset.n));
+    }
+  }
+
+  async function handleDownloadPdf() {
+    if (!result) return;
+    setPdfLoading(true);
+    try {
+      const params: Record<string, unknown> = {
+        channel_type: channelType,
+        manning_n: manningN,
+        slope: parseFloat(slope),
+        design_flow: designFlow ? parseFloat(designFlow) : null,
+        lining_type: liningType || null,
+      };
+      if (channelType === 'rectangular') { params.width = parseFloat(width); params.depth = parseFloat(depth); }
+      else if (channelType === 'trapezoidal') { params.bottom_width = parseFloat(bottomWidth); params.depth = parseFloat(depth); params.side_slope = parseFloat(sideSlope); }
+      else if (channelType === 'circular') { params.diameter = parseFloat(diameter); params.depth = parseFloat(depth); }
+      else if (channelType === 'triangular') { params.side_slope = parseFloat(triSideSlope); params.depth = parseFloat(depth); }
+
+      const blob = await generateManningPdf({
+        params,
+        result: result as unknown as Record<string, unknown>,
+        projectName: 'Cálculo Hidráulico Manning',
+        location: 'Argentina',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `memoria_hidraulica_manning_${channelType}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Error al generar el PDF.');
+    } finally {
+      setPdfLoading(false);
     }
   }
 
@@ -511,6 +548,33 @@ export function Manning() {
                     </p>
                   </div>
                 )}
+
+                {/* PDF report button */}
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleDownloadPdf}
+                    disabled={pdfLoading}
+                    className="px-4 py-2 rounded-lg bg-[#0055A4] text-white text-sm font-semibold hover:bg-[#004a91] disabled:opacity-50 transition-colors flex items-center gap-2"
+                  >
+                    {pdfLoading ? (
+                      <>
+                        <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                        </svg>
+                        Generando PDF…
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Generar Memoria de Cálculo (PDF)
+                      </>
+                    )}
+                  </button>
+                </div>
 
                 {/* Reference table */}
                 <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">

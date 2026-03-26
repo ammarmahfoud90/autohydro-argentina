@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { generateCulvertPdf } from '../services/api';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -158,6 +159,7 @@ export function Culvert() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState<CulvertResult | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   // When Q comes from hydrology calculator via router state, highlight the field
   const [flowFromCalc] = useState(!!passedFlow);
@@ -171,6 +173,28 @@ export function Culvert() {
     length !== '' && parseFloat(length) > 0 &&
     slope !== '' && parseFloat(slope) > 0 &&
     hwMax !== '' && parseFloat(hwMax) > 0;
+
+  async function handleDownloadPdf() {
+    if (!result) return;
+    setPdfLoading(true);
+    try {
+      const blob = await generateCulvertPdf({
+        result: result as unknown as Record<string, unknown>,
+        projectName: 'Dimensionamiento de Alcantarilla',
+        location: 'Argentina',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `memoria_hidraulica_alcantarilla_T${parseFloat(flow).toFixed(0)}m3s.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Error al generar el PDF.');
+    } finally {
+      setPdfLoading(false);
+    }
+  }
 
   async function handleCalculate() {
     if (!canCalculate) return;
@@ -578,8 +602,8 @@ export function Culvert() {
               </div>
             </Card>
 
-            {/* New calculation button */}
-            <div className="flex justify-end">
+            {/* PDF + New calculation buttons */}
+            <div className="flex flex-wrap gap-3 justify-between">
               <button
                 type="button"
                 onClick={() => {
@@ -590,9 +614,32 @@ export function Culvert() {
                   setHwMax('');
                   setTailwater('0');
                 }}
-                className="px-5 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
+                className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
               >
                 Nuevo cálculo
+              </button>
+              <button
+                type="button"
+                onClick={handleDownloadPdf}
+                disabled={pdfLoading}
+                className="px-4 py-2 rounded-lg bg-[#0055A4] text-white text-sm font-semibold hover:bg-[#004a91] disabled:opacity-50 transition-colors flex items-center gap-2"
+              >
+                {pdfLoading ? (
+                  <>
+                    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                    </svg>
+                    Generando PDF…
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Generar Memoria de Cálculo (PDF)
+                  </>
+                )}
               </button>
             </div>
           </>

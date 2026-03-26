@@ -4,6 +4,7 @@ from app.services.report_service import MemoriaCalculoGenerator
 from app.services.docx_service import MemoriaCalculoDocxGenerator
 from app.services.excel_service import ExcelReportGenerator
 from app.services.ai_service import generate_report_sections
+from app.services.hydraulic_report_service import ManningReportGenerator, CulvertReportGenerator
 
 router = APIRouter()
 
@@ -183,5 +184,97 @@ def generate_report_excel(payload: dict) -> StreamingResponse:
     return StreamingResponse(
         buffer,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.post("/report/manning-pdf")
+def generate_manning_pdf(payload: dict) -> StreamingResponse:
+    """
+    Generate PDF Memoria de Cálculo Hidráulico for a Manning channel calculation.
+
+    Request body:
+        params: channel input parameters (channel_type, manning_n, slope, dimensions, etc.)
+        result: calculation result (flow_m3s, velocity_ms, area_m2, etc.)
+        projectName: project name
+        location: location description
+        clientName: optional client name
+    """
+    params = payload.get("params", {})
+    result = payload.get("result", {})
+    project_name = payload.get("projectName", "Proyecto Hidráulico")
+    location = payload.get("location", "Argentina")
+    client_name = payload.get("clientName")
+
+    if not result:
+        raise HTTPException(status_code=422, detail="result is required")
+
+    try:
+        generator = ManningReportGenerator(
+            project_name=project_name,
+            location=location,
+            client=client_name,
+        )
+        buffer = generator.generate(params=params, result=result)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al generar el PDF: {str(exc)}",
+        ) from exc
+
+    safe_name = "".join(
+        c if c.isalnum() or c in (" ", "-", "_") else "_"
+        for c in project_name[:40]
+    ).strip()
+    filename = f"memoria_hidraulica_manning_{safe_name}.pdf"
+
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.post("/report/culvert-pdf")
+def generate_culvert_pdf(payload: dict) -> StreamingResponse:
+    """
+    Generate PDF Memoria de Cálculo Hidráulico for a culvert sizing calculation.
+
+    Request body:
+        result: culvert calculation result (design_flow_m3s, recommended, alternatives, etc.)
+        projectName: project name
+        location: location description
+        clientName: optional client name
+    """
+    result = payload.get("result", {})
+    project_name = payload.get("projectName", "Proyecto Hidráulico")
+    location = payload.get("location", "Argentina")
+    client_name = payload.get("clientName")
+
+    if not result:
+        raise HTTPException(status_code=422, detail="result is required")
+
+    try:
+        generator = CulvertReportGenerator(
+            project_name=project_name,
+            location=location,
+            client=client_name,
+        )
+        buffer = generator.generate(result=result)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al generar el PDF: {str(exc)}",
+        ) from exc
+
+    safe_name = "".join(
+        c if c.isalnum() or c in (" ", "-", "_") else "_"
+        for c in project_name[:40]
+    ).strip()
+    filename = f"memoria_hidraulica_alcantarilla_{safe_name}.pdf"
+
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )

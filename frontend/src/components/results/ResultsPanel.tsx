@@ -275,6 +275,29 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
           />
         </div>
 
+        {/* Climate change notice */}
+        {results.climate_factor && results.original_intensity_mm_hr && (
+          <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm">
+            <div className="flex items-center gap-2 mb-1 font-semibold text-amber-800">
+              <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Caudal ajustado por cambio climático
+              {results.climate_scenario && (
+                <span className="ml-1 text-xs font-normal bg-amber-200 text-amber-800 px-2 py-0.5 rounded-full">
+                  {results.climate_scenario === 'rcp45' ? 'RCP 4.5' : 'RCP 8.5'} — {results.climate_horizon}
+                </span>
+              )}
+            </div>
+            <div className="text-amber-700 text-xs">
+              Intensidad original: <strong>{results.original_intensity_mm_hr.toFixed(1)} mm/hr</strong>
+              {' → '}
+              Intensidad ajustada: <strong>{results.intensity_mm_hr.toFixed(1)} mm/hr</strong>
+              {' '}(factor: <strong>×{results.climate_factor.toFixed(3)}</strong>)
+            </div>
+          </div>
+        )}
+
         {/* Risk badge */}
         <div
           className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-bold ${

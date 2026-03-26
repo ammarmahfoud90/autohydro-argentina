@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.routes import hydrology, ai, report, watershed, landuse, hydraulics, gis, flood
+from app.api.routes import hydrology, ai, report, watershed, landuse, hydraulics, gis, flood, hyetograph
 
 app = FastAPI(
     title="AutoHydro Argentina API",
@@ -27,6 +27,7 @@ app.include_router(landuse.router, prefix="/api", tags=["landuse"])
 app.include_router(hydraulics.router, prefix="/api", tags=["hydraulics"])
 app.include_router(gis.router, prefix="/api", tags=["gis"])
 app.include_router(flood.router, prefix="/api", tags=["flood"])
+app.include_router(hyetograph.router, prefix="/api", tags=["hyetograph"])
 
 
 @app.get("/health")

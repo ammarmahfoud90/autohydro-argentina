@@ -434,6 +434,78 @@ export function Calculator() {
 
             <ReportOptions formData={formData} onChange={update} />
 
+            {/* Climate Change Adjustment */}
+            <Card title="Ajuste por Cambio Climático (opcional)">
+              <p className="text-xs text-gray-500 mb-3">
+                Factores basados en proyecciones del <strong>IPCC AR6</strong> y estudios del <strong>CIMA</strong> para Argentina.
+                Se aplica sobre la intensidad IDF antes del cálculo de caudal.
+              </p>
+              <div className="flex items-center gap-3 mb-3">
+                <button
+                  type="button"
+                  onClick={() => update({
+                    climate_scenario: formData.climate_scenario && formData.climate_scenario !== 'none'
+                      ? 'none'
+                      : 'rcp45',
+                    climate_horizon: formData.climate_horizon ?? 2050,
+                  })}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
+                    formData.climate_scenario && formData.climate_scenario !== 'none'
+                      ? 'bg-blue-600'
+                      : 'bg-gray-200'
+                  }`}
+                >
+                  <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                    formData.climate_scenario && formData.climate_scenario !== 'none'
+                      ? 'translate-x-5'
+                      : 'translate-x-0'
+                  }`} />
+                </button>
+                <span className="text-sm font-medium text-gray-700">Considerar cambio climático</span>
+              </div>
+
+              {formData.climate_scenario && formData.climate_scenario !== 'none' && (
+                <div className="space-y-3 pt-1 border-t border-gray-100">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Escenario</label>
+                      <select
+                        value={formData.climate_scenario}
+                        onChange={(e) => update({ climate_scenario: e.target.value })}
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="rcp45">RCP 4.5 — Escenario moderado</option>
+                        <option value="rcp85">RCP 8.5 — Escenario alto</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Horizonte temporal</label>
+                      <select
+                        value={formData.climate_horizon ?? 2050}
+                        onChange={(e) => update({ climate_horizon: Number(e.target.value) })}
+                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value={2030}>2030 (corto plazo)</option>
+                        <option value={2050}>2050 (mediano plazo)</option>
+                        <option value={2100}>2100 (largo plazo)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 text-xs text-blue-700">
+                    <strong>Factor de ajuste estimado: </strong>
+                    {formData.climate_scenario === 'rcp85'
+                      ? formData.climate_horizon === 2030 ? '+10–15%'
+                        : formData.climate_horizon === 2100 ? '+35–40%'
+                        : '+20–25%'
+                      : formData.climate_horizon === 2030 ? '+5–10%'
+                        : formData.climate_horizon === 2100 ? '+15–20%'
+                        : '+10–15%'
+                    } sobre la intensidad IDF (varía por región).
+                  </div>
+                </div>
+              )}
+            </Card>
+
             {errorMessage && (
               <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 flex items-start gap-2">
                 <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

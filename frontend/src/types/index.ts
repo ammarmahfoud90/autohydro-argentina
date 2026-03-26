@@ -47,6 +47,9 @@ export interface HydrologyInput {
   client_name: string;
   language: string;
   cn_override?: number | null;
+  // Climate change adjustment (optional)
+  climate_scenario?: string | null;
+  climate_horizon?: number | null;
 }
 
 // ── Response types ────────────────────────────────────────────────────────────
@@ -109,6 +112,11 @@ export interface HydrologyResult {
   time_to_peak_hr?: number;
   base_time_hr?: number;
   idf_verified?: boolean;
+  // Climate change (when applied)
+  climate_factor?: number;
+  original_intensity_mm_hr?: number;
+  climate_scenario?: string;
+  climate_horizon?: number;
 }
 
 export interface CNSensitivityPoint {

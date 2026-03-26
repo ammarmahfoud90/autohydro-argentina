@@ -14,6 +14,7 @@ from typing import Optional
 from app.data.idf_argentina import calculate_idf_intensity, IDF_ARGENTINA
 from app.data.cn_argentina import calculate_composite_cn
 from app.services.tc_service import calculate_all_tc
+from app.services.climate_service import adjust_idf_intensity, scenario_label
 from app.models.schemas import (
     CalculationRequest,
     CalculationResponse,
@@ -368,6 +369,18 @@ def run_calculation(payload: dict) -> dict:
     # ── 2. IDF intensity ─────────────────────────────────────────────────
     intensity = calculate_idf_intensity(req.city, T=float(T_clamped), t=float(t_clamped))
 
+    # ── 2b. Climate change adjustment (optional) ─────────────────────────
+    original_intensity: Optional[float] = None
+    climate_factor: Optional[float] = None
+    if req.climate_scenario and req.climate_scenario != "none" and req.climate_horizon:
+        adjusted, factor = adjust_idf_intensity(
+            intensity, req.climate_scenario, req.climate_horizon,
+            province=city_data["province"],
+        )
+        original_intensity = intensity
+        climate_factor = factor
+        intensity = adjusted
+
     # ── 3. Tc calculation ─────────────────────────────────────────────────
     L_m = req.length_km * 1000.0
     tc_raw = calculate_all_tc(
@@ -535,6 +548,10 @@ def run_calculation(payload: dict) -> dict:
         risk_level=risk_level,
         risk_recommendations=risk_recs,
         infrastructure_type=req.infrastructure_type,
+        climate_factor=climate_factor,
+        original_intensity_mm_hr=round(original_intensity, 3) if original_intensity else None,
+        climate_scenario=req.climate_scenario if req.climate_scenario and req.climate_scenario != "none" else None,
+        climate_horizon=req.climate_horizon if req.climate_scenario and req.climate_scenario != "none" else None,
         **extra,
     )
 

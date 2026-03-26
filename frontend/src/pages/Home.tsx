@@ -9,6 +9,20 @@ const IconFlood = () => (
   </svg>
 );
 
+const IconHieto = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round"
+      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+  </svg>
+);
+
+const IconClimate = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round"
+      d="M13 10V3L4 14h7v7l9-11h-7z" />
+  </svg>
+);
+
 // ── Feature card ────────────────────────────────────────────────────────────
 
 interface FeatureCardProps {
@@ -103,6 +117,29 @@ const FEATURES: FeatureCardProps[] = [
       'Análisis de sensibilidad CN (±5)',
       'Hidrograma Unitario SCS',
       'Comparación de escenarios (T o CN)',
+      'Ajuste por cambio climático (RCP 4.5/8.5)',
+    ],
+  },
+  {
+    icon: <IconHieto />,
+    title: 'Hietogramas de Diseño',
+    items: [
+      'Bloques Alternos (método estándar Argentina)',
+      'SCS Tipo II (regiones húmedas)',
+      'Chicago (peak asimétrico, r = 0.4)',
+      'Distribución uniforme',
+      'Gráficos interactivos + exportar CSV',
+    ],
+  },
+  {
+    icon: <IconClimate />,
+    title: 'Cambio Climático',
+    items: [
+      'Ajuste IPCC AR6 sobre intensidades IDF',
+      'Escenarios RCP 4.5 y RCP 8.5',
+      'Horizontes 2030, 2050 y 2100',
+      'Corrección regional por provincia',
+      'Factor visible en resultados y reportes',
     ],
   },
   {
@@ -119,10 +156,10 @@ const FEATURES: FeatureCardProps[] = [
     icon: <IconHydro />,
     title: 'Cálculo Hidráulico',
     items: [
-      'Ecuación de Manning',
-      'Canales rectangulares, trapezoidales, circulares',
+      'Ecuación de Manning (4 secciones)',
       'Dimensionamiento de alcantarillas (FHWA HDS-5)',
-      'Verificación de velocidades',
+      'Verificación de velocidades y régimen',
+      'Memoria de cálculo PDF incluida',
     ],
   },
   {
@@ -139,10 +176,10 @@ const FEATURES: FeatureCardProps[] = [
     icon: <IconReport />,
     title: 'Reportes Profesionales',
     items: [
-      'Memoria de Cálculo PDF (norma argentina)',
-      'Exportar a Word (.docx)',
-      'Exportar a Excel (.xlsx) — múltiples hojas',
-      'Mapas e hidrogramas incluidos',
+      'Memoria de Cálculo hidrológica PDF/Word/Excel',
+      'Memoria de cálculo hidráulico (Manning + Alc.)',
+      'Mapas, hidrogramas e hidrogramas incluidos',
+      'Normas y metodología argentina',
     ],
   },
   {
@@ -198,7 +235,7 @@ export function Home() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-[#74ACDF] text-xs font-semibold px-3.5 py-1.5 rounded-full">
             <span className="w-1.5 h-1.5 rounded-full bg-[#74ACDF] animate-pulse" />
-            Ing. Ammar Mahfoud — AutoHydro Argentina v1.4
+            Ing. Ammar Mahfoud — AutoHydro Argentina v1.5
           </div>
 
           {/* Headline */}
@@ -257,9 +294,15 @@ export function Home() {
         <div className="max-w-5xl mx-auto space-y-4">
           {[
             {
-              version: 'v1.4',
+              version: 'v1.5',
               label: 'Nuevo',
               color: 'text-emerald-700 bg-emerald-100',
+              items: ['Ajuste por cambio climático (RCP 4.5/8.5)', 'Generador de hietogramas de diseño', 'Memorias de cálculo hidráulico (Manning + Alcantarillas)'],
+            },
+            {
+              version: 'v1.4',
+              label: '',
+              color: 'text-violet-700 bg-violet-100',
               items: ['Simulador de Inundaciones', 'Cálculo de área inundable y profundidades', 'Clasificación de riesgo hídrico'],
             },
             {
@@ -404,7 +447,7 @@ export function Home() {
               Ingeniero Civil · Hidrología e Hidráulica · Buenos Aires, Argentina
             </p>
             <p className="text-white/40 text-xs mt-1">
-              AutoHydro Argentina v1.4 · © 2026 | Código abierto bajo licencia MIT
+              AutoHydro Argentina v1.5 · © 2026 | Código abierto bajo licencia MIT
             </p>
           </div>
           <div className="sm:ml-auto">

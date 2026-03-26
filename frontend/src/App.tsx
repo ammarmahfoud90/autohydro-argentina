@@ -7,6 +7,7 @@ import { About } from './pages/About';
 import { Manning } from './pages/Manning';
 import { Culvert } from './pages/Culvert';
 import { FloodSimulator } from './pages/FloodSimulator';
+import { Hyetograph } from './pages/Hyetograph';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
             <Route path="/calculadora/alcantarilla" element={<Culvert />} />
             <Route path="/alcantarilla" element={<Culvert />} />
             <Route path="/simulador-inundaciones" element={<FloodSimulator />} />
+            <Route path="/calculadora/hietograma" element={<Hyetograph />} />
             <Route path="/about" element={<About />} />
           </Routes>
         </main>

@@ -36,6 +36,8 @@ export async function calculateHydrology(
     infrastructure_type: input.infrastructure_type,
     tc_formulas: input.tc_formulas,
     cn_override: input.cn_override ?? undefined,
+    climate_scenario: input.climate_scenario ?? undefined,
+    climate_horizon: input.climate_horizon ?? undefined,
   };
   return request<HydrologyResult>('/api/calculate', {
     method: 'POST',
@@ -273,4 +275,77 @@ export async function classifyLandUse(
     method: 'POST',
     body: JSON.stringify({ description, soil_group: soilGroup }),
   });
+}
+
+// ── Hyetograph ────────────────────────────────────────────────────────────────
+
+export interface HyetographResult {
+  times_min: number[];
+  depths_mm: number[];
+  intensities_mm_hr: number[];
+  cumulative_mm: number[];
+  total_depth_mm: number;
+  peak_intensity_mm_hr: number;
+  peak_time_min: number;
+  method: string;
+  method_label: string;
+  city: string;
+  province: string;
+  return_period: number;
+  duration_min: number;
+  time_step_min: number;
+  idf_source: string;
+}
+
+export async function generateHyetograph(params: {
+  city: string;
+  return_period: number;
+  duration_min: number;
+  time_step_min: number;
+  method: string;
+  r?: number;
+}): Promise<HyetographResult> {
+  return request<HyetographResult>('/api/hydrology/hyetograph', {
+    method: 'POST',
+    body: JSON.stringify(params),
+  });
+}
+
+// ── Hydraulic PDF Reports ─────────────────────────────────────────────────────
+
+export async function generateManningPdf(options: {
+  params: Record<string, unknown>;
+  result: Record<string, unknown>;
+  projectName: string;
+  location: string;
+  clientName?: string;
+}): Promise<Blob> {
+  const res = await fetch(`${BASE}/api/report/manning-pdf`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(options),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(body.detail ?? `HTTP ${res.status}`);
+  }
+  return res.blob();
+}
+
+export async function generateCulvertPdf(options: {
+  result: Record<string, unknown>;
+  projectName: string;
+  location: string;
+  clientName?: string;
+}): Promise<Blob> {
+  const res = await fetch(`${BASE}/api/report/culvert-pdf`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(options),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(body.detail ?? `HTTP ${res.status}`);
+  }
+  return res.blob();
 }

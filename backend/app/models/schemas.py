@@ -100,6 +100,14 @@ class CalculationRequest(BaseModel):
         None, ge=1.0, le=100.0, description="Direct CN override (skips composite CN from land use)"
     )
 
+    # Climate change adjustment (optional)
+    climate_scenario: Optional[str] = Field(
+        None, description="none | rcp45 | rcp85"
+    )
+    climate_horizon: Optional[int] = Field(
+        None, description="2030 | 2050 | 2100"
+    )
+
     # Report options
     language: str = Field("es", description="es | en")
 
@@ -236,3 +244,9 @@ class CalculationResponse(BaseModel):
     runoff_volume_m3: Optional[float] = None
     time_to_peak_hr: Optional[float] = None
     base_time_hr: Optional[float] = None
+
+    # Climate change adjustment (when applied)
+    climate_factor: Optional[float] = None
+    original_intensity_mm_hr: Optional[float] = None
+    climate_scenario: Optional[str] = None
+    climate_horizon: Optional[int] = None
