@@ -304,11 +304,11 @@ export function CaseStudies() {
             Casos de Estudio
           </div>
           <h1 className="text-3xl font-extrabold text-gray-900">
-            Ejemplos Reales de Aplicación
+            Ejemplos Ilustrativos de Aplicación
           </h1>
           <p className="text-gray-500 max-w-2xl mx-auto text-sm leading-relaxed">
-            Tres casos de estudio documentados que demuestran AutoHydro con datos IDF verificados
-            de Argentina. Hacé clic en "Cargar en calculadora" para explorar cada caso con parámetros pre-cargados.
+            Tres casos ilustrativos que demuestran AutoHydro con datos IDF de Argentina.
+            Los parámetros son representativos de cada región. Hacé clic en "Cargar en calculadora" para explorar cada caso.
           </p>
         </div>
 

@@ -113,7 +113,7 @@ export function About() {
             AutoHydro Argentina es un proyecto{' '}
             <span className="font-semibold text-gray-800">open source</span> de cálculo hidrológico
             para la práctica profesional en Argentina. Implementa los métodos Racional, Racional
-            Modificado y SCS-CN con datos IDF regionalizados para 33 ciudades, análisis de
+            Modificado y SCS-CN con datos IDF regionalizados para 15 ciudades argentinas, análisis de
             sensibilidad del Número de Curva, generación de reportes PDF/Word y delimitación de
             cuencas mediante dibujo interactivo en mapa.
           </p>
@@ -184,17 +184,17 @@ export function About() {
         {/* ── Validation ──────────────────────────────────────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7">
           <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <span className="w-1 h-5 rounded-full bg-green-500 inline-block" />
-            Validación Técnica
+            <span className="w-1 h-5 rounded-full bg-[#74ACDF] inline-block" />
+            Verificación Técnica
           </h2>
           <p className="text-sm text-gray-600 leading-relaxed mb-4">
-            Los resultados de AutoHydro han sido comparados con <strong>HEC-HMS 4.11</strong> (U.S. Army Corps of Engineers),
-            el software de referencia mundial para análisis hidrológico. En los 3 casos de prueba evaluados
-            (cuenca urbana AMBA, rural NEA y de montaña Cuyo), todas las diferencias son menores al 5%.
+            AutoHydro implementa las mismas metodologías que utiliza <strong>HEC-HMS 4.11</strong> (U.S. Army Corps of Engineers):
+            SCS-CN, Hidrograma Unitario SCS y ecuaciones de Tc estándar. La verificación formal ejecutando HEC-HMS
+            con los mismos datos de entrada está en proceso.
           </p>
           <div className="flex flex-wrap gap-3 mb-4">
-            {['✅ 3/3 casos validados', '< 5% diferencia máxima', '0% diferencia en intensidades IDF'].map((badge) => (
-              <span key={badge} className="text-xs font-semibold text-green-700 bg-green-100 border border-green-200 px-2.5 py-1 rounded-full">
+            {['Metodología SCS-CN estándar', 'Fórmulas de Tc documentadas', 'Validación formal en curso'].map((badge) => (
+              <span key={badge} className="text-xs font-semibold text-blue-700 bg-blue-100 border border-blue-200 px-2.5 py-1 rounded-full">
                 {badge}
               </span>
             ))}
@@ -203,7 +203,7 @@ export function About() {
             to="/validacion"
             className="inline-flex items-center gap-2 text-sm font-semibold text-[#0055A4] hover:text-[#004a91] transition-colors"
           >
-            Ver validación completa
+            Ver verificación técnica
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
@@ -269,20 +269,6 @@ export function About() {
             >
               Enviar feedback
             </a>
-          </div>
-        </div>
-
-        {/* ── Testimonials placeholder ─────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7">
-          <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <span className="w-1 h-5 rounded-full bg-[#74ACDF] inline-block" />
-            Lo que dicen los usuarios
-          </h2>
-          <div className="rounded-xl bg-gray-50 border border-dashed border-gray-300 p-6 text-center">
-            <p className="text-sm text-gray-400 italic">
-              Próximamente: testimonios de ingenieros que usan AutoHydro
-            </p>
-            <p className="text-xs text-gray-300 mt-1">Contactanos para compartir tu experiencia</p>
           </div>
         </div>
 

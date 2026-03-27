@@ -10,7 +10,10 @@
       "Bash(./venv/Scripts/python -m pytest tests/ -v --tb=short)",
       "Bash(./venv/Scripts/python -c \"from app.main import app; print\\(''FastAPI app loaded OK —'', len\\(app.routes\\), ''routes''\\)\")",
       "Bash(./venv/Scripts/python -c \":*)",
-      "Bash(./venv/Scripts/python -m pytest tests/ -q)"
+      "Bash(./venv/Scripts/python -m pytest tests/ -q)",
+      "Bash(venvScriptspip install:*)",
+      "Bash(pip install:*)",
+      "Bash(python -c \":*)"
     ]
   }
 }

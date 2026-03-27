@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArgentinaMap } from '../ArgentinaMap';
 
@@ -22,22 +21,10 @@ function LinkedInIcon() {
 }
 
 export function Footer() {
-  const [email, setEmail] = useState('');
-  const [sent, setSent] = useState(false);
-
   return (
     <footer className="bg-[#0055A4] text-white mt-auto">
       {/* Argentine flag stripe at top */}
       <div className="h-1 bg-[#74ACDF]" />
-
-      {/* User counter bar */}
-      <div className="border-b border-white/10 bg-white/5">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2 text-center">
-          <p className="text-xs text-white/60">
-            🧑‍💻 +500 ingenieros usan AutoHydro en Argentina
-          </p>
-        </div>
-      </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         <div className="grid sm:grid-cols-3 gap-8">
@@ -85,30 +72,13 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Column 3: Newsletter + Social */}
+          {/* Column 3: Contacto */}
           <div>
-            <p className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-3">Novedades</p>
-            <p className="text-xs text-white/60 mb-3">Recibí actualizaciones sobre nuevas funcionalidades.</p>
-            {sent ? (
-              <p className="text-xs text-green-300 font-semibold">¡Próximamente disponible! Te avisamos cuando esté listo.</p>
-            ) : (
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  placeholder="tu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="flex-1 min-w-0 px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-white text-xs placeholder-white/30 focus:outline-none focus:border-[#74ACDF]"
-                />
-                <button
-                  onClick={() => setSent(true)}
-                  className="px-3 py-1.5 rounded-lg bg-[#74ACDF] text-[#0055A4] font-semibold text-xs hover:bg-white transition-colors shrink-0"
-                >
-                  Recibir
-                </button>
-              </div>
-            )}
-            <div className="flex items-center gap-4 mt-4">
+            <p className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-3">Contacto</p>
+            <p className="text-xs text-white/60 mb-4 leading-relaxed">
+              ¿Encontraste un error o tenés una sugerencia? Abrí un issue en GitHub o contactame por LinkedIn.
+            </p>
+            <div className="flex items-center gap-4">
               <a
                 href={GITHUB_URL}
                 target="_blank"

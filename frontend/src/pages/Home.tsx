@@ -279,17 +279,17 @@ export function Home() {
           </div>
         </div>
 
-        {/* HEC-HMS credibility badge */}
-        <div className="relative border-t border-white/10 bg-green-900/30">
+        {/* Methodology badge */}
+        <div className="relative border-t border-white/10 bg-[#004a91]/40">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-center gap-3 flex-wrap">
-            <div className="flex items-center gap-2 text-green-300 text-xs font-semibold">
+            <div className="flex items-center gap-2 text-blue-200 text-xs font-semibold">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
-              Validado contra HEC-HMS (USACE) — Diferencias &lt; 5% en todos los casos
+              Metodología SCS-CN / USDA · Fórmulas de Tc estándar · Datos IDF regionalizados
             </div>
-            <Link to="/validacion" className="text-xs text-green-200 underline underline-offset-2 hover:text-white transition-colors">
-              Ver validación completa
+            <Link to="/validacion" className="text-xs text-blue-200 underline underline-offset-2 hover:text-white transition-colors">
+              Ver verificación técnica
             </Link>
           </div>
         </div>
@@ -332,8 +332,8 @@ export function Home() {
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Casos de Estudio Reales</h2>
-              <p className="text-gray-500 text-sm mt-0.5">AutoHydro en acción — ejemplos documentados con datos IDF verificados</p>
+              <h2 className="text-lg font-bold text-gray-900">Ejemplos de Aplicación</h2>
+              <p className="text-gray-500 text-sm mt-0.5">Casos ilustrativos con datos IDF de Argentina — parámetros representativos de cada región</p>
             </div>
             <Link
               to="/casos-de-estudio"
@@ -357,7 +357,7 @@ export function Home() {
                     <span className="text-base leading-none">{c.icon}</span>
                     <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${c.regionColor}`}>{c.region}</span>
                   </div>
-                  <span className="text-xs text-gray-400">✅ IDF verificado</span>
+                  <span className="text-xs text-gray-400">Datos IDF verificados</span>
                 </div>
                 <h3 className="text-sm font-bold text-gray-800 leading-snug mb-1">{c.title}</h3>
                 <p className="text-xs text-gray-500 mb-3">{c.city} · {c.t}</p>
@@ -374,52 +374,40 @@ export function Home() {
       {/* ── Cities ────────────────────────────────────────────────────────── */}
       <section className="bg-white border-y border-gray-200 py-10 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-base font-bold text-gray-800 mb-5">
+          <h2 className="text-base font-bold text-gray-800 mb-2">
             Ciudades disponibles{' '}
             <span className="text-[#0055A4] font-extrabold">({IDF_ARGENTINA.length})</span>
           </h2>
+          <p className="text-xs text-gray-500 mb-5 leading-relaxed">
+            Coeficientes IDF basados en publicaciones técnicas (Caamaño Nelli et al. 1999, INA, SMN, UNLP).
+            Verificar siempre con los estudios locales más recientes antes del diseño definitivo.
+          </p>
 
-          {/* Verified cities */}
-          <div className="mb-5">
-            <p className="text-xs font-semibold text-green-700 mb-2.5 flex items-center gap-2">
-              ✅ Verificados
-              <span className="font-normal text-gray-400">— datos IDF validados (INA / Caamaño Nelli)</span>
-              <span className="ml-auto text-green-600 font-bold">{IDF_ARGENTINA.filter(c => c.verified).length}</span>
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {IDF_ARGENTINA.filter(c => c.verified).map((c) => (
-                <span
-                  key={c.city}
-                  title="Datos IDF verificados (INA/Caamaño Nelli)"
-                  className="inline-flex items-center gap-1.5 bg-green-50 border border-green-200 text-green-800 text-xs font-medium px-2.5 py-1 rounded-full"
-                >
-                  ✓ {c.city}
-                  <span className="text-green-500 text-[10px]">{c.province}</span>
-                </span>
-              ))}
-            </div>
+          <div className="flex flex-wrap gap-2">
+            {IDF_ARGENTINA.map((c) => (
+              <span
+                key={c.city}
+                title={c.source}
+                className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-800 text-xs font-medium px-2.5 py-1 rounded-full"
+              >
+                {c.city}
+                <span className="text-blue-400 text-[10px]">{c.province}</span>
+              </span>
+            ))}
           </div>
 
-          {/* Estimated cities */}
-          <div>
-            <p className="text-xs font-semibold text-amber-700 mb-2.5 flex items-center gap-2">
-              ⚠️ Estimados
-              <span className="font-normal text-gray-400">— verificar con fuentes locales antes del diseño final</span>
-              <span className="ml-auto text-amber-600 font-bold">{IDF_ARGENTINA.filter(c => !c.verified).length}</span>
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {IDF_ARGENTINA.filter(c => !c.verified).map((c) => (
-                <span
-                  key={c.city}
-                  title="Datos IDF estimados - verificar con fuentes locales"
-                  className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-800/80 text-xs font-medium px-2.5 py-1 rounded-full"
-                >
-                  ~ {c.city}
-                  <span className="text-amber-500 text-[10px]">{c.province}</span>
-                </span>
-              ))}
-            </div>
-          </div>
+          <p className="text-xs text-gray-500 mt-5">
+            ¿Tu ciudad no está? Podés contribuir datos IDF verificados a través del{' '}
+            <a
+              href="https://github.com/ammarmahfoud90/autohydro-argentina/issues"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#0055A4] underline underline-offset-2 hover:text-[#004a91]"
+            >
+              repositorio de GitHub
+            </a>
+            .
+          </p>
         </div>
       </section>
 

@@ -81,7 +81,7 @@ const ENTRIES: ChangelogEntry[] = [
   },
   {
     version: 'v1.0',
-    highlights: ['Lanzamiento inicial — Cálculo hidrológico, IDF 33 ciudades'],
+    highlights: ['Lanzamiento inicial — Cálculo hidrológico, IDF 15 ciudades verificadas'],
   },
 ];
 

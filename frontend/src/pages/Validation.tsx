@@ -220,13 +220,31 @@ export function Validation() {
               <h2 className="font-bold text-lg mb-1">¿Por qué validar contra HEC-HMS?</h2>
               <p className="text-blue-100 text-sm leading-relaxed">
                 AutoHydro Argentina utiliza metodologías reconocidas internacionalmente (SCS-CN, Hidrograma Unitario SCS,
-                ecuaciones de Tc estándar). Para demostrar la precisión de los cálculos, comparamos nuestros resultados
+                ecuaciones de Tc estándar). Para verificar la precisión de los cálculos, se presentan comparaciones teóricas
                 con <strong className="text-white">HEC-HMS 4.11</strong>, el software de referencia del U.S. Army Corps of Engineers
                 utilizado mundialmente para análisis hidrológico. Las curvas IDF utilizadas son idénticas en ambos softwares
                 (datos Caamaño Nelli / INA).
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Validation status disclaimer */}
+        <div className="rounded-2xl bg-amber-50 border-2 border-amber-300 p-6">
+          <h2 className="font-bold text-amber-800 text-base mb-2 flex items-center gap-2">
+            <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+            </svg>
+            Validación en curso
+          </h2>
+          <p className="text-sm text-amber-800 leading-relaxed">
+            Los valores comparativos que se muestran a continuación son estimaciones teóricas basadas en la
+            implementación de las mismas fórmulas que utiliza HEC-HMS. La validación formal con archivos de
+            proyecto HEC-HMS (.basin, .met, .gage) está pendiente de ejecución. Los resultados mostrados abajo
+            representan las diferencias esperadas por diferencias de implementación (redondeo, discretización),
+            pero no han sido verificados ejecutando HEC-HMS. Se actualizará esta página cuando la validación
+            formal esté completa.
+          </p>
         </div>
 
         {/* Summary badges */}
