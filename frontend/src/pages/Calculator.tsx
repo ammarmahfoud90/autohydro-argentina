@@ -12,7 +12,6 @@ import { TcCalculator } from '../components/forms/TcCalculator';
 import { ReportOptions } from '../components/forms/ReportOptions';
 import { ResultsPanel } from '../components/results/ResultsPanel';
 import { BasinMap } from '../components/map/BasinMap';
-import { EngineerChat } from '../components/chat/EngineerChat';
 import type { HydrologyInput, HydrologyResult, SoilGroup, LandUseCategory, TcFormulaKey } from '../types';
 import { DEFAULT_FORM } from '../types';
 
@@ -221,7 +220,7 @@ export function Calculator() {
 
   // ── Validation ──────────────────────────────────────────────────────────────
 
-  const step1Valid = !!formData.city;
+  const step1Valid = !!formData.locality_id;
 
   const step2Valid =
     formData.area_km2 > 0 && formData.length_km > 0 && formData.slope > 0;
@@ -296,11 +295,20 @@ export function Calculator() {
         {step === 1 && (
           <Card title={t('calculator.selectLocation')}>
             <CitySelector
-              value={formData.city}
+              value={formData.locality_id}
               returnPeriod={formData.return_period}
               duration={formData.duration_min}
-              onChange={(city) => update({ city })}
+              onChange={(localityId) => update({ locality_id: localityId })}
             />
+
+            {formData.locality_id === 'el_colorado' && (
+              <div className="mt-3 rounded-lg bg-amber-50 border border-amber-300 px-4 py-3 text-sm text-amber-800">
+                <strong>Datos orientativos — serie de 7 años.</strong> El Colorado (Formosa) tiene
+                el período de registro más corto de las tres localidades. Los valores IDF son
+                orientativos y deben verificarse con la autoridad hídrica provincial antes de
+                usarse en diseños definitivos.
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4 mt-5">
               <div>
@@ -562,8 +570,6 @@ export function Calculator() {
         )}
       </div>
 
-      {/* Floating AI Engineer Chat — only shown when results are available */}
-      {step === 4 && results && <EngineerChat results={results} />}
     </div>
   );
 }

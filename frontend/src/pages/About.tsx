@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-// Note: Link is used for internal navigation
 
 const GITHUB_URL = 'https://github.com/ammarmahfoud90/autohydro-argentina';
 const LINKEDIN_URL = 'https://www.linkedin.com/in/ammar-mahfoud-499212118';
@@ -21,23 +20,31 @@ function LinkedInIcon() {
 }
 
 const TECH_STACK = [
-  { label: 'React 18 + TypeScript', color: 'bg-[#EEF6FB] text-[#0055A4] border-[#74ACDF]/40' },
-  { label: 'Tailwind CSS v4', color: 'bg-cyan-50 text-cyan-700 border-cyan-200' },
+  { label: 'React 18 + TypeScript', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+  { label: 'Tailwind CSS', color: 'bg-cyan-50 text-cyan-700 border-cyan-200' },
   { label: 'Vite', color: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
   { label: 'FastAPI (Python)', color: 'bg-green-50 text-green-700 border-green-200' },
-  { label: 'Anthropic Claude AI', color: 'bg-violet-50 text-violet-700 border-violet-200' },
   { label: 'ReportLab PDF', color: 'bg-red-50 text-red-700 border-red-200' },
-  { label: 'python-docx Word', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+  { label: 'python-docx', color: 'bg-blue-50 text-blue-700 border-blue-200' },
   { label: 'Recharts', color: 'bg-orange-50 text-orange-700 border-orange-200' },
-  { label: 'Leaflet Maps', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  { label: 'Leaflet', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
 ];
 
 const REFERENCES = [
-  'Caamaño Nelli, G. M. et al. (1999). Fórmulas para curvas IDF. Ingeniería del Agua.',
-  'INA — Instituto Nacional del Agua. Publicaciones técnicas regionales.',
-  'USDA-SCS (1972). National Engineering Handbook, Section 4: Hydrology.',
-  'Témez, J.R. (1978). Cálculo hidrometeorológico de caudales máximos.',
+  'Resolución APA 1334/21 — Administración Provincial del Agua, Chaco (2021)',
+  'USDA-SCS (1972). National Engineering Handbook, Section 4: Hydrology',
+  'Témez, J.R. (1978). Cálculo hidrometeorológico de caudales máximos',
+  'FHWA (2012). Hydraulic Design of Highway Culverts, HDS-5',
 ];
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
+      <span className="w-1 h-5 rounded-full bg-[#74ACDF] inline-block shrink-0" />
+      {children}
+    </h2>
+  );
+}
 
 export function About() {
   return (
@@ -46,31 +53,24 @@ export function About() {
 
         {/* ── Developer card ──────────────────────────────────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-          {/* Header band — Argentine flag colors */}
-          <div className="h-5 bg-[#74ACDF]" />
-          <div className="h-5 bg-white border-b border-gray-100" />
-          <div className="h-5 bg-[#74ACDF]" />
-
-          <div className="px-7 pt-5 pb-7">
+          <div className="h-1 bg-[#74ACDF]" />
+          <div className="px-7 pt-6 pb-7">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-              {/* Avatar + name */}
               <div className="flex items-center gap-4">
-                <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-[#0055A4] text-white font-extrabold text-xl shrink-0 shadow-md">
+                <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-[#0055A4] text-white font-bold text-lg shrink-0">
                   AM
                 </div>
                 <div>
                   <h1 className="text-xl font-bold text-gray-900">Ing. Ammar Mahfoud</h1>
-                  <p className="text-sm text-gray-500 mt-0.5 leading-snug">
-                    Ingeniero Civil | Especialista en Hidrología | Data Science
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    Ingeniero Civil · Hidrología e Hidráulica
                   </p>
-                  <p className="text-sm text-[#0055A4] font-medium mt-1 flex items-center gap-1">
-                    <span role="img" aria-label="Argentine flag">🇦🇷</span>
+                  <p className="text-sm text-[#0055A4] font-medium mt-1">
+                    <span role="img" aria-label="Argentine flag">🇦🇷</span>{' '}
                     Buenos Aires, Argentina
                   </p>
                 </div>
               </div>
-
-              {/* Social links */}
               <div className="flex items-center gap-2 shrink-0">
                 <a
                   href={LINKEDIN_URL}
@@ -92,36 +92,29 @@ export function About() {
                 </a>
               </div>
             </div>
-
             <p className="text-sm text-gray-600 leading-relaxed mt-5">
-              Ingeniero civil con especialización en hidrología e hidráulica. AutoHydro Argentina fue
-              desarrollado para optimizar los flujos de trabajo de los profesionales argentinos en
-              estudios hidrológicos, combinando metodología técnica rigurosa con inteligencia
-              artificial generativa para producir resultados interpretables y memorias de cálculo
-              listas para entregar.
+              Ingeniero civil con experiencia en hidrología e hidráulica. Trabajó en la Administración
+              Provincial del Agua (APA) del Chaco en estudios hidrológicos y diseño de desagües
+              pluviales urbanos.
             </p>
           </div>
         </div>
 
         {/* ── About the project ───────────────────────────────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7">
-          <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <span className="w-1 h-5 rounded-full bg-[#74ACDF] inline-block" />
-            Sobre AutoHydro Argentina
-          </h2>
+          <SectionTitle>Sobre AutoHydro Argentina</SectionTitle>
           <p className="text-sm text-gray-600 leading-relaxed mb-3">
-            AutoHydro Argentina es un proyecto{' '}
-            <span className="font-semibold text-gray-800">open source</span> de cálculo hidrológico
-            para la práctica profesional en Argentina. Implementa los métodos Racional, Racional
-            Modificado y SCS-CN con datos IDF regionalizados para 15 ciudades argentinas, análisis de
-            sensibilidad del Número de Curva, generación de reportes PDF/Word y delimitación de
-            cuencas mediante dibujo interactivo en mapa.
+            AutoHydro Argentina es un proyecto <strong>open source</strong> de cálculo hidrológico
+            para la práctica profesional en Argentina. Los datos IDF incluidos provienen de fuentes
+            oficiales verificadas — actualmente la Resolución APA 1334/21 del Chaco.
           </p>
-          <p className="text-sm text-gray-600 leading-relaxed">
-            Construido con <strong>React + FastAPI + Claude AI + Leaflet</strong>. Las contribuciones,
-            reportes de error y sugerencias son bienvenidas en el repositorio de GitHub.
+          <p className="text-sm text-gray-600 leading-relaxed mb-5">
+            El proyecto se construye de forma incremental: se incorporan nuevas localidades
+            únicamente cuando se dispone de datos IDF provenientes de publicaciones técnicas
+            verificables (resoluciones oficiales, papers arbitrados, informes técnicos de organismos
+            hídricos).
           </p>
-          <div className="mt-5 flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3">
             <Link
               to="/calculator"
               className="inline-flex items-center gap-2 bg-[#0055A4] hover:bg-[#004a91] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
@@ -145,10 +138,7 @@ export function About() {
 
         {/* ── Tech stack ──────────────────────────────────────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7">
-          <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <span className="w-1 h-5 rounded-full bg-[#74ACDF] inline-block" />
-            Stack Tecnológico
-          </h2>
+          <SectionTitle>Stack Tecnológico</SectionTitle>
           <div className="flex flex-wrap gap-2">
             {TECH_STACK.map(({ label, color }) => (
               <span
@@ -161,16 +151,9 @@ export function About() {
           </div>
         </div>
 
-        {/* ── Methodology ─────────────────────────────────────────────────── */}
+        {/* ── References ──────────────────────────────────────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7">
-          <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <span className="w-1 h-5 rounded-full bg-[#74ACDF] inline-block" />
-            Metodología y Referencias
-          </h2>
-          <p className="text-sm text-gray-600 leading-relaxed mb-4">
-            Las curvas IDF están basadas en la regionalización de Caamaño Nelli et al. (1999) y
-            publicaciones del INA. Los métodos de cálculo siguen la práctica establecida en Argentina.
-          </p>
+          <SectionTitle>Referencias</SectionTitle>
           <ul className="space-y-2">
             {REFERENCES.map((ref) => (
               <li key={ref} className="flex gap-2.5 text-sm text-gray-600">
@@ -181,43 +164,11 @@ export function About() {
           </ul>
         </div>
 
-        {/* ── Validation ──────────────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7">
-          <h2 className="text-base font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <span className="w-1 h-5 rounded-full bg-[#74ACDF] inline-block" />
-            Verificación Técnica
-          </h2>
-          <p className="text-sm text-gray-600 leading-relaxed mb-4">
-            AutoHydro implementa las mismas metodologías que utiliza <strong>HEC-HMS 4.11</strong> (U.S. Army Corps of Engineers):
-            SCS-CN, Hidrograma Unitario SCS y ecuaciones de Tc estándar. La verificación formal ejecutando HEC-HMS
-            con los mismos datos de entrada está en proceso.
-          </p>
-          <div className="flex flex-wrap gap-3 mb-4">
-            {['Metodología SCS-CN estándar', 'Fórmulas de Tc documentadas', 'Validación formal en curso'].map((badge) => (
-              <span key={badge} className="text-xs font-semibold text-blue-700 bg-blue-100 border border-blue-200 px-2.5 py-1 rounded-full">
-                {badge}
-              </span>
-            ))}
-          </div>
-          <Link
-            to="/validacion"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#0055A4] hover:text-[#004a91] transition-colors"
-          >
-            Ver verificación técnica
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </Link>
-        </div>
-
         {/* ── Contact ─────────────────────────────────────────────────────── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7">
-          <h2 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
-            <span className="w-1 h-5 rounded-full bg-[#74ACDF] inline-block" />
-            Contacto y Feedback
-          </h2>
+          <SectionTitle>Contacto y Feedback</SectionTitle>
           <p className="text-sm text-gray-600 leading-relaxed mb-4">
-            ¿Encontraste un error, tenés una sugerencia o querés colaborar en el proyecto?
+            ¿Encontraste un error, tenés una sugerencia o querés colaborar?
             Podés abrir un issue en GitHub o contactarme directamente por LinkedIn.
           </p>
           <div className="flex gap-3 flex-wrap">
@@ -242,39 +193,8 @@ export function About() {
           </div>
         </div>
 
-        {/* ── Contribuir ──────────────────────────────────────────────────── */}
-        <div className="bg-blue-50 rounded-2xl border border-blue-200 p-7">
-          <h2 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
-            <span className="w-1 h-5 rounded-full bg-[#0055A4] inline-block" />
-            ¿Querés contribuir?
-          </h2>
-          <p className="text-sm text-gray-700 leading-relaxed mb-4">
-            AutoHydro es open source. Podés contribuir con código, datos IDF, o reportando errores.
-          </p>
-          <div className="flex gap-3 flex-wrap">
-            <a
-              href={`${GITHUB_URL}/issues`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white text-xs font-semibold hover:bg-gray-700 transition-colors"
-            >
-              <GitHubIcon />
-              Ver issues en GitHub
-            </a>
-            <a
-              href={LINKEDIN_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#0055A4] text-[#0055A4] text-xs font-semibold hover:bg-[#0055A4] hover:text-white transition-colors"
-            >
-              Enviar feedback
-            </a>
-          </div>
-        </div>
-
-        {/* Version */}
         <p className="text-center text-xs text-gray-400 pb-2">
-          AutoHydro Argentina v1.7 · © 2026 Ing. Ammar Mahfoud 🇦🇷
+          AutoHydro Argentina · © 2025 Ing. Ammar Mahfoud 🇦🇷 · MIT License
         </p>
       </div>
     </div>

@@ -8,7 +8,7 @@ VALID_METHODS = {"alternating_blocks", "scs_type_ii", "chicago", "uniform"}
 
 
 class HyetographRequest(BaseModel):
-    city: str
+    locality_id: str
     return_period: int = Field(..., ge=2, le=1000)
     duration_min: int = Field(..., ge=15, le=1440)
     time_step_min: int = Field(10, ge=1, le=60)
@@ -33,7 +33,7 @@ def create_hyetograph(req: HyetographRequest) -> dict:
         )
     try:
         return generate_hyetograph(
-            city_name=req.city,
+            locality_id=req.locality_id,
             return_period=req.return_period,
             duration_min=(n * req.time_step_min),  # snap to multiple
             time_step_min=req.time_step_min,

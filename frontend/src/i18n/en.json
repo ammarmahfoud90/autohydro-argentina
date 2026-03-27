@@ -1,12 +1,13 @@
 {
   "app": {
     "title": "AutoHydro Argentina",
-    "subtitle": "Smart hydrology for Argentine engineers",
+    "subtitle": "Hydrological calculations with verified IDF data",
     "tagline": "Professional hydrological calculations for civil works in Argentina"
   },
   "nav": {
     "home": "Home",
     "calculator": "Calculator",
+    "sources": "Sources",
     "about": "About"
   },
   "steps": {
@@ -17,8 +18,8 @@
   },
   "calculator": {
     "title": "Hydrological Calculator",
-    "selectLocation": "Select Location and Design Period",
-    "selectCity": "Select city",
+    "selectLocation": "Select Locality and Design Period",
+    "selectCity": "Select locality",
     "returnPeriod": "Return period",
     "stormDuration": "Storm duration",
     "basinTitle": "Basin Characteristics",
@@ -121,7 +122,7 @@
     "required": "This field is required",
     "positiveNumber": "Must be a positive number",
     "maxOne": "Must be a value between 0 and 1",
-    "cityRequired": "Select a city to continue",
+    "cityRequired": "Select a locality to continue",
     "areaRequired": "Basin area is required",
     "lengthRequired": "Channel length is required",
     "slopeRequired": "Average slope is required",
@@ -151,39 +152,22 @@
     "optional": "optional"
   },
   "home": {
-    "heroTitle": "Professional hydrology for Argentina",
-    "heroSubtitle": "Calculate design discharges using updated Argentine methodology, AI interpretation, and automatic generation of calculation reports.",
+    "heroTitle": "Hydrological calculations with verified IDF data",
+    "heroSubtitle": "Calculate design discharges using intensity-duration-frequency data from official Argentine sources.",
     "cta": "Start calculation",
-    "feature1Title": "Regionalized IDF Data",
-    "feature1Desc": "IDF coefficients for 15 Argentine cities based on Caamaño Nelli and INA/SMN sources.",
-    "feature2Title": "Multiple Methods",
-    "feature2Desc": "Rational, Modified Rational, and SCS-CN with automatic result comparison.",
-    "feature3Title": "AI Interpretation",
-    "feature3Desc": "Claude API analyzes your results and generates technical explanations in Spanish.",
-    "feature4Title": "PDF Calculation Report",
-    "feature4Desc": "Automatically generates a calculation report in Argentine technical format ready to submit.",
     "disclaimerTitle": "Important Notice",
-    "disclaimerText": "This tool generates estimates for preliminary design stages. The included IDF coefficients are indicative. For final designs, always verify with the most recent local hydrological studies.",
-    "citiesTitle": "Available cities"
+    "disclaimerText": "This tool generates estimates for preliminary design stages. For final designs, always verify with the most recent local hydrological studies."
   },
   "about": {
     "title": "About AutoHydro Argentina",
     "developerTitle": "Developer",
     "developerName": "Ing. Ammar Mahfoud",
-    "developerBio": "Civil engineer specialized in hydrology and hydraulics. AutoHydro Argentina was developed to streamline workflows for Argentine civil engineers in hydrological studies, combining rigorous technical methodology with artificial intelligence.",
     "methodologyTitle": "Methodology",
-    "methodologyText": "IDF curves are based on Caamaño Nelli et al. (1999) regionalization and INA (National Water Institute) publications. Calculation methods follow established Argentine engineering practice.",
     "referencesTitle": "References",
-    "ref1": "Caamaño Nelli, G. M. et al. (1999). IDF curve formulas. Ingeniería del Agua.",
-    "ref2": "INA — Instituto Nacional del Agua. Regional technical publications.",
-    "ref3": "USDA-SCS (1972). National Engineering Handbook, Section 4: Hydrology.",
-    "ref4": "Témez, J.R. (1978). Hydrometeorological calculation of peak flows.",
-    "versionTitle": "Version",
-    "version": "1.0.0 — MVP",
     "techTitle": "Technologies"
   },
   "footer": {
-    "tagline": "AutoHydro Argentina — Developed by Ing. Ammar Mahfoud",
-    "rights": "Hydrological estimation tool for professional use"
+    "tagline": "AutoHydro Argentina — Hydrological calculation tool",
+    "rights": "© 2025 Ing. Ammar Mahfoud · MIT License"
   }
 }

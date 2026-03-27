@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { ArgentinaMap } from '../ArgentinaMap';
 
 const GITHUB_URL = 'https://github.com/ammarmahfoud90/autohydro-argentina';
 const LINKEDIN_URL = 'https://www.linkedin.com/in/ammar-mahfoud-499212118';
@@ -23,48 +22,45 @@ function LinkedInIcon() {
 export function Footer() {
   return (
     <footer className="bg-[#0055A4] text-white mt-auto">
-      {/* Argentine flag stripe at top */}
       <div className="h-1 bg-[#74ACDF]" />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         <div className="grid sm:grid-cols-3 gap-8">
 
-          {/* Column 1: About */}
+          {/* Column 1: Identity */}
           <div>
-            <div className="flex items-center gap-3 mb-3">
-              <div className="opacity-30">
-                <ArgentinaMap fill="white" className="w-6 h-auto" />
-              </div>
-              <div className="font-bold text-sm text-white">
-                AutoHydro Argentina 🇦🇷
-              </div>
-            </div>
-            <p className="text-[#74ACDF] text-xs leading-relaxed">
-              Plataforma open source de hidrología e hidráulica para la práctica profesional en Argentina.
+            <p className="font-semibold text-sm text-white mb-1">
+              AutoHydro Argentina
             </p>
-            <p className="text-white/40 text-xs mt-3">
-              © 2026 Ing. Ammar Mahfoud · MIT License
+            <p className="text-[#74ACDF] text-xs leading-relaxed mb-3">
+              Herramienta de cálculo hidrológico con datos IDF verificados.
+              Open source, libre uso profesional.
+            </p>
+            <p className="text-white/40 text-xs">
+              © 2025 Ing. Ammar Mahfoud · MIT License
             </p>
           </div>
 
           {/* Column 2: Links */}
           <div>
-            <p className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-3">Herramientas</p>
+            <p className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-3">
+              Herramientas
+            </p>
             <div className="space-y-2">
               <Link to="/calculator" className="block text-xs text-white/70 hover:text-white transition-colors">
                 Calculadora hidrológica
               </Link>
-              <Link to="/manning" className="block text-xs text-white/70 hover:text-white transition-colors">
+              <Link to="/calculadora/manning" className="block text-xs text-white/70 hover:text-white transition-colors">
                 Cálculo Manning
               </Link>
               <Link to="/calculadora/alcantarilla" className="block text-xs text-white/70 hover:text-white transition-colors">
                 Dimensionar alcantarilla
               </Link>
-              <Link to="/validacion" className="block text-xs text-white/70 hover:text-white transition-colors">
-                Validación técnica
+              <Link to="/calculadora/hietograma" className="block text-xs text-white/70 hover:text-white transition-colors">
+                Hietogramas
               </Link>
-              <Link to="/casos-de-estudio" className="block text-xs text-white/70 hover:text-white transition-colors">
-                Casos de estudio
+              <Link to="/sources" className="block text-xs text-white/70 hover:text-white transition-colors">
+                Fuentes y Metodología
               </Link>
               <Link to="/about" className="block text-xs text-white/70 hover:text-white transition-colors">
                 Acerca de
@@ -72,11 +68,14 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Column 3: Contacto */}
+          {/* Column 3: Contact */}
           <div>
-            <p className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-3">Contacto</p>
+            <p className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-3">
+              Contacto
+            </p>
             <p className="text-xs text-white/60 mb-4 leading-relaxed">
-              ¿Encontraste un error o tenés una sugerencia? Abrí un issue en GitHub o contactame por LinkedIn.
+              Ing. Ammar Mahfoud — Ingeniero Civil, Hidrología e Hidráulica.
+              Errores y sugerencias a través de GitHub o LinkedIn.
             </p>
             <div className="flex items-center gap-4">
               <a
@@ -103,7 +102,6 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Bottom stripe */}
       <div className="h-1 bg-[#74ACDF]" />
     </footer>
   );

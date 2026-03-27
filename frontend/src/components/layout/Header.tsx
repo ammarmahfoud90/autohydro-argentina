@@ -93,7 +93,7 @@ export function Header() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const isCalcActive = pathname.startsWith('/calculator') || pathname.startsWith('/calculadora') || pathname === '/manning' || pathname === '/alcantarilla' || pathname === '/calculadora/hietograma';
+  const isCalcActive = pathname.startsWith('/calculator') || pathname.startsWith('/calculadora') || pathname === '/manning' || pathname === '/alcantarilla';
 
   const linkClass = (to: string) =>
     `px-3 py-1.5 rounded-md text-sm font-medium transition-colors relative ${
@@ -111,20 +111,19 @@ export function Header() {
             <path strokeLinecap="round" strokeLinejoin="round"
               d="M18.364 5.636a9 9 0 010 12.728m-2.829-2.829a5 5 0 010-7.07M9.172 9.172a5 5 0 000 7.07m-2.829-2.829A9 9 0 015.636 5.636M3 3l18 18" />
           </svg>
-          Sin conexión — Modo offline · Las calculaciones requieren internet
+          Sin conexión — Las calculaciones requieren internet
         </div>
       )}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
         {/* Brand */}
         <Link to="/" className="flex items-center gap-3 group" onClick={() => setMenuOpen(false)}>
-          <div className="relative flex items-center justify-center w-11 h-11 rounded-xl bg-white/15 ring-1 ring-white/25 font-extrabold text-base leading-none select-none shadow-md group-hover:bg-white/25 transition-all">
+          <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-white/15 ring-1 ring-white/25 font-bold text-base leading-none select-none shadow-md group-hover:bg-white/25 transition-all">
             <span className="text-white tracking-tight">AH</span>
             <span className="absolute bottom-1 left-2 right-2 h-[2px] rounded-full bg-[#74ACDF]" />
           </div>
           <div>
-            <div className="flex items-center gap-1.5 font-bold text-[15px] leading-tight tracking-tight">
+            <div className="font-bold text-[15px] leading-tight tracking-tight">
               AutoHydro Argentina
-              <span role="img" aria-label="Argentine flag" className="text-sm">🇦🇷</span>
             </div>
             <div className="text-[11px] text-blue-200 leading-tight hidden sm:block">
               {t('app.subtitle')}
@@ -188,16 +187,9 @@ export function Header() {
             )}
           </div>
 
-          <Link to="/casos-de-estudio" className={linkClass('/casos-de-estudio')}>
-            Casos de Estudio
-            {pathname === '/casos-de-estudio' && (
-              <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-[#74ACDF] rounded-full" />
-            )}
-          </Link>
-
-          <Link to="/validacion" className={linkClass('/validacion')}>
-            Validación
-            {pathname === '/validacion' && (
+          <Link to="/sources" className={linkClass('/sources')}>
+            {t('nav.sources')}
+            {pathname === '/sources' && (
               <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-[#74ACDF] rounded-full" />
             )}
           </Link>
@@ -276,11 +268,8 @@ export function Header() {
               {label}
             </Link>
           ))}
-          <Link to="/casos-de-estudio" onClick={() => setMenuOpen(false)} className={`block ${linkClass('/casos-de-estudio')}`}>
-            Casos de Estudio
-          </Link>
-          <Link to="/validacion" onClick={() => setMenuOpen(false)} className={`block ${linkClass('/validacion')}`}>
-            Validación
+          <Link to="/sources" onClick={() => setMenuOpen(false)} className={`block ${linkClass('/sources')}`}>
+            {t('nav.sources')}
           </Link>
           <Link to="/about" onClick={() => setMenuOpen(false)} className={`block ${linkClass('/about')}`}>
             {t('nav.about')}

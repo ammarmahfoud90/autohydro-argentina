@@ -301,7 +301,7 @@ export interface HyetographResult {
 }
 
 export async function generateHyetograph(params: {
-  city: string;
+  locality_id: string;
   return_period: number;
   duration_min: number;
   time_step_min: number;

@@ -4,12 +4,10 @@ import { Footer } from './components/layout/Footer';
 import { Home } from './pages/Home';
 import { Calculator } from './pages/Calculator';
 import { About } from './pages/About';
+import { Sources } from './pages/Sources';
 import { Manning } from './pages/Manning';
 import { Culvert } from './pages/Culvert';
-// import { FloodSimulator } from './pages/FloodSimulator'; // TODO: Re-enable when flood simulation is production-ready
 import { Hyetograph } from './pages/Hyetograph';
-import { CaseStudies } from './pages/CaseStudies';
-import { Validation } from './pages/Validation';
 
 function App() {
   return (
@@ -24,11 +22,8 @@ function App() {
             <Route path="/manning" element={<Manning />} />
             <Route path="/calculadora/alcantarilla" element={<Culvert />} />
             <Route path="/alcantarilla" element={<Culvert />} />
-            {/* <Route path="/simulador-inundaciones" element={<FloodSimulator />} /> */}
-            {/* TODO: Re-enable when flood simulation is production-ready */}
             <Route path="/calculadora/hietograma" element={<Hyetograph />} />
-            <Route path="/casos-de-estudio" element={<CaseStudies />} />
-            <Route path="/validacion" element={<Validation />} />
+            <Route path="/sources" element={<Sources />} />
             <Route path="/about" element={<About />} />
           </Routes>
         </main>

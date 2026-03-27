@@ -13,7 +13,9 @@
       "Bash(./venv/Scripts/python -m pytest tests/ -q)",
       "Bash(venvScriptspip install:*)",
       "Bash(pip install:*)",
-      "Bash(python -c \":*)"
+      "Bash(python -c \":*)",
+      "Bash(python -m pytest tests/test_data_layer.py -v)",
+      "Bash(cd:*)"
     ]
   }
 }

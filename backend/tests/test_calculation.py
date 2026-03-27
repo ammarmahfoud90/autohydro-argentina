@@ -191,7 +191,7 @@ class TestRiskClassification:
 
 class TestRunCalculation:
     BASE_RATIONAL = {
-        "city": "Buenos Aires (Aeroparque)",
+        "locality_id": "amgr",
         "return_period": 25,
         "duration_min": 60,
         "area_km2": 2.0,
@@ -204,8 +204,8 @@ class TestRunCalculation:
     }
 
     BASE_SCS = {
-        "city": "Córdoba (Observatorio)",
-        "return_period": 50,
+        "locality_id": "amgr",
+        "return_period": 25,
         "duration_min": 60,
         "area_km2": 10.0,
         "length_km": 8.0,
@@ -275,7 +275,7 @@ class TestRunCalculation:
         assert abs(result["specific_flow_m3s_km2"] - expected) < 1e-4
 
     def test_invalid_city_raises(self):
-        payload = {**self.BASE_RATIONAL, "city": "Ciudad Fantasma"}
+        payload = {**self.BASE_RATIONAL, "locality_id": "localidad_inexistente"}
         with pytest.raises((ValueError, Exception)):
             run_calculation(payload)
 

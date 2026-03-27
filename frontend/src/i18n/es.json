@@ -1,12 +1,13 @@
 {
   "app": {
     "title": "AutoHydro Argentina",
-    "subtitle": "Hidrología inteligente para ingenieros argentinos",
+    "subtitle": "Cálculo hidrológico con datos IDF verificados",
     "tagline": "Cálculo hidrológico profesional para obras civiles en Argentina"
   },
   "nav": {
     "home": "Inicio",
     "calculator": "Calculadora",
+    "sources": "Fuentes",
     "about": "Acerca de"
   },
   "steps": {
@@ -17,8 +18,8 @@
   },
   "calculator": {
     "title": "Calculadora Hidrológica",
-    "selectLocation": "Seleccionar Ubicación y Período de Diseño",
-    "selectCity": "Seleccionar ciudad",
+    "selectLocation": "Seleccionar Localidad y Período de Diseño",
+    "selectCity": "Seleccionar localidad",
     "returnPeriod": "Período de retorno",
     "stormDuration": "Duración de tormenta",
     "basinTitle": "Características de la Cuenca",
@@ -121,7 +122,7 @@
     "required": "Este campo es obligatorio",
     "positiveNumber": "Debe ser un número positivo",
     "maxOne": "Debe ser un valor entre 0 y 1",
-    "cityRequired": "Seleccione una ciudad para continuar",
+    "cityRequired": "Seleccione una localidad para continuar",
     "areaRequired": "El área de la cuenca es obligatoria",
     "lengthRequired": "La longitud del cauce es obligatoria",
     "slopeRequired": "La pendiente media es obligatoria",
@@ -151,39 +152,22 @@
     "optional": "opcional"
   },
   "home": {
-    "heroTitle": "Hidrología profesional para Argentina",
-    "heroSubtitle": "Calculá caudales de diseño con metodología argentina actualizada, interpretación IA y generación automática de memorias de cálculo.",
+    "heroTitle": "Cálculo hidrológico con datos IDF verificados",
+    "heroSubtitle": "Calculá caudales de diseño usando datos de intensidad-duración-frecuencia de fuentes oficiales argentinas.",
     "cta": "Iniciar cálculo",
-    "feature1Title": "Datos IDF Regionalizados",
-    "feature1Desc": "Coeficientes IDF para 15 ciudades argentinas según Caamaño Nelli y fuentes INA/SMN.",
-    "feature2Title": "Múltiples Métodos",
-    "feature2Desc": "Racional, Racional Modificado y SCS-CN con comparación automática de resultados.",
-    "feature3Title": "Interpretación IA",
-    "feature3Desc": "Claude API analiza tus resultados y genera explicaciones técnicas en español rioplatense.",
-    "feature4Title": "Memoria de Cálculo PDF",
-    "feature4Desc": "Genera automáticamente una memoria de cálculo en formato técnico argentino lista para entregar.",
     "disclaimerTitle": "Aviso Importante",
-    "disclaimerText": "Esta herramienta genera estimaciones para etapas de anteproyecto. Los coeficientes IDF incluidos son de carácter indicativo. Para diseños finales, verifique siempre con los estudios hidrológicos locales más recientes.",
-    "citiesTitle": "Ciudades disponibles"
+    "disclaimerText": "Esta herramienta genera estimaciones para etapas de anteproyecto. Para diseños finales, verificar siempre con los estudios hidrológicos locales más recientes."
   },
   "about": {
     "title": "Acerca de AutoHydro Argentina",
     "developerTitle": "Desarrollador",
     "developerName": "Ing. Ammar Mahfoud",
-    "developerBio": "Ingeniero civil con especialización en hidrología e hidráulica. AutoHydro Argentina fue desarrollado para optimizar los flujos de trabajo de los ingenieros civiles argentinos en estudios hidrológicos, combinando metodología técnica rigurosa con inteligencia artificial.",
     "methodologyTitle": "Metodología",
-    "methodologyText": "Las curvas IDF utilizadas están basadas en la regionalización de Caamaño Nelli et al. (1999) y publicaciones del INA (Instituto Nacional del Agua). Los métodos de cálculo siguen la práctica establecida en Argentina.",
     "referencesTitle": "Referencias",
-    "ref1": "Caamaño Nelli, G. M. et al. (1999). Fórmulas para curvas IDF. Ingeniería del Agua.",
-    "ref2": "INA — Instituto Nacional del Agua. Publicaciones técnicas regionales.",
-    "ref3": "USDA-SCS (1972). National Engineering Handbook, Section 4: Hydrology.",
-    "ref4": "Témez, J.R. (1978). Cálculo hidrometeorológico de caudales máximos.",
-    "versionTitle": "Versión",
-    "version": "1.0.0 — MVP",
     "techTitle": "Tecnologías"
   },
   "footer": {
-    "tagline": "AutoHydro Argentina — Desarrollado por Ing. Ammar Mahfoud",
-    "rights": "Herramienta de estimación hidrológica para uso profesional"
+    "tagline": "AutoHydro Argentina — Herramienta de cálculo hidrológico",
+    "rights": "© 2025 Ing. Ammar Mahfoud · MIT License"
   }
 }

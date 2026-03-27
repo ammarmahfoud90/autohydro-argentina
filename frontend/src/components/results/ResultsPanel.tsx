@@ -17,7 +17,6 @@ import {
 } from 'recharts';
 import type { HydrologyResult, HydrologyInput, CNSensitivityPoint } from '../../types';
 import { interpretResults, generateReport, generateDocxReport, generateExcelReport, calculateHydrology, exportShapefile } from '../../services/api';
-import { getCityByName } from '../../constants/idf-data';
 
 const RISK_STYLES: Record<string, string> = {
   muy_bajo: 'bg-green-100 text-green-800 border-green-300',
@@ -249,24 +248,8 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
     }
   }
 
-  const cityData = getCityByName(results.city);
-  const isEstimated = cityData ? !cityData.verified : false;
-
   return (
     <div className="space-y-4">
-      {/* ── Estimated data warning banner ───────────────────────────────── */}
-      {isEstimated && (
-        <div className="rounded-xl border border-amber-400 bg-amber-50 px-4 py-3 flex items-start gap-3">
-          <svg className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round"
-              d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-          </svg>
-          <p className="text-sm text-amber-800">
-            <strong>Resultados basados en datos IDF ESTIMADOS para {results.city}.</strong>{' '}
-            Verificar con fuentes locales (SMN / autoridad hídrica provincial) antes de usar en diseño definitivo.
-          </p>
-        </div>
-      )}
 
       {/* ── Summary ─────────────────────────────────────────────────────── */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">

@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
-import { generateHyetograph } from '../services/api';
+import { generateHyetograph, getLocalities } from '../services/api';
 import type { HyetographResult } from '../services/api';
-import { IDF_ARGENTINA } from '../constants/idf-data';
+import type { IDFLocality } from '../types/idf';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -114,9 +114,14 @@ function StepDot({ n, active, done }: { n: number; active: boolean; done: boolea
 
 export function Hyetograph() {
   const [step, setStep] = useState(0);
+  const [localities, setLocalities] = useState<IDFLocality[]>([]);
+
+  useEffect(() => {
+    getLocalities().then(setLocalities).catch(console.error);
+  }, []);
 
   // Step 0: IDF source
-  const [city, setCity] = useState('');
+  const [localityId, setLocalityId] = useState('');
   const [returnPeriod, setReturnPeriod] = useState(25);
 
   // Step 1: Storm parameters
@@ -136,7 +141,7 @@ export function Hyetograph() {
     setError(null);
     try {
       const data = await generateHyetograph({
-        city,
+        locality_id: localityId,
         return_period: returnPeriod,
         duration_min: duration,
         time_step_min: timeStep,
@@ -202,14 +207,14 @@ export function Hyetograph() {
                   Ciudad <span className="text-red-400">*</span>
                 </label>
                 <select
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
+                  value={localityId}
+                  onChange={(e) => setLocalityId(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="">— Seleccioná una ciudad —</option>
-                  {IDF_ARGENTINA.map((c) => (
-                    <option key={c.city} value={c.city}>
-                      {c.city} ({c.province})
+                  <option value="">— Seleccioná una localidad —</option>
+                  {localities.map((loc) => (
+                    <option key={loc.id} value={loc.id}>
+                      {loc.name} ({loc.province})
                     </option>
                   ))}
                 </select>
@@ -238,7 +243,7 @@ export function Hyetograph() {
               <div className="flex justify-end pt-2">
                 <button
                   type="button"
-                  disabled={!city}
+                  disabled={!localityId}
                   onClick={() => setStep(1)}
                   className="px-6 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >

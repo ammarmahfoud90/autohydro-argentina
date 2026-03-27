@@ -10,7 +10,7 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from app.data.idf_argentina import IDF_ARGENTINA, calculate_idf_intensity
+from app.services.idf_service import get_localities, get_locality, calculate_intensity
 from app.data.cn_argentina import CN_ARGENTINA, calculate_composite_cn, get_cn_value
 from app.services.tc_service import (
     calculate_tc_kirpich,
@@ -26,50 +26,48 @@ from app.services.tc_service import (
 # ── IDF Tests ────────────────────────────────────────────────────────────────
 
 class TestIDFData:
-    def test_fifteen_cities_loaded(self):
-        assert len(IDF_ARGENTINA) == 15
+    def test_three_localities_loaded(self):
+        localities = get_localities()
+        assert len(localities) == 3
 
-    def test_buenos_aires_aeroparque_manual(self):
-        """Manual check: T=10yr, t=60min for Buenos Aires Aeroparque."""
-        # i = (1656.36 * 10^0.197) / (60 + 13)^0.846
-        a, b, c, d = 1656.36, 0.197, 13.0, 0.846
-        expected = (a * (10 ** b)) / ((60 + c) ** d)
-        result = calculate_idf_intensity("Buenos Aires (Aeroparque)", T=10, t=60)
-        assert abs(result - expected) / expected < 0.001, f"Expected {expected:.3f}, got {result:.3f}"
+    def test_locality_ids(self):
+        ids = {loc["id"] for loc in get_localities()}
+        assert ids == {"amgr", "el_colorado", "pr_saenz_pena"}
 
-    def test_cordoba_manual(self):
-        """Manual check for Córdoba T=25yr, t=30min."""
-        a, b, c, d = 2850.0, 0.220, 15.0, 0.900
-        expected = (a * (25 ** b)) / ((30 + c) ** d)
-        result = calculate_idf_intensity("Córdoba (Observatorio)", T=25, t=30)
-        assert abs(result - expected) / expected < 0.001
+    def test_all_localities_have_required_fields(self):
+        required = {"id", "name", "province", "return_periods", "durations_min", "source"}
+        for loc in get_localities():
+            assert required.issubset(loc.keys()), f"Missing fields in {loc['id']}"
 
-    def test_out_of_range_duration_raises(self):
-        with pytest.raises(ValueError, match="Duration"):
-            calculate_idf_intensity("Buenos Aires (Aeroparque)", T=10, t=3)
-
-    def test_out_of_range_return_period_raises(self):
-        with pytest.raises(ValueError, match="Return period"):
-            calculate_idf_intensity("Mendoza (Aeropuerto)", T=100, t=30)
-
-    def test_unknown_city_raises(self):
-        with pytest.raises(ValueError, match="not found"):
-            calculate_idf_intensity("Ciudad Inexistente", T=10, t=60)
-
-    def test_intensity_increases_with_return_period(self):
-        i10 = calculate_idf_intensity("Rosario", T=10, t=60)
-        i50 = calculate_idf_intensity("Rosario", T=50, t=60)
-        assert i50 > i10
-
-    def test_intensity_decreases_with_duration(self):
-        i30 = calculate_idf_intensity("Rosario", T=10, t=30)
-        i120 = calculate_idf_intensity("Rosario", T=10, t=120)
+    def test_amgr_intensity_decreases_with_duration(self):
+        i30 = calculate_intensity("amgr", return_period=10, duration_min=30)["intensity_mm_hr"]
+        i120 = calculate_intensity("amgr", return_period=10, duration_min=120)["intensity_mm_hr"]
         assert i30 > i120
 
-    def test_all_cities_have_required_fields(self):
-        required = {"city", "province", "a", "b", "c", "d", "source", "validRange"}
-        for city in IDF_ARGENTINA:
-            assert required.issubset(city.keys()), f"Missing fields in {city['city']}"
+    def test_amgr_intensity_increases_with_return_period(self):
+        i10 = calculate_intensity("amgr", return_period=10, duration_min=60)["intensity_mm_hr"]
+        i25 = calculate_intensity("amgr", return_period=25, duration_min=60)["intensity_mm_hr"]
+        assert i25 > i10
+
+    def test_calculate_intensity_returns_expected_keys(self):
+        result = calculate_intensity("amgr", return_period=10, duration_min=60)
+        assert "intensity_mm_hr" in result
+        assert "return_period" in result
+        assert "duration_min" in result
+        assert "locality_id" in result
+        assert result["locality_id"] == "amgr"
+
+    def test_unknown_locality_raises(self):
+        with pytest.raises(ValueError, match="not found"):
+            get_locality("ciudad_inexistente")
+
+    def test_out_of_range_return_period_raises(self):
+        with pytest.raises(ValueError, match="outside the valid range"):
+            calculate_intensity("amgr", return_period=100, duration_min=60)
+
+    def test_out_of_range_duration_raises(self):
+        with pytest.raises(ValueError, match="outside the valid range"):
+            calculate_intensity("amgr", return_period=10, duration_min=5)
 
 
 # ── CN Tests ─────────────────────────────────────────────────────────────────
