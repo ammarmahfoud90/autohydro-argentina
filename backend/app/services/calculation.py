@@ -11,7 +11,7 @@ Implements:
 import math
 from typing import Optional
 
-from app.data.idf_argentina import calculate_idf_intensity, IDF_ARGENTINA
+from app.services.idf_service import calculate_intensity as idf_calculate_intensity, get_locality
 from app.data.cn_argentina import calculate_composite_cn
 from app.services.tc_service import calculate_all_tc
 from app.services.climate_service import adjust_idf_intensity, scenario_label
@@ -356,18 +356,16 @@ def run_calculation(payload: dict) -> dict:
     """
     req = CalculationRequest.model_validate(payload)
 
-    # ── 1. Find IDF city ──────────────────────────────────────────────────
-    city_data = next((c for c in IDF_ARGENTINA if c["city"] == req.city), None)
-    if city_data is None:
-        raise ValueError(f"Ciudad '{req.city}' no encontrada en la base de datos IDF")
-
-    # Clamp duration within valid range for this city
-    vr = city_data["validRange"]
-    t_clamped = max(vr["tMin"], min(vr["tMax"], req.duration_min))
-    T_clamped = max(vr["TMin"], min(vr["TMax"], req.return_period))
+    # ── 1. Find IDF locality ──────────────────────────────────────────────
+    locality = get_locality(req.locality_id)
 
     # ── 2. IDF intensity ─────────────────────────────────────────────────
-    intensity = calculate_idf_intensity(req.city, T=float(T_clamped), t=float(t_clamped))
+    idf_result = idf_calculate_intensity(
+        req.locality_id,
+        return_period=float(req.return_period),
+        duration_min=float(req.duration_min),
+    )
+    intensity = idf_result["intensity_mm_hr"]
 
     # ── 2b. Climate change adjustment (optional) ─────────────────────────
     original_intensity: Optional[float] = None
@@ -375,7 +373,7 @@ def run_calculation(payload: dict) -> dict:
     if req.climate_scenario and req.climate_scenario != "none" and req.climate_horizon:
         adjusted, factor = adjust_idf_intensity(
             intensity, req.climate_scenario, req.climate_horizon,
-            province=city_data["province"],
+            province=locality["province"],
         )
         original_intensity = intensity
         climate_factor = factor
@@ -529,16 +527,17 @@ def run_calculation(payload: dict) -> dict:
 
     # ── 9. Assemble response ──────────────────────────────────────────────
     response = CalculationResponse(
-        city=req.city,
-        province=city_data["province"],
+        locality_id=req.locality_id,
+        city=locality["name"],
+        province=locality["province"],
         return_period=req.return_period,
         duration_min=req.duration_min,
         area_km2=req.area_km2,
         method=req.method,
         location_description=req.location_description,
         intensity_mm_hr=round(intensity, 3),
-        idf_source=city_data["source"],
-        idf_verified=city_data["verified"],
+        idf_source=locality["source"]["document"],
+        idf_verified=None,
         tc_results=tc_results,
         tc_adopted_hours=round(tc_adopted_hr, 4),
         tc_adopted_minutes=round(tc_adopted_min, 2),

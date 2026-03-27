@@ -1,0 +1,61 @@
+{
+  "id": "amgr",
+  "name": "Área Metropolitana del Gran Resistencia",
+  "short_name": "AMGR",
+  "province": "Chaco",
+  "country": "Argentina",
+  "coordinates": {"lat": -27.4514, "lon": -59.0186},
+  "source": {
+    "document": "Resolución APA 1334/21 — Anexo I",
+    "title": "Normas para la Tormenta de Diseño en Desagües Pluviales Urbanos",
+    "authors": "Ing. Eliana Cóceres, Ing. Ezequiel Silva — Dirección de Estudios Básicos, APA",
+    "institution": "Administración Provincial del Agua (APA) — Provincia del Chaco",
+    "date": "2021-11-15",
+    "stations": [
+      "INTA Colonia Benítez",
+      "SMN Aeropuerto Resistencia",
+      "Campus UNNE Resistencia",
+      "SAT-APA río Negro"
+    ],
+    "series_period": "1960–2019",
+    "series_length_years": 60,
+    "statistical_software": "AFMULTI (Paoli et al., FICH-UNL, 1991)",
+    "distributions_tested": "Log Gauss 2p, GEV, Gumbel, Pearson III, Log Pearson III, Exponencial, Wakeby",
+    "homogeneity_tests": "Mann-Kendall, Smirnov",
+    "goodness_of_fit": "Chi² de Pearson, Kolmogorov-Smirnov, ECMF, ECMV"
+  },
+  "limitations": {
+    "max_reliable_return_period": 50,
+    "spatial_coverage": "Área urbanizada del AMGR. Límite superior: orden de magnitud del área actualmente urbanizada.",
+    "convective_note": "Procesos convectivos con cobertura en superficie reducida.",
+    "series_note": "Serie de 60 años. Resultados confiables hasta TR=50 años."
+  },
+  "municipalities": [
+    "Resistencia", "Barranqueras", "Colonia Benítez", "Fontana",
+    "Margarita Belén", "Puerto Tirol", "Puerto Vilelas"
+  ],
+  "idf_table": {
+    "durations_min": [15, 30, 45, 60, 120, 180, 240],
+    "return_periods_years": [2, 5, 10, 25, 50],
+    "intensities_mm_hr": [
+      [102.5, 77.0, 62.6, 51.1, 33.3, 25.3, 20.9],
+      [129.6, 95.7, 80.2, 66.4, 45.1, 35.0, 28.8],
+      [145.6, 106.7, 90.5, 75.0, 53.3, 42.0, 34.0],
+      [163.8, 119.5, 102.0, 84.8, 64.2, 51.8, 40.6],
+      [176.1, 128.3, 109.6, 91.3, 72.7, 59.7, 45.5]
+    ]
+  },
+  "idf_formula": {
+    "expression": "Ip = A / (Td + B)^C",
+    "Td_unit": "minutes",
+    "Ip_unit": "mm/hr",
+    "note": "Parameters A, B, C are specific to each return period. Td = duration in minutes.",
+    "parameters_by_return_period": {
+      "2":  {"A": 2711.632, "B": 29.742, "C": 0.871},
+      "5":  {"A": 2725.371, "B": 29.434, "C": 0.820},
+      "10": {"A": 2740.193, "B": 29.190, "C": 0.791},
+      "25": {"A": 2760.347, "B": 28.989, "C": 0.755},
+      "50": {"A": 2786.493, "B": 28.757, "C": 0.741}
+    }
+  }
+}

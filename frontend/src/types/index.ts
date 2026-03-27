@@ -27,7 +27,7 @@ export interface LandUseCategory {
 }
 
 export interface HydrologyInput {
-  city: string;
+  locality_id: string;
   location_description: string;
   return_period: number;
   duration_min: number;
@@ -80,7 +80,8 @@ export interface RiskRecommendations {
 }
 
 export interface HydrologyResult {
-  city: string;
+  locality_id: string;
+  city: string;          // locality full name (for display)
   province: string;
   return_period: number;
   duration_min: number;
@@ -133,7 +134,7 @@ export interface InterpretationResponse {
 // ── Utility ───────────────────────────────────────────────────────────────────
 
 export const DEFAULT_FORM: HydrologyInput = {
-  city: '',
+  locality_id: '',
   location_description: '',
   return_period: 25,
   duration_min: 60,

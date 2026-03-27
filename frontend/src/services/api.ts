@@ -1,4 +1,5 @@
 import type { HydrologyInput, HydrologyResult, InterpretationResponse } from '../types';
+import type { IDFLocality } from '../types/idf';
 
 const BASE = import.meta.env.VITE_API_URL ?? '';
 
@@ -19,7 +20,7 @@ export async function calculateHydrology(
 ): Promise<HydrologyResult> {
   // Map camelCase form state to snake_case API payload
   const payload = {
-    city: input.city,
+    locality_id: input.locality_id,
     location_description: input.location_description || undefined,
     return_period: input.return_period,
     duration_min: input.duration_min,
@@ -148,10 +149,12 @@ export async function generateExcelReport(
   return res.blob();
 }
 
-export async function getCities(): Promise<
-  Array<{ city: string; province: string; source: string }>
-> {
-  return request('/api/cities');
+export async function getLocalities(): Promise<IDFLocality[]> {
+  return request<IDFLocality[]>('/api/localities');
+}
+
+export async function getLocality(id: string): Promise<IDFLocality> {
+  return request<IDFLocality>(`/api/localities/${id}`);
 }
 
 export interface WatershedResult {

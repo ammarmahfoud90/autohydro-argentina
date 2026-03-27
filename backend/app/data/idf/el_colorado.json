@@ -1,0 +1,53 @@
+{
+  "id": "el_colorado",
+  "name": "El Colorado",
+  "short_name": "El Colorado",
+  "province": "Formosa",
+  "country": "Argentina",
+  "coordinates": {"lat": -26.3075, "lon": -59.3667},
+  "source": {
+    "document": "Resolución APA 1334/21 — Anexo II",
+    "title": "Normas para la Tormenta de Diseño en Desagües Pluviales Urbanos",
+    "authors": "Ing. Eliana Cóceres, Ing. Ezequiel Silva — Dirección de Estudios Básicos, APA",
+    "institution": "Administración Provincial del Agua (APA) — Provincia del Chaco",
+    "date": "2021-11-15",
+    "stations": ["INTA El Colorado (Formosa)"],
+    "series_period": "1993–2000",
+    "series_length_years": 7,
+    "statistical_software": "AFMULTI (Paoli et al., FICH-UNL, 1991)",
+    "distribution_adopted": "Gumbel"
+  },
+  "limitations": {
+    "max_reliable_return_period": 25,
+    "spatial_coverage": "Localidad de El Colorado y municipios con similar régimen pluviométrico.",
+    "convective_note": "Procesos convectivos con cobertura en superficie reducida.",
+    "series_note": "ADVERTENCIA: Serie de solo 7 años. Resultados orientativos — pueden sufrir variaciones importantes con mayor longitud de registro."
+  },
+  "municipalities": [
+    "El Colorado", "General San Martín", "Presidencia Roca", "Colonias Unidas"
+  ],
+  "idf_table": {
+    "durations_min": [15, 30, 45, 60, 90, 120, 180],
+    "return_periods_years": [2, 5, 10, 25, 50],
+    "intensities_mm_hr": [
+      [93.3, 69.4, 57.3, 48.8, 40.5, 33.4, 25.6],
+      [109.7, 84.4, 72.7, 62.5, 51.5, 44.2, 34.7],
+      [121.2, 94.4, 82.9, 71.6, 58.8, 51.3, 40.7],
+      [135.8, 107.0, 95.8, 83.1, 68.1, 60.3, 48.3],
+      [146.6, 116.3, 105.4, 91.6, 74.9, 67.0, 54.0]
+    ]
+  },
+  "idf_formula": {
+    "expression": "Ip = A / (Td + B)^C",
+    "Td_unit": "minutes",
+    "Ip_unit": "mm/hr",
+    "note": "Parameters A, B, C are specific to each return period. Td = duration in minutes.",
+    "parameters_by_return_period": {
+      "2":  {"A": 741.00,  "B": 9.70,  "C": 0.64},
+      "5":  {"A": 1248.33, "B": 17.57, "C": 0.69},
+      "10": {"A": 845.24,  "B": 10.60, "C": 0.58},
+      "25": {"A": 967.00,  "B": 14.68, "C": 0.57},
+      "50": {"A": 1332.00, "B": 23.50, "C": 0.60}
+    }
+  }
+}

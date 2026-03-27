@@ -44,13 +44,13 @@ class LandUseCategory(BaseModel):
 
 class CalculationRequest(BaseModel):
     # Location
-    city: str = Field(..., description="City name as in IDF_ARGENTINA")
+    locality_id: str = Field(..., description="Locality ID as in idf_service (e.g. 'amgr')")
     location_description: Optional[str] = Field(None, max_length=200)
 
     # Design parameters
     return_period: int = Field(..., ge=2, le=1000, description="Return period in years")
     duration_min: int = Field(
-        ..., ge=5, le=120, description="Storm duration in minutes"
+        ..., ge=5, le=240, description="Storm duration in minutes"
     )
 
     # Basin characteristics
@@ -195,7 +195,8 @@ class CNSensitivityPoint(BaseModel):
 
 class CalculationResponse(BaseModel):
     # Input echo
-    city: str
+    locality_id: str
+    city: str          # locality full name (for display)
     province: str
     return_period: int
     duration_min: int
@@ -206,7 +207,7 @@ class CalculationResponse(BaseModel):
     # IDF result
     intensity_mm_hr: float
     idf_source: str
-    idf_verified: bool
+    idf_verified: Optional[bool] = None
 
     # Tc results
     tc_results: list[TcFormulaResult]
