@@ -32,6 +32,10 @@ const TECH_STACK = [
 
 const REFERENCES = [
   'Resolución APA 1334/21 — Administración Provincial del Agua, Chaco (2021)',
+  'INA-CRA (2008). Relaciones IDF para el pedemonte del Gran Mendoza. Instituto Nacional del Agua — Centro Regional Andino.',
+  'Dirección de Hidráulica, Mendoza (2019). Resolución DH 034/2019. Gobierno de Mendoza.',
+  'SsRH Neuquén (2018). Instructivo para la Realización de Estudios de Riesgo Hídrico. Subsecretaría de Recursos Hídricos, Provincia del Neuquén.',
+  'Fernández, P.C. y Fornero, L.A. (2000). Sistemas Hidrometeorológicos en Tiempo Real. INA-CRA, Mendoza.',
   'USDA-SCS (1972). National Engineering Handbook, Section 4: Hydrology',
   'Témez, J.R. (1978). Cálculo hidrometeorológico de caudales máximos',
   'FHWA (2012). Hydraulic Design of Highway Culverts, HDS-5',
@@ -106,7 +110,7 @@ export function About() {
           <p className="text-sm text-gray-600 leading-relaxed mb-3">
             AutoHydro Argentina es un proyecto <strong>open source</strong> de cálculo hidrológico
             para la práctica profesional en Argentina. Los datos IDF incluidos provienen de fuentes
-            oficiales verificadas — actualmente la Resolución APA 1334/21 del Chaco.
+            oficiales verificadas: Resolución APA 1334/21 (Chaco), INA-CRA 2008 (Mendoza) y SsRH Neuquén 2018 (Neuquén).
           </p>
           <p className="text-sm text-gray-600 leading-relaxed mb-5">
             El proyecto se construye de forma incremental: se incorporan nuevas localidades

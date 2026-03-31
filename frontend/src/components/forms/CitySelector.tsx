@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { getLocalities } from '../../services/api';
 import type { IDFLocality } from '../../types/idf';
 
@@ -11,7 +10,6 @@ interface Props {
 }
 
 export function CitySelector({ value, onChange }: Props) {
-  const { t } = useTranslation();
   const [localities, setLocalities] = useState<IDFLocality[]>([]);
 
   useEffect(() => {
@@ -19,21 +17,23 @@ export function CitySelector({ value, onChange }: Props) {
   }, []);
 
   const selected = localities.find((l) => l.id === value) ?? null;
-  const isShortSeries = selected ? selected.source.series_length_years < 15 : false;
+  const isShortSeries = selected
+    ? selected.source.series_length_years != null && selected.source.series_length_years < 15
+    : false;
 
   return (
     <div className="space-y-4">
       {/* Locality select */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          {t('calculator.selectCity')} <span className="text-red-500">*</span>
+          Seleccionar localidad <span className="text-red-500">*</span>
         </label>
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
-          <option value="">{t('calculator.selectCity')}</option>
+          <option value="">Seleccionar localidad</option>
           {localities.map((loc) => (
             <option key={loc.id} value={loc.id}>
               {loc.name} · {loc.province}
@@ -55,15 +55,21 @@ export function CitySelector({ value, onChange }: Props) {
           </div>
 
           <div className="text-xs text-gray-600">
-            <span className="font-medium text-gray-700">{t('common.source')}:</span>{' '}
+            <span className="font-medium text-gray-700">Fuente:</span>{' '}
             {selected.source.document}
           </div>
 
           <div className="text-xs text-gray-600">
             <span className="font-medium text-gray-700">Período:</span>{' '}
-            {selected.source.series_period} ({selected.source.series_length_years} años) ·{' '}
-            <span className="font-medium text-gray-700">TR máximo confiable:</span>{' '}
-            {selected.limitations.max_reliable_return_period} años
+            {selected.source.series_period != null
+              ? `${selected.source.series_period}${selected.source.series_length_years != null ? ` (${selected.source.series_length_years} años)` : ''}`
+              : selected.source.series_length_years != null
+                ? `${selected.source.series_length_years} años`
+                : 'Múltiples estaciones'}
+            {selected.limitations.max_reliable_return_period != null && (
+              <>{' · '}<span className="font-medium text-gray-700">TR máximo confiable:</span>{' '}
+              {selected.limitations.max_reliable_return_period} años</>
+            )}
           </div>
 
           {isShortSeries && (
@@ -77,7 +83,7 @@ export function CitySelector({ value, onChange }: Props) {
 
       {/* Disclaimer */}
       <p className="text-xs text-gray-500 italic">
-        {t('results.disclaimer')}
+        Aviso: Estos resultados son estimaciones para etapas preliminares. Verifique con estudios locales actualizados para diseños finales.
       </p>
     </div>
   );

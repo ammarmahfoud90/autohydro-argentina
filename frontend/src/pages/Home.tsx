@@ -30,7 +30,16 @@ const TOOLS = [
 ];
 
 function LocalityCard({ loc }: { loc: IDFLocality }) {
-  const isShortSeries = loc.source.series_length_years < 15;
+  const isShortSeries =
+    loc.source.series_length_years != null && loc.source.series_length_years < 15;
+
+  const seriesSummary =
+    loc.source.series_period != null
+      ? `${loc.source.series_period}${loc.source.series_length_years != null ? ` (${loc.source.series_length_years} años)` : ''}`
+      : loc.source.series_length_years != null
+        ? `${loc.source.series_length_years} años`
+        : 'Múltiples estaciones';
+
   return (
     <div className={`bg-white rounded-xl border p-5 ${isShortSeries ? 'border-amber-200' : 'border-gray-200'}`}>
       <div className="flex items-start justify-between gap-2 mb-3">
@@ -51,12 +60,14 @@ function LocalityCard({ loc }: { loc: IDFLocality }) {
         </div>
         <div className="flex justify-between">
           <dt className="text-gray-400">Período</dt>
-          <dd>{loc.source.series_period} ({loc.source.series_length_years} años)</dd>
+          <dd>{seriesSummary}</dd>
         </div>
-        <div className="flex justify-between">
-          <dt className="text-gray-400">TR máximo confiable</dt>
-          <dd>{loc.limitations.max_reliable_return_period} años</dd>
-        </div>
+        {loc.limitations.max_reliable_return_period != null && (
+          <div className="flex justify-between">
+            <dt className="text-gray-400">TR máximo confiable</dt>
+            <dd>{loc.limitations.max_reliable_return_period} años</dd>
+          </div>
+        )}
       </dl>
     </div>
   );
@@ -77,7 +88,7 @@ export function Home() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
           <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-[#74ACDF] text-xs font-medium px-3 py-1.5 rounded-full mb-6">
             <span className="w-1.5 h-1.5 rounded-full bg-[#74ACDF]" />
-            Datos IDF: Resolución APA 1334/21
+            Datos IDF verificados — 5 localidades
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-bold leading-tight mb-3">
@@ -117,8 +128,8 @@ export function Home() {
           Localidades con datos IDF verificados
         </h2>
         <p className="text-sm text-gray-500 mb-6">
-          Los datos IDF provienen de la Resolución APA 1334/21 (Administración Provincial del Agua,
-          Chaco), calibrados con registros pluviográficos históricos.
+          Datos IDF de fuentes oficiales verificadas: Resolución APA 1334/21 (Chaco),
+          INA-CRA 2008 (Mendoza) y SsRH Neuquén 2018.
         </p>
 
         {localities.length === 0 ? (

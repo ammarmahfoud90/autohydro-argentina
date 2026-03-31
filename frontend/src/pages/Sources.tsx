@@ -2,12 +2,23 @@ import { useState, useEffect } from 'react';
 import { getLocalities, getLocality } from '../services/api';
 import type { IDFLocality } from '../types/idf';
 
-// Extended type for full locality data (includes idf_table from backend)
+// Extended type for full locality data returned by /api/localities/:id
 interface IDFLocalityFull extends IDFLocality {
-  idf_table: {
+  idf_table?: {
     durations_min: number[];
     return_periods_years: number[];
     intensities_mm_hr: number[][];
+  };
+  idf_formula?: {
+    omega_by_return_period?: Record<string, number>;
+    [key: string]: unknown;
+  };
+  p24h_by_station_mm?: {
+    return_periods_years: number[];
+    stations: Record<string, {
+      coordinates_approx: { lat: number; lon: number };
+      p24h_mm: number[];
+    }>;
   };
 }
 
@@ -32,11 +43,14 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 function LocalitySourceCard({ localityId }: { localityId: string }) {
   const [data, setData] = useState<IDFLocalityFull | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
+    setLoading(true);
+    setError(false);
     getLocality(localityId)
       .then((d) => setData(d as IDFLocalityFull))
-      .catch(console.error)
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, [localityId]);
 
@@ -53,9 +67,25 @@ function LocalitySourceCard({ localityId }: { localityId: string }) {
     );
   }
 
-  if (!data) return null;
+  if (error || !data) {
+    return (
+      <div className="bg-white rounded-2xl border border-red-200 p-6">
+        <p className="text-sm text-red-600">No se pudo cargar la información de esta localidad.</p>
+      </div>
+    );
+  }
 
-  const isShortSeries = data.source.series_length_years < 15;
+  const isShortSeries =
+    data.source.series_length_years != null && data.source.series_length_years < 15;
+
+  const seriesSummary =
+    data.source.series_period != null
+      ? `${data.source.series_period}${data.source.series_length_years != null ? ` (${data.source.series_length_years} años)` : ''}`
+      : data.source.series_length_years != null
+        ? `${data.source.series_length_years} años`
+        : null;
+
+  const idfModel = data.idf_model ?? 'apa_chaco';
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
@@ -94,19 +124,23 @@ function LocalitySourceCard({ localityId }: { localityId: string }) {
               <dt className="text-gray-400 w-36 shrink-0">Fecha</dt>
               <dd className="text-gray-700">{data.source.date}</dd>
             </div>
-            <div className="flex gap-3">
-              <dt className="text-gray-400 w-36 shrink-0">Período de datos</dt>
-              <dd className="text-gray-700">{data.source.series_period} ({data.source.series_length_years} años)</dd>
-            </div>
-            <div className="flex gap-3">
-              <dt className="text-gray-400 w-36 shrink-0">Estaciones</dt>
-              <dd className="text-gray-700">{data.source.stations.join(', ')}</dd>
-            </div>
+            {seriesSummary != null && (
+              <div className="flex gap-3">
+                <dt className="text-gray-400 w-36 shrink-0">Período de datos</dt>
+                <dd className="text-gray-700">{seriesSummary}</dd>
+              </div>
+            )}
+            {data.source.stations != null && data.source.stations.length > 0 && (
+              <div className="flex gap-3">
+                <dt className="text-gray-400 w-36 shrink-0">Estaciones</dt>
+                <dd className="text-gray-700">{data.source.stations.join(', ')}</dd>
+              </div>
+            )}
           </dl>
         </div>
 
         {/* Municipalities */}
-        {data.municipalities.length > 0 && (
+        {(data.municipalities?.length ?? 0) > 0 && (
           <div>
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
               Municipios cubiertos
@@ -127,22 +161,28 @@ function LocalitySourceCard({ localityId }: { localityId: string }) {
             Limitaciones
           </p>
           <div className={`rounded-lg px-4 py-3 text-sm border ${isShortSeries ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-gray-50 border-gray-200 text-gray-600'}`}>
-            <div className="flex justify-between mb-1">
-              <span>TR máximo confiable:</span>
-              <span className="font-semibold">{data.limitations.max_reliable_return_period} años</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span>Cobertura espacial:</span>
-              <span className="font-medium">{data.limitations.spatial_coverage}</span>
-            </div>
-            <p className="text-xs leading-relaxed border-t border-current/20 pt-2 mt-2">
-              {data.limitations.series_note}
-            </p>
+            {data.limitations.max_reliable_return_period != null && (
+              <div className="flex justify-between mb-1">
+                <span>TR máximo confiable:</span>
+                <span className="font-semibold">{data.limitations.max_reliable_return_period} años</span>
+              </div>
+            )}
+            {data.limitations.spatial_coverage != null && (
+              <div className="flex justify-between mb-2">
+                <span>Cobertura espacial:</span>
+                <span className="font-medium">{data.limitations.spatial_coverage}</span>
+              </div>
+            )}
+            {data.limitations.series_note != null && (
+              <p className="text-xs leading-relaxed border-t border-current/20 pt-2 mt-2">
+                {data.limitations.series_note}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* IDF Table */}
-        {data.idf_table && (
+        {/* APA Chaco: IDF Table */}
+        {idfModel === 'apa_chaco' && data.idf_table && (
           <div>
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
               Tabla IDF publicada (mm/hr)
@@ -167,9 +207,9 @@ function LocalitySourceCard({ localityId }: { localityId: string }) {
                       <td className="px-3 py-1.5 font-medium text-gray-700 border-r border-gray-200">
                         {dur}
                       </td>
-                      {data.idf_table.return_periods_years.map((_, ti) => (
+                      {data.idf_table!.return_periods_years.map((_, ti) => (
                         <td key={ti} className="px-3 py-1.5 text-center tabular-nums text-gray-700 border-r border-gray-200 last:border-r-0">
-                          {data.idf_table.intensities_mm_hr[ti]?.[di]?.toFixed(1) ?? '—'}
+                          {data.idf_table!.intensities_mm_hr[ti]?.[di]?.toFixed(1) ?? '—'}
                         </td>
                       ))}
                     </tr>
@@ -182,6 +222,108 @@ function LocalitySourceCard({ localityId }: { localityId: string }) {
             </p>
           </div>
         )}
+
+        {/* INA-CRA Mendoza: formula + omega table */}
+        {idfModel === 'ina_cra_mendoza' && data.idf_formula?.omega_by_return_period && (
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              Modelo IDF — INA-CRA 2008
+            </p>
+            <div className="bg-gray-50 rounded-lg border border-gray-200 px-4 py-3 font-mono text-sm text-gray-800 mb-3">
+              I = ω(TR) / (D + 0.268)^0.883
+            </div>
+            <dl className="text-xs text-gray-500 space-y-0.5 mb-3">
+              <div><span className="font-medium text-gray-700">I</span> — Intensidad (mm/h)</div>
+              <div><span className="font-medium text-gray-700">D</span> — Duración en horas</div>
+              <div><span className="font-medium text-gray-700">ω</span> — Parámetro dependiente del TR (tabla abajo)</div>
+            </dl>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs border-collapse">
+                <thead>
+                  <tr className="bg-gray-50 border border-gray-200">
+                    <th className="text-left px-3 py-2 text-gray-600 font-semibold border-r border-gray-200">
+                      TR (años)
+                    </th>
+                    <th className="text-center px-3 py-2 text-gray-600 font-semibold">
+                      ω (omega)
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.entries(data.idf_formula.omega_by_return_period).map(([tr, omega], i) => (
+                    <tr key={tr} className={`border border-gray-200 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+                      <td className="px-3 py-1.5 font-medium text-gray-700 border-r border-gray-200">{tr}</td>
+                      <td className="px-3 py-1.5 text-center tabular-nums text-gray-700">{omega}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-gray-400 mt-1.5">
+              Fuente: {data.source.document}. Normativa vigente: Resolución DH 034/2019, Dirección de Hidráulica, Mendoza.
+            </p>
+          </div>
+        )}
+
+        {/* SsRH Neuquén: two formulas + P24h table */}
+        {idfModel === 'neuquen_ssrh' && data.p24h_by_station_mm && (
+          <div className="space-y-4">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Modelo IDF — SsRH Neuquén 2018
+            </p>
+            <div className="space-y-2">
+              <div className="bg-gray-50 rounded-lg border border-gray-200 px-4 py-3 text-xs">
+                <p className="font-semibold text-gray-700 mb-1">D ≤ 1 h — Fórmula de Cartaya</p>
+                <p className="font-mono text-gray-800">I = (1.041 · D^0.49 · P₁ₕ) / D</p>
+                <p className="text-gray-500 mt-1">P₁ₕ = 0.59 · P₂₄ₕ (constante regional)</p>
+              </div>
+              <div className="bg-gray-50 rounded-lg border border-gray-200 px-4 py-3 text-xs">
+                <p className="font-semibold text-gray-700 mb-1">D &gt; 1 h — MIC (Método de Intensidad Contigua)</p>
+                <p className="font-mono text-gray-800">I = 13.98 · I₂₄ · D^(-0.83)</p>
+                <p className="text-gray-500 mt-1">I₂₄ = P₂₄ₕ / 24 — D en horas</p>
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-gray-600 mb-2">
+                P₂₄ₕ por estación (mm) — seleccionar según polígonos de Thiessen de la SsRH
+              </p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50 border border-gray-200">
+                      <th className="text-left px-3 py-2 text-gray-600 font-semibold border-r border-gray-200">
+                        Estación
+                      </th>
+                      {data.p24h_by_station_mm.return_periods_years.map((tr) => (
+                        <th key={tr} className="text-center px-2 py-2 text-gray-600 font-semibold border-r border-gray-200 last:border-r-0">
+                          TR={tr}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(data.p24h_by_station_mm.stations).map(([station, stData], i) => (
+                      <tr key={station} className={`border border-gray-200 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+                        <td className="px-3 py-1.5 font-medium text-gray-700 border-r border-gray-200 whitespace-nowrap">
+                          {station}
+                        </td>
+                        {stData.p24h_mm.map((val, ti) => (
+                          <td key={ti} className="px-2 py-1.5 text-center tabular-nums text-gray-700 border-r border-gray-200 last:border-r-0">
+                            {val}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-gray-400 mt-1.5">
+                Fuente: {data.source.document}. Unidades: mm.
+              </p>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
@@ -189,11 +331,12 @@ function LocalitySourceCard({ localityId }: { localityId: string }) {
 
 export function Sources() {
   const [localityIds, setLocalityIds] = useState<string[]>([]);
+  const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => {
     getLocalities()
       .then((locs) => setLocalityIds(locs.map((l) => l.id)))
-      .catch(console.error);
+      .catch(() => setFetchError(true));
   }, []);
 
   return (
@@ -211,38 +354,97 @@ export function Sources() {
         {/* Locality cards */}
         <section>
           <SectionTitle>Datos IDF por localidad</SectionTitle>
-          <div className="space-y-6">
-            {localityIds.map((id) => (
-              <LocalitySourceCard key={id} localityId={id} />
-            ))}
-          </div>
+          {fetchError ? (
+            <div className="rounded-xl bg-red-50 border border-red-200 p-5">
+              <p className="text-sm text-red-700">
+                No se pudieron cargar las localidades. Verificá que el servidor esté activo.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {localityIds.map((id) => (
+                <LocalitySourceCard key={id} localityId={id} />
+              ))}
+            </div>
+          )}
         </section>
 
-        {/* IDF formula */}
+        {/* IDF models */}
         <section className="bg-white rounded-2xl border border-gray-200 p-7">
-          <SectionTitle>Fórmula IDF (APA Resolución 1334/21)</SectionTitle>
-          <div className="bg-gray-50 rounded-xl border border-gray-200 px-5 py-4 mb-4 font-mono text-sm text-gray-800">
-            Ip = A / (Td + B)^C
+          <SectionTitle>Modelos IDF implementados</SectionTitle>
+
+          <div className="space-y-6">
+            {/* APA Chaco */}
+            <div>
+              <p className="text-sm font-semibold text-gray-800 mb-2">APA Chaco — Resolución 1334/21</p>
+              <div className="bg-gray-50 rounded-xl border border-gray-200 px-5 py-4 mb-3 font-mono text-sm text-gray-800">
+                Ip = A / (Td + B)^C
+              </div>
+              <dl className="text-sm space-y-1.5 text-gray-600">
+                <div className="flex gap-3">
+                  <dt className="font-medium text-gray-700 w-8">Ip</dt>
+                  <dd>Intensidad de precipitación de diseño (mm/hr)</dd>
+                </div>
+                <div className="flex gap-3">
+                  <dt className="font-medium text-gray-700 w-8">Td</dt>
+                  <dd>Duración de la tormenta (minutos)</dd>
+                </div>
+                <div className="flex gap-3">
+                  <dt className="font-medium text-gray-700 w-8">A, B, C</dt>
+                  <dd>Parámetros ajustados individualmente para cada TR mediante AFMULTI (Paoli et al., FICH-UNL, 1991)</dd>
+                </div>
+              </dl>
+              <p className="text-xs text-gray-500 mt-3 leading-relaxed">
+                A diferencia de la fórmula de Sherman (<em>i = a·T^b / (t+c)^d</em>), esta formulación usa parámetros
+                independientes por TR, lo que mejora el ajuste para cada período de retorno.
+              </p>
+            </div>
+
+            <hr className="border-gray-100" />
+
+            {/* INA-CRA Mendoza */}
+            <div>
+              <p className="text-sm font-semibold text-gray-800 mb-2">INA-CRA Mendoza — 2008 (Res. DH 034/2019)</p>
+              <div className="bg-gray-50 rounded-xl border border-gray-200 px-5 py-4 mb-3 font-mono text-sm text-gray-800">
+                I = ω(TR) / (D + 0.268)^0.883
+              </div>
+              <dl className="text-sm space-y-1.5 text-gray-600">
+                <div className="flex gap-3">
+                  <dt className="font-medium text-gray-700 w-8">I</dt>
+                  <dd>Intensidad (mm/h)</dd>
+                </div>
+                <div className="flex gap-3">
+                  <dt className="font-medium text-gray-700 w-8">D</dt>
+                  <dd>Duración en horas</dd>
+                </div>
+                <div className="flex gap-3">
+                  <dt className="font-medium text-gray-700 w-8">ω</dt>
+                  <dd>Parámetro dependiente del TR. Derivado de análisis Log-Normal sobre 101 tormentas convectivas (1982–1995)</dd>
+                </div>
+              </dl>
+            </div>
+
+            <hr className="border-gray-100" />
+
+            {/* SsRH Neuquén */}
+            <div>
+              <p className="text-sm font-semibold text-gray-800 mb-2">SsRH Neuquén — Instructivo ERH 2018</p>
+              <div className="space-y-2 mb-3">
+                <div className="bg-gray-50 rounded-xl border border-gray-200 px-5 py-3 text-sm">
+                  <p className="text-xs font-medium text-gray-500 mb-1">D ≤ 1 h — Cartaya</p>
+                  <p className="font-mono text-gray-800">I = (1.041 · D^0.49 · P₁ₕ) / D</p>
+                </div>
+                <div className="bg-gray-50 rounded-xl border border-gray-200 px-5 py-3 text-sm">
+                  <p className="text-xs font-medium text-gray-500 mb-1">D &gt; 1 h — MIC</p>
+                  <p className="font-mono text-gray-800">I = 13.98 · I₂₄ · D^(-0.83)</p>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                P₁ₕ = 0.59 · P₂₄ₕ (relación constante para la zona aluvional). P₂₄ₕ se obtiene de la tabla por estación
+                según polígonos de Thiessen de la SsRH Neuquén. Desarrollado para zona árida centro-norte (Vaca Muerta).
+              </p>
+            </div>
           </div>
-          <dl className="text-sm space-y-2 text-gray-600">
-            <div className="flex gap-3">
-              <dt className="font-medium text-gray-700 w-8">Ip</dt>
-              <dd>Intensidad de precipitación de diseño (mm/hr)</dd>
-            </div>
-            <div className="flex gap-3">
-              <dt className="font-medium text-gray-700 w-8">Td</dt>
-              <dd>Duración de la tormenta (minutos)</dd>
-            </div>
-            <div className="flex gap-3">
-              <dt className="font-medium text-gray-700 w-8">A, B, C</dt>
-              <dd>Parámetros ajustados individualmente para cada período de retorno (TR) mediante el software AFMULTI (Paoli et al., FICH-UNL, 1991)</dd>
-            </div>
-          </dl>
-          <p className="text-xs text-gray-500 mt-4 leading-relaxed">
-            A diferencia de la fórmula de Sherman (<em>i = a·T^b / (t+c)^d</em>), esta formulación usa parámetros
-            independientes por TR, lo que mejora el ajuste para cada período de retorno pero no permite
-            interpolación directa de parámetros — la interpolación entre TR se hace sobre las intensidades calculadas.
-          </p>
         </section>
 
         {/* Calculation methods */}
