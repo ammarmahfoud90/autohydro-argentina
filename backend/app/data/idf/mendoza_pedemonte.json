@@ -1,0 +1,60 @@
+{
+  "id": "mendoza_pedemonte",
+  "name": "Pedemonte del Gran Mendoza",
+  "short_name": "Gran Mendoza (pedemonte)",
+  "province": "Mendoza",
+  "country": "Argentina",
+  "coordinates": {"lat": -32.89, "lon": -68.84},
+  "source": {
+    "document": "INA-CRA 2008 — Relaciones IDF para el pedemonte del Gran Mendoza",
+    "title": "Relaciones Intensidad Duración Frecuencia (IDF) para el pedemonte del Gran Mendoza",
+    "authors": "Instituto Nacional del Agua — Centro Regional Andino (INA-CRA)",
+    "institution": "Instituto Nacional del Agua (INA) — Centro Regional Andino",
+    "date": "2008-03",
+    "normative_reference": "Resolución DH 034/2019 — Dirección de Hidráulica, Gobierno de Mendoza",
+    "scientific_reference": "Fernández, P.C. y Fornero, L.A. (2000) — INA-CRA, Mendoza",
+    "stations": ["Red telemétrica INA-CRA Gran Mendoza (25 estaciones)"],
+    "series_period": "1982–1995 (red telemétrica) + 1946–1995 (estaciones SMN)",
+    "series_length_years": 13,
+    "statistical_distribution": "Log-Normal",
+    "total_storms_analyzed": 101
+  },
+  "limitations": {
+    "max_reliable_return_period": 200,
+    "spatial_coverage": "Piedemonte del Gran Mendoza — precordillera y ciudad, elevaciones entre 775 y 2000 msnm aproximadamente. NO aplicable a Zona 1 (elevaciones mayores a 2000 msnm — precordillera alta).",
+    "convective_note": "Las IDF corresponden a tormentas convectivas de verano, características del piedemonte mendocino. Las tormentas frontales de invierno tienen menor intensidad y no generan aluviones.",
+    "geographic_note": "Válido para el piedemonte del Gran Mendoza (área de ~625 km²). Para sitios fuera de esta zona, verificar con la Dirección de Hidráulica de Mendoza.",
+    "version_note": "Versión de marzo 2008. La Resolución DH 034/2019 la cita como versión vigente."
+  },
+  "idf_model": "ina_cra_mendoza",
+  "idf_formula": {
+    "expression": "I = omega(TR) / (D + 0.268)^0.883",
+    "variables": {
+      "I": "Intensidad en mm/h",
+      "D": "Duración en horas",
+      "omega": "Parámetro que depende del período de retorno TR"
+    },
+    "note": "D debe expresarse en HORAS. Parámetros 0.268 y 0.883 son constantes del modelo. omega varía según TR.",
+    "omega_by_return_period": {
+      "2":   36.049,
+      "5":   53.303,
+      "10":  64.727,
+      "25":  79.161,
+      "50":  89.869,
+      "100": 100.498,
+      "200": 111.088
+    }
+  },
+  "design_hyetogram_1h": {
+    "description": "Hietograma de diseño de duración 1 hora — distribución temporal en intervalos de 5 minutos",
+    "source": "INA-CRA 2008",
+    "time_intervals_min": [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60],
+    "percent_total_lamina": [4.2, 9.7, 12.7, 14.0, 14.0, 13.0, 11.2, 8.9, 6.4, 3.9, 1.7, 0.3]
+  },
+  "area_reduction": {
+    "description": "Relación Lámina-Área para reducir precipitación puntual a valores promedios en el área",
+    "source": "INA-CRA 2008",
+    "formula": "% Lluvia puntual = 1 - 0.7632 * (1 - exp(-0.00769 * A))",
+    "A_unit": "km²"
+  }
+}

@@ -37,6 +37,7 @@
       [146.6, 116.3, 105.4, 91.6, 74.9, 67.0, 54.0]
     ]
   },
+  "idf_model": "apa_chaco",
   "idf_formula": {
     "expression": "Ip = A / (Td + B)^C",
     "Td_unit": "minutes",
