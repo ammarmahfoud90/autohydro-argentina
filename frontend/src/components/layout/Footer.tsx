@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
 const GITHUB_URL = 'https://github.com/ammarmahfoud90/autohydro-argentina';
@@ -21,59 +22,70 @@ function LinkedInIcon() {
 
 export function Footer() {
   return (
-    <footer className="bg-[#0055A4] text-white mt-auto">
-      <div className="h-1 bg-[#74ACDF]" />
+    <motion.footer
+      className="text-white mt-auto"
+      style={{ background: 'linear-gradient(180deg, #0a1628 0%, #071224 100%)' }}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
         <div className="grid sm:grid-cols-3 gap-8">
 
           {/* Column 1: Identity */}
           <div>
-            <p className="font-semibold text-sm text-white mb-1">
-              AutoHydro Argentina
-            </p>
-            <p className="text-[#74ACDF] text-xs leading-relaxed mb-3">
+            <div className="flex items-center gap-2.5 mb-3">
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xs shrink-0"
+                style={{ background: 'linear-gradient(135deg, #1d4ed8 0%, #4f46e5 100%)' }}
+              >
+                AH
+              </div>
+              <p className="font-semibold text-sm text-white">AutoHydro Argentina</p>
+            </div>
+            <p className="text-blue-300/80 text-xs leading-relaxed mb-4">
               Herramienta de cálculo hidrológico con datos IDF verificados.
               Open source, libre uso profesional.
             </p>
-            <p className="text-white/40 text-xs">
+            <p className="text-white/30 text-xs">
               © 2025 Ing. Ammar Mahfoud · MIT License
             </p>
           </div>
 
           {/* Column 2: Links */}
           <div>
-            <p className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-3">
+            <p className="text-xs font-semibold text-blue-400/70 uppercase tracking-wider mb-3">
               Herramientas
             </p>
             <div className="space-y-2">
-              <Link to="/calculator" className="block text-xs text-white/70 hover:text-white transition-colors">
-                Calculadora hidrológica
-              </Link>
-              <Link to="/calculadora/manning" className="block text-xs text-white/70 hover:text-white transition-colors">
-                Cálculo Manning
-              </Link>
-              <Link to="/calculadora/alcantarilla" className="block text-xs text-white/70 hover:text-white transition-colors">
-                Dimensionar alcantarilla
-              </Link>
-              <Link to="/calculadora/hietograma" className="block text-xs text-white/70 hover:text-white transition-colors">
-                Hietogramas
-              </Link>
-              <Link to="/sources" className="block text-xs text-white/70 hover:text-white transition-colors">
-                Fuentes y Metodología
-              </Link>
-              <Link to="/about" className="block text-xs text-white/70 hover:text-white transition-colors">
-                Acerca de
-              </Link>
+              {[
+                { to: '/calculator', label: 'Calculadora hidrológica' },
+                { to: '/calculadora/manning', label: 'Cálculo Manning' },
+                { to: '/calculadora/alcantarilla', label: 'Dimensionar alcantarilla' },
+                { to: '/calculadora/hietograma', label: 'Hietogramas' },
+                { to: '/sources', label: 'Fuentes y Metodología' },
+                { to: '/about', label: 'Acerca de' },
+              ].map(({ to, label }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  className="block text-xs text-white/50 hover:text-blue-300 transition-colors duration-200"
+                >
+                  {label}
+                </Link>
+              ))}
             </div>
           </div>
 
           {/* Column 3: Contact */}
           <div>
-            <p className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-3">
+            <p className="text-xs font-semibold text-blue-400/70 uppercase tracking-wider mb-3">
               Contacto
             </p>
-            <p className="text-xs text-white/60 mb-4 leading-relaxed">
+            <p className="text-xs text-white/50 mb-4 leading-relaxed">
               Ing. Ammar Mahfoud — Ingeniero Civil, Hidrología e Hidráulica.
               Errores y sugerencias a través de GitHub o LinkedIn.
             </p>
@@ -82,17 +94,17 @@ export function Footer() {
                 href={GITHUB_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-xs text-white/60 hover:text-white transition-colors"
+                className="flex items-center gap-1.5 text-xs text-white/50 hover:text-white transition-colors duration-200"
               >
                 <GitHubIcon />
                 GitHub
               </a>
-              <span className="text-white/20">|</span>
+              <span className="text-white/15">|</span>
               <a
                 href={LINKEDIN_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-xs text-white/60 hover:text-white transition-colors"
+                className="flex items-center gap-1.5 text-xs text-white/50 hover:text-white transition-colors duration-200"
               >
                 <LinkedInIcon />
                 LinkedIn
@@ -102,7 +114,7 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="h-1 bg-[#74ACDF]" />
-    </footer>
+      <div className="h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+    </motion.footer>
   );
 }

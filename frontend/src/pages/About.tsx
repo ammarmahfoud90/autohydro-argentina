@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 const GITHUB_URL = 'https://github.com/ammarmahfoud90/autohydro-argentina';
 const LINKEDIN_URL = 'https://www.linkedin.com/in/ammar-mahfoud-499212118';
@@ -20,8 +21,9 @@ function LinkedInIcon() {
 }
 
 const TECH_STACK = [
-  { label: 'React 18 + TypeScript', color: 'bg-blue-50 text-blue-700 border-blue-200' },
-  { label: 'Tailwind CSS', color: 'bg-cyan-50 text-cyan-700 border-cyan-200' },
+  { label: 'React 19 + TypeScript', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+  { label: 'Tailwind CSS v4', color: 'bg-cyan-50 text-cyan-700 border-cyan-200' },
+  { label: 'Framer Motion', color: 'bg-purple-50 text-purple-700 border-purple-200' },
   { label: 'Vite', color: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
   { label: 'FastAPI (Python)', color: 'bg-green-50 text-green-700 border-green-200' },
   { label: 'ReportLab PDF', color: 'bg-red-50 text-red-700 border-red-200' },
@@ -44,56 +46,95 @@ const REFERENCES = [
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <h2 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
-      <span className="w-1 h-5 rounded-full bg-[#74ACDF] inline-block shrink-0" />
+      <span className="w-1 h-5 rounded-full bg-blue-400 inline-block shrink-0" />
       {children}
     </h2>
   );
 }
 
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+};
+
 export function About() {
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6">
-      <div className="max-w-3xl mx-auto space-y-5">
+    <div className="min-h-screen bg-gray-50">
+
+      {/* Header with gradient */}
+      <section
+        className="py-12 px-4 sm:px-6"
+        style={{ background: 'linear-gradient(135deg, #0a1628 0%, #0d2a5e 100%)' }}
+      >
+        <div className="max-w-3xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h1 className="text-3xl font-bold text-white mb-2">Acerca de</h1>
+            <p className="text-blue-300 text-sm">
+              AutoHydro Argentina — herramienta open source de cálculo hidrológico.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 space-y-5">
 
         {/* ── Developer card ──────────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="h-1 bg-[#74ACDF]" />
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          animate="show"
+          className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
+        >
+          <div className="h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
           <div className="px-7 pt-6 pb-7">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-[#0055A4] text-white font-bold text-lg shrink-0">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: 'spring', stiffness: 300 }}
+                  className="flex items-center justify-center w-14 h-14 rounded-xl text-white font-bold text-lg shrink-0"
+                  style={{ background: 'linear-gradient(135deg, #1d4ed8 0%, #4f46e5 100%)' }}
+                >
                   AM
-                </div>
+                </motion.div>
                 <div>
                   <h1 className="text-xl font-bold text-gray-900">Ing. Ammar Mahfoud</h1>
                   <p className="text-sm text-gray-500 mt-0.5">
                     Ingeniero Civil · Hidrología e Hidráulica
                   </p>
-                  <p className="text-sm text-[#0055A4] font-medium mt-1">
+                  <p className="text-sm text-blue-600 font-medium mt-1">
                     <span role="img" aria-label="Argentine flag">🇦🇷</span>{' '}
                     Buenos Aires, Argentina
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <a
+                <motion.a
                   href={LINKEDIN_URL}
                   target="_blank"
                   rel="noopener noreferrer"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                   className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#0077b5] text-white text-xs font-semibold hover:bg-[#006399] transition-colors"
                 >
                   <LinkedInIcon />
                   LinkedIn
-                </a>
-                <a
+                </motion.a>
+                <motion.a
                   href={GITHUB_URL}
                   target="_blank"
                   rel="noopener noreferrer"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
                   className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-gray-900 text-white text-xs font-semibold hover:bg-gray-700 transition-colors"
                 >
                   <GitHubIcon />
                   GitHub
-                </a>
+                </motion.a>
               </div>
             </div>
             <p className="text-sm text-gray-600 leading-relaxed mt-5">
@@ -102,10 +143,16 @@ export function About() {
               pluviales urbanos.
             </p>
           </div>
-        </div>
+        </motion.div>
 
         {/* ── About the project ───────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7"
+        >
           <SectionTitle>Sobre AutoHydro Argentina</SectionTitle>
           <p className="text-sm text-gray-600 leading-relaxed mb-3">
             AutoHydro Argentina es un proyecto <strong>open source</strong> de cálculo hidrológico
@@ -121,7 +168,8 @@ export function About() {
           <div className="flex flex-wrap gap-3">
             <Link
               to="/calculator"
-              className="inline-flex items-center gap-2 bg-[#0055A4] hover:bg-[#004a91] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
+              className="inline-flex items-center gap-2 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 hover:scale-[1.02]"
+              style={{ background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)' }}
             >
               Ir a la calculadora
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -138,64 +186,94 @@ export function About() {
               Ver código fuente
             </a>
           </div>
-        </div>
+        </motion.div>
 
         {/* ── Tech stack ──────────────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7"
+        >
           <SectionTitle>Stack Tecnológico</SectionTitle>
-          <div className="flex flex-wrap gap-2">
+          <motion.div
+            className="flex flex-wrap gap-2"
+            variants={{ show: { transition: { staggerChildren: 0.05 } } }}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+          >
             {TECH_STACK.map(({ label, color }) => (
-              <span
+              <motion.span
                 key={label}
-                className={`text-xs font-medium px-2.5 py-1 rounded-full border ${color}`}
+                variants={{ hidden: { opacity: 0, scale: 0.8 }, show: { opacity: 1, scale: 1, transition: { duration: 0.3 } } }}
+                whileHover={{ scale: 1.06 }}
+                className={`text-xs font-medium px-2.5 py-1 rounded-full border cursor-default ${color}`}
               >
                 {label}
-              </span>
+              </motion.span>
             ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* ── References ──────────────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7"
+        >
           <SectionTitle>Referencias</SectionTitle>
           <ul className="space-y-2">
             {REFERENCES.map((ref) => (
               <li key={ref} className="flex gap-2.5 text-sm text-gray-600">
-                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#74ACDF] shrink-0" />
+                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />
                 {ref}
               </li>
             ))}
           </ul>
-        </div>
+        </motion.div>
 
         {/* ── Contact ─────────────────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7"
+        >
           <SectionTitle>Contacto y Feedback</SectionTitle>
           <p className="text-sm text-gray-600 leading-relaxed mb-4">
             ¿Encontraste un error, tenés una sugerencia o querés colaborar?
             Podés abrir un issue en GitHub o contactarme directamente por LinkedIn.
           </p>
           <div className="flex gap-3 flex-wrap">
-            <a
+            <motion.a
               href={`${GITHUB_URL}/issues`}
               target="_blank"
               rel="noopener noreferrer"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white text-xs font-semibold hover:bg-gray-700 transition-colors"
             >
               <GitHubIcon />
               Abrir issue en GitHub
-            </a>
-            <a
+            </motion.a>
+            <motion.a
               href={LINKEDIN_URL}
               target="_blank"
               rel="noopener noreferrer"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0077b5] text-white text-xs font-semibold hover:bg-[#006399] transition-colors"
             >
               <LinkedInIcon />
               Contactar por LinkedIn
-            </a>
+            </motion.a>
           </div>
-        </div>
+        </motion.div>
 
         <p className="text-center text-xs text-gray-400 pb-2">
           AutoHydro Argentina · © 2025 Ing. Ammar Mahfoud 🇦🇷 · MIT License
