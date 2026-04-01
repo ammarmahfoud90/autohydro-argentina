@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getLocalities } from '../services/api';
-import type { IDFLocality } from '../types/idf';
+import { LOCALITIES_SUMMARY } from '../constants/localities-summary';
+import type { LocalitySummary } from '../constants/localities-summary';
 
 const GITHUB_URL = 'https://github.com/ammarmahfoud90/autohydro-argentina';
 const LINKEDIN_URL = 'https://www.linkedin.com/in/ammar-mahfoud-499212118';
@@ -29,43 +28,33 @@ const TOOLS = [
   },
 ];
 
-function LocalityCard({ loc }: { loc: IDFLocality }) {
-  const isShortSeries =
-    loc.source.series_length_years != null && loc.source.series_length_years < 15;
-
-  const seriesSummary =
-    loc.source.series_period != null
-      ? `${loc.source.series_period}${loc.source.series_length_years != null ? ` (${loc.source.series_length_years} años)` : ''}`
-      : loc.source.series_length_years != null
-        ? `${loc.source.series_length_years} años`
-        : 'Múltiples estaciones';
-
+function LocalityCard({ loc }: { loc: LocalitySummary }) {
   return (
-    <div className={`bg-white rounded-xl border p-5 ${isShortSeries ? 'border-amber-200' : 'border-gray-200'}`}>
+    <div className={`bg-white rounded-xl border p-5 ${loc.warning_badge ? 'border-amber-200' : 'border-gray-200'}`}>
       <div className="flex items-start justify-between gap-2 mb-3">
         <div>
           <h3 className="font-semibold text-gray-900 text-sm">{loc.name}</h3>
           <p className="text-xs text-gray-500 mt-0.5">{loc.province}</p>
         </div>
-        {isShortSeries && (
+        {loc.warning_badge && (
           <span className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full shrink-0">
-            Serie corta
+            {loc.warning_badge}
           </span>
         )}
       </div>
       <dl className="space-y-1.5 text-xs text-gray-600">
         <div className="flex justify-between">
           <dt className="text-gray-400">Fuente</dt>
-          <dd className="text-right max-w-[60%] leading-tight">{loc.source.document}</dd>
+          <dd className="text-right max-w-[60%] leading-tight">{loc.source_document}</dd>
         </div>
         <div className="flex justify-between">
           <dt className="text-gray-400">Período</dt>
-          <dd>{seriesSummary}</dd>
+          <dd>{loc.series_period}</dd>
         </div>
-        {loc.limitations.max_reliable_return_period != null && (
+        {loc.max_reliable_return_period != null && (
           <div className="flex justify-between">
             <dt className="text-gray-400">TR máximo confiable</dt>
-            <dd>{loc.limitations.max_reliable_return_period} años</dd>
+            <dd>{loc.max_reliable_return_period} años</dd>
           </div>
         )}
       </dl>
@@ -74,12 +63,6 @@ function LocalityCard({ loc }: { loc: IDFLocality }) {
 }
 
 export function Home() {
-  const [localities, setLocalities] = useState<IDFLocality[]>([]);
-
-  useEffect(() => {
-    getLocalities().then(setLocalities).catch(console.error);
-  }, []);
-
   return (
     <div className="min-h-screen bg-gray-50">
 
@@ -132,27 +115,11 @@ export function Home() {
           INA-CRA 2008 (Mendoza) y SsRH Neuquén 2018.
         </p>
 
-        {localities.length === 0 ? (
-          <div className="grid sm:grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-xl border border-gray-200 p-5 animate-pulse">
-                <div className="h-4 bg-gray-100 rounded w-2/3 mb-2" />
-                <div className="h-3 bg-gray-100 rounded w-1/3 mb-4" />
-                <div className="space-y-2">
-                  <div className="h-3 bg-gray-100 rounded" />
-                  <div className="h-3 bg-gray-100 rounded" />
-                  <div className="h-3 bg-gray-100 rounded" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid sm:grid-cols-3 gap-4">
-            {localities.map((loc) => (
-              <LocalityCard key={loc.id} loc={loc} />
-            ))}
-          </div>
-        )}
+        <div className="grid sm:grid-cols-3 gap-4">
+          {LOCALITIES_SUMMARY.map((loc) => (
+            <LocalityCard key={loc.id} loc={loc} />
+          ))}
+        </div>
 
         <p className="text-xs text-gray-400 mt-4">
           Se incorporarán nuevas localidades a medida que se verifiquen fuentes oficiales.{' '}
