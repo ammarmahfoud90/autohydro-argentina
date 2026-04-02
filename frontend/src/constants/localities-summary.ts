@@ -37,7 +37,7 @@ export const LOCALITIES_SUMMARY: LocalitySummary[] = [
     province: 'Mendoza',
     source_document: 'INA-CRA 2008',
     series_period: '1982-1995 (13 años)',
-    max_reliable_return_period: 200,
+    max_reliable_return_period: 25,
     warning_badge: 'Serie corta',
   },
   {

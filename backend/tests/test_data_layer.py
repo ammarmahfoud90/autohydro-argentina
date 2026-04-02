@@ -65,9 +65,11 @@ class TestIDFData:
         with pytest.raises(ValueError, match="outside the valid range"):
             calculate_intensity("amgr", return_period=100, duration_min=60)
 
-    def test_out_of_range_duration_raises(self):
-        with pytest.raises(ValueError, match="outside the valid range"):
-            calculate_intensity("amgr", return_period=10, duration_min=5)
+    def test_non_table_duration_uses_parametric_formula(self):
+        """APA model accepts any duration (not restricted to table values).
+        The parametric formula Ip = A / (Td + B)^C handles any duration."""
+        result = calculate_intensity("amgr", return_period=10, duration_min=5)
+        assert result["intensity_mm_hr"] > 0
 
 
 # ── CN Tests ─────────────────────────────────────────────────────────────────

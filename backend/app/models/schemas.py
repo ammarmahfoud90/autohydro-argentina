@@ -50,7 +50,7 @@ class CalculationRequest(BaseModel):
     # Design parameters
     return_period: int = Field(..., ge=2, le=1000, description="Return period in years")
     duration_min: int = Field(
-        ..., ge=5, le=240, description="Storm duration in minutes"
+        ..., ge=5, le=1440, description="Storm duration in minutes"
     )
 
     # Basin characteristics
@@ -100,12 +100,9 @@ class CalculationRequest(BaseModel):
         None, ge=1.0, le=100.0, description="Direct CN override (skips composite CN from land use)"
     )
 
-    # Climate change adjustment (optional)
-    climate_scenario: Optional[str] = Field(
-        None, description="none | rcp45 | rcp85"
-    )
-    climate_horizon: Optional[int] = Field(
-        None, description="2030 | 2050 | 2100"
+    # Tc formula adopted for design (optional; if not set, defaults to first computed result)
+    tc_adopted_formula: Optional[str] = Field(
+        None, description="Key of the Tc formula adopted for the design calculation"
     )
 
     # Report options
@@ -246,8 +243,3 @@ class CalculationResponse(BaseModel):
     time_to_peak_hr: Optional[float] = None
     base_time_hr: Optional[float] = None
 
-    # Climate change adjustment (when applied)
-    climate_factor: Optional[float] = None
-    original_intensity_mm_hr: Optional[float] = None
-    climate_scenario: Optional[str] = None
-    climate_horizon: Optional[int] = None

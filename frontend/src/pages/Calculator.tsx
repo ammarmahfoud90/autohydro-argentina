@@ -14,9 +14,9 @@ import { ResultsPanel } from '../components/results/ResultsPanel';
 import { BasinMap } from '../components/map/BasinMap';
 import type { HydrologyInput, HydrologyResult, SoilGroup, LandUseCategory, TcFormulaKey } from '../types';
 import { DEFAULT_FORM } from '../types';
+import { calculateAllTc } from '../constants/tc-formulas';
 
 const RETURN_PERIODS = [2, 5, 10, 25, 50, 100];
-const DURATIONS = [15, 30, 45, 60, 90, 120];
 const TOTAL_STEPS = 4;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -234,6 +234,7 @@ export function Calculator() {
   })();
 
   const step3Valid = (() => {
+    if (!formData.tc_adopted_formula) return false;
     if (formData.method === 'rational' || formData.method === 'modified_rational') {
       return (formData.runoff_coeff ?? 0) > 0;
     }
@@ -245,6 +246,8 @@ export function Calculator() {
   })();
 
   const step3Hint = (() => {
+    if (!formData.tc_adopted_formula)
+      return 'Seleccioná una fórmula de Tc adoptada para el diseño.';
     if (formData.method === 'rational' || formData.method === 'modified_rational') {
       return 'Ingresá un coeficiente de escorrentía C > 0.';
     }
@@ -331,17 +334,22 @@ export function Calculator() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   {t('calculator.stormDuration')}
                 </label>
-                <select
-                  value={formData.duration_min}
-                  onChange={(e) => update({ duration_min: Number(e.target.value) })}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {DURATIONS.map((d) => (
-                    <option key={d} value={d}>
-                      {d} {t('common.minutes')}
-                    </option>
-                  ))}
-                </select>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={formData.duration_min}
+                    onChange={(e) => {
+                      const val = Math.round(Number(e.target.value));
+                      if (val >= 5 && val <= 1440) update({ duration_min: val });
+                    }}
+                    min={5}
+                    max={1440}
+                    step={1}
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-500 whitespace-nowrap">{t('common.minutes')}</span>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">Rango válido: 5 – 1440 min (24 hs)</p>
               </div>
             </div>
 
@@ -447,6 +455,7 @@ export function Calculator() {
             <Card title={t('calculator.tcFormulas')}>
               <TcCalculator
                 selectedFormulas={formData.tc_formulas}
+                adoptedFormula={formData.tc_adopted_formula}
                 basinData={{
                   area_km2: formData.area_km2,
                   length_km: formData.length_km,
@@ -455,82 +464,63 @@ export function Calculator() {
                   avg_elevation_m: formData.avg_elevation_m,
                 }}
                 onChange={(formulas: TcFormulaKey[]) => update({ tc_formulas: formulas })}
+                onAdoptedChange={(f: TcFormulaKey) => update({ tc_adopted_formula: f })}
               />
+
+              {/* Fix 3 — Duration vs Tc warning */}
+              {(() => {
+                if (!(formData.area_km2 > 0 && formData.length_km > 0 && formData.slope > 0)) return null;
+                if (!formData.tc_adopted_formula) return null;
+                const tcResults = calculateAllTc({
+                  L_m: formData.length_km * 1000,
+                  L_km: formData.length_km,
+                  S: formData.slope,
+                  A_km2: formData.area_km2,
+                  H_m: formData.elevation_diff_m ?? undefined,
+                  Hm_m: formData.avg_elevation_m ?? undefined,
+                }, formData.tc_formulas);
+                const adopted = tcResults.find(r => r.formula === formData.tc_adopted_formula);
+                if (!adopted) return null;
+                const tcMin = adopted.tcMinutes;
+                if (formData.duration_min >= tcMin * 0.9) return null;
+                return (
+                  <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                    <div className="flex items-start gap-2">
+                      <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      <div>
+                        <p className="font-semibold">Duración de tormenta menor al Tc</p>
+                        <p className="text-xs mt-1">
+                          La duración seleccionada (<strong>{formData.duration_min} min</strong>) es menor al tiempo de concentración calculado (<strong>Tc = {tcMin.toFixed(0)} min</strong>). En el Método Racional, la duración de diseño debe ser igual al Tc para obtener el caudal pico máximo. Con t &lt; Tc se sobreestima el caudal. Se recomienda usar t = Tc como duración de diseño.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => update({ duration_min: Math.round(tcMin) })}
+                          className="mt-2 px-3 py-1 text-xs font-medium rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition-colors"
+                        >
+                          Usar Tc como duración ({Math.round(tcMin)} min)
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
             </Card>
+
+            {/* Fix 6 — CN tables origin note */}
+            {formData.method === 'scs_cn' && (
+              <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-xs text-gray-600">
+                <strong>Nota sobre tablas CN:</strong> Las tablas de CN provienen del manual USDA-SCS (NEH-4, 1972), desarrolladas para suelos de EE.UU. No existe actualmente un estándar nacional de CN para Argentina. Se recomienda al proyectista verificar con datos locales cuando estén disponibles y aplicar criterio profesional en la selección.
+              </div>
+            )}
+
+            {/* Fix 1 — Climate change methodological note */}
+            <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-700">
+              <strong>ℹ️ Cambio climático:</strong> AutoHydro no aplica factores de ajuste automáticos por cambio climático. No existe actualmente en Argentina una publicación oficial que establezca factores de corrección validados para intensidades IDF sub-diarias por escenario climático. Se recomienda al proyectista consultar literatura especializada y aplicar criterio profesional según las características del proyecto.
+            </div>
 
             <ReportOptions formData={formData} onChange={update} />
-
-            {/* Climate Change Adjustment */}
-            <Card title="Ajuste por Cambio Climático (opcional)">
-              <p className="text-xs text-gray-500 mb-3">
-                Factores basados en proyecciones del <strong>IPCC AR6</strong> y estudios del <strong>CIMA</strong> para Argentina.
-                Se aplica sobre la intensidad IDF antes del cálculo de caudal.
-              </p>
-              <div className="flex items-center gap-3 mb-3">
-                <button
-                  type="button"
-                  onClick={() => update({
-                    climate_scenario: formData.climate_scenario && formData.climate_scenario !== 'none'
-                      ? 'none'
-                      : 'rcp45',
-                    climate_horizon: formData.climate_horizon ?? 2050,
-                  })}
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
-                    formData.climate_scenario && formData.climate_scenario !== 'none'
-                      ? 'bg-blue-600'
-                      : 'bg-gray-200'
-                  }`}
-                >
-                  <span className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
-                    formData.climate_scenario && formData.climate_scenario !== 'none'
-                      ? 'translate-x-5'
-                      : 'translate-x-0'
-                  }`} />
-                </button>
-                <span className="text-sm font-medium text-gray-700">Considerar cambio climático</span>
-              </div>
-
-              {formData.climate_scenario && formData.climate_scenario !== 'none' && (
-                <div className="space-y-3 pt-1 border-t border-gray-100">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Escenario</label>
-                      <select
-                        value={formData.climate_scenario}
-                        onChange={(e) => update({ climate_scenario: e.target.value })}
-                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="rcp45">RCP 4.5 — Escenario moderado</option>
-                        <option value="rcp85">RCP 8.5 — Escenario alto</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Horizonte temporal</label>
-                      <select
-                        value={formData.climate_horizon ?? 2050}
-                        onChange={(e) => update({ climate_horizon: Number(e.target.value) })}
-                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value={2030}>2030 (corto plazo)</option>
-                        <option value={2050}>2050 (mediano plazo)</option>
-                        <option value={2100}>2100 (largo plazo)</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-2 text-xs text-blue-700">
-                    <strong>Factor de ajuste estimado: </strong>
-                    {formData.climate_scenario === 'rcp85'
-                      ? formData.climate_horizon === 2030 ? '+10–15%'
-                        : formData.climate_horizon === 2100 ? '+35–40%'
-                        : '+20–25%'
-                      : formData.climate_horizon === 2030 ? '+5–10%'
-                        : formData.climate_horizon === 2100 ? '+15–20%'
-                        : '+10–15%'
-                    } sobre la intensidad IDF (varía por región).
-                  </div>
-                </div>
-              )}
-            </Card>
 
             {errorMessage && (
               <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 flex items-start gap-2">

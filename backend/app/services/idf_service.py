@@ -140,13 +140,6 @@ def _calculate_intensity_apa(loc: dict, return_period: float, duration_min: floa
     """
     locality_id = loc["id"]
 
-    durations = loc["idf_table"]["durations_min"]
-    if duration_min < durations[0] or duration_min > durations[-1]:
-        raise ValueError(
-            f"Duration {duration_min} min is outside the valid range "
-            f"[{durations[0]}, {durations[-1]}] min for locality '{locality_id}'"
-        )
-
     params_by_tr = loc["idf_formula"]["parameters_by_return_period"]
     available_trs = sorted(int(k) for k in params_by_tr.keys())
     tr_min, tr_max = available_trs[0], available_trs[-1]

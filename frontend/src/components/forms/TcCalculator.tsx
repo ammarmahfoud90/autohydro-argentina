@@ -3,12 +3,12 @@ import { useMemo } from 'react';
 import {
   TC_FORMULA_LIST,
   calculateAllTc,
-  averageTc,
 } from '../../constants/tc-formulas';
 import type { TcFormulaKey } from '../../types';
 
 interface Props {
   selectedFormulas: TcFormulaKey[];
+  adoptedFormula?: TcFormulaKey | null;
   basinData: {
     area_km2: number;
     length_km: number;
@@ -17,9 +17,10 @@ interface Props {
     avg_elevation_m: number | null;
   };
   onChange: (formulas: TcFormulaKey[]) => void;
+  onAdoptedChange?: (formula: TcFormulaKey) => void;
 }
 
-export function TcCalculator({ selectedFormulas, basinData, onChange }: Props) {
+export function TcCalculator({ selectedFormulas, adoptedFormula, basinData, onChange, onAdoptedChange }: Props) {
   const { t } = useTranslation();
 
   const { area_km2, length_km, slope, elevation_diff_m, avg_elevation_m } = basinData;
@@ -41,11 +42,10 @@ export function TcCalculator({ selectedFormulas, basinData, onChange }: Props) {
     );
   }, [area_km2, length_km, slope, elevation_diff_m, avg_elevation_m, selectedFormulas]);
 
-  const avgTc = useMemo(() => averageTc(tcResults), [tcResults]);
-
   function toggleFormula(key: TcFormulaKey) {
     if (selectedFormulas.includes(key)) {
       if (selectedFormulas.length === 1) return; // keep at least one
+      if (key === adoptedFormula) return; // can't remove the adopted formula
       onChange(selectedFormulas.filter((f) => f !== key));
     } else {
       onChange([...selectedFormulas, key]);
@@ -136,31 +136,46 @@ export function TcCalculator({ selectedFormulas, basinData, onChange }: Props) {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {tcResults.map((r, i) => (
-                <tr key={r.formula} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                  <td className="px-3 py-2 text-gray-700">{r.formulaName}</td>
-                  <td className="px-3 py-2 text-right font-mono text-blue-700">
-                    {r.tcHours.toFixed(3)}
-                  </td>
-                  <td className="px-3 py-2 text-right font-mono text-blue-700">
-                    {r.tcMinutes.toFixed(1)}
-                  </td>
-                </tr>
-              ))}
-              {tcResults.length > 1 && (
-                <tr className="bg-blue-600 text-white font-semibold">
-                  <td className="px-3 py-2">Tc ADOPTADO (promedio)</td>
-                  <td className="px-3 py-2 text-right font-mono">
-                    {avgTc.toFixed(3)}
-                  </td>
-                  <td className="px-3 py-2 text-right font-mono">
-                    {(avgTc * 60).toFixed(1)}
-                  </td>
-                </tr>
-              )}
+              {tcResults.map((r, i) => {
+                const isAdopted = r.formula === adoptedFormula;
+                return (
+                  <tr
+                    key={r.formula}
+                    className={isAdopted ? 'bg-blue-600 text-white font-semibold' : i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                  >
+                    <td className="px-3 py-2">
+                      <div className="flex items-center gap-2">
+                        {onAdoptedChange && (
+                          <input
+                            type="radio"
+                            name="adopted_tc"
+                            checked={isAdopted}
+                            onChange={() => onAdoptedChange(r.formula as TcFormulaKey)}
+                            className="accent-white cursor-pointer"
+                          />
+                        )}
+                        <span className={isAdopted ? 'text-white' : 'text-gray-700'}>{r.formulaName}</span>
+                        {isAdopted && <span className="text-xs bg-white/20 text-white px-1.5 py-0.5 rounded">ADOPTADO</span>}
+                      </div>
+                    </td>
+                    <td className={`px-3 py-2 text-right font-mono ${isAdopted ? 'text-white' : 'text-blue-700'}`}>
+                      {r.tcHours.toFixed(3)}
+                    </td>
+                    <td className={`px-3 py-2 text-right font-mono ${isAdopted ? 'text-white' : 'text-blue-700'}`}>
+                      {r.tcMinutes.toFixed(1)}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
+      )}
+
+      {hasBasin && tcResults.length > 0 && onAdoptedChange && (
+        <p className="text-xs text-gray-500 mt-1">
+          Seleccioná la fórmula adoptada para el diseño usando el selector en la tabla. El Tc adoptado es el que se usa para el cálculo del caudal.
+        </p>
       )}
 
       {!hasBasin && (

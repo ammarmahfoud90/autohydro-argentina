@@ -43,13 +43,11 @@ export interface HydrologyInput {
   use_pampa_lambda: boolean;
   infrastructure_type: InfrastructureType;
   tc_formulas: TcFormulaKey[];
+  tc_adopted_formula: TcFormulaKey | null;
   project_name: string;
   client_name: string;
   language: string;
   cn_override?: number | null;
-  // Climate change adjustment (optional)
-  climate_scenario?: string | null;
-  climate_horizon?: number | null;
 }
 
 // ── Response types ────────────────────────────────────────────────────────────
@@ -113,11 +111,6 @@ export interface HydrologyResult {
   time_to_peak_hr?: number;
   base_time_hr?: number;
   idf_verified?: boolean;
-  // Climate change (when applied)
-  climate_factor?: number;
-  original_intensity_mm_hr?: number;
-  climate_scenario?: string;
-  climate_horizon?: number;
 }
 
 export interface CNSensitivityPoint {
@@ -150,6 +143,7 @@ export const DEFAULT_FORM: HydrologyInput = {
   use_pampa_lambda: false,
   infrastructure_type: 'canal_rural',
   tc_formulas: ['temez'],
+  tc_adopted_formula: null,
   project_name: '',
   client_name: '',
   language: 'es',

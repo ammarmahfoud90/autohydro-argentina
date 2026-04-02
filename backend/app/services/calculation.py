@@ -14,7 +14,6 @@ from typing import Optional
 from app.services.idf_service import calculate_intensity as idf_calculate_intensity, get_locality
 from app.data.cn_argentina import calculate_composite_cn
 from app.services.tc_service import calculate_all_tc
-from app.services.climate_service import adjust_idf_intensity, scenario_label
 from app.models.schemas import (
     CalculationRequest,
     CalculationResponse,
@@ -367,18 +366,6 @@ def run_calculation(payload: dict) -> dict:
     )
     intensity = idf_result["intensity_mm_hr"]
 
-    # ── 2b. Climate change adjustment (optional) ─────────────────────────
-    original_intensity: Optional[float] = None
-    climate_factor: Optional[float] = None
-    if req.climate_scenario and req.climate_scenario != "none" and req.climate_horizon:
-        adjusted, factor = adjust_idf_intensity(
-            intensity, req.climate_scenario, req.climate_horizon,
-            province=locality["province"],
-        )
-        original_intensity = intensity
-        climate_factor = factor
-        intensity = adjusted
-
     # ── 3. Tc calculation ─────────────────────────────────────────────────
     L_m = req.length_km * 1000.0
     tc_raw = calculate_all_tc(
@@ -396,8 +383,19 @@ def run_calculation(payload: dict) -> dict:
             "No se pudo calcular el Tiempo de Concentración con las fórmulas y datos provistos"
         )
 
-    # Adopt average Tc from selected formulas
-    tc_adopted_hr = sum(r["tcHours"] for r in tc_raw) / len(tc_raw)
+    # Adopt Tc from the explicitly selected formula, or fall back to the first result
+    if req.tc_adopted_formula:
+        adopted = next(
+            (r for r in tc_raw if r["formula"] == req.tc_adopted_formula), None
+        )
+        if adopted is None:
+            raise ValueError(
+                f"tc_adopted_formula '{req.tc_adopted_formula}' was not computed "
+                f"(check required inputs for that formula)"
+            )
+        tc_adopted_hr = adopted["tcHours"]
+    else:
+        tc_adopted_hr = tc_raw[0]["tcHours"]
     tc_adopted_min = tc_adopted_hr * 60.0
 
     tc_results = [TcFormulaResult(**r) for r in tc_raw]
@@ -547,10 +545,6 @@ def run_calculation(payload: dict) -> dict:
         risk_level=risk_level,
         risk_recommendations=risk_recs,
         infrastructure_type=req.infrastructure_type,
-        climate_factor=climate_factor,
-        original_intensity_mm_hr=round(original_intensity, 3) if original_intensity else None,
-        climate_scenario=req.climate_scenario if req.climate_scenario and req.climate_scenario != "none" else None,
-        climate_horizon=req.climate_horizon if req.climate_scenario and req.climate_scenario != "none" else None,
         **extra,
     )
 

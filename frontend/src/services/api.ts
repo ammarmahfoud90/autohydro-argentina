@@ -36,9 +36,8 @@ export async function calculateHydrology(
     use_pampa_lambda: input.use_pampa_lambda,
     infrastructure_type: input.infrastructure_type,
     tc_formulas: input.tc_formulas,
+    tc_adopted_formula: input.tc_adopted_formula ?? undefined,
     cn_override: input.cn_override ?? undefined,
-    climate_scenario: input.climate_scenario ?? undefined,
-    climate_horizon: input.climate_horizon ?? undefined,
   };
   return request<HydrologyResult>('/api/calculate', {
     method: 'POST',

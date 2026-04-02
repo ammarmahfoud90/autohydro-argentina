@@ -201,6 +201,7 @@ class TestRunCalculation:
         "runoff_coeff": 0.6,
         "infrastructure_type": "canal_urbano",
         "tc_formulas": ["temez", "ventura_heras"],
+        "tc_adopted_formula": "temez",
     }
 
     BASE_SCS = {
@@ -218,6 +219,7 @@ class TestRunCalculation:
         ],
         "infrastructure_type": "canal_rural",
         "tc_formulas": ["temez"],
+        "tc_adopted_formula": "temez",
     }
 
     def test_rational_returns_all_fields(self):

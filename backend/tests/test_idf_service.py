@@ -96,18 +96,20 @@ def test_invalid_tr_too_low_raises_error():
         calculate_intensity("amgr", 1, 60)
 
 
-# ── 6. Invalid duration raises ValueError ─────────────────────────────────────
+# ── 6. Parametric formula works for any duration ──────────────────────────────
 
-def test_invalid_duration_too_short_raises_error():
-    """Duration below 15 min (AMGR minimum) must raise ValueError."""
-    with pytest.raises(ValueError, match="outside the valid range"):
-        calculate_intensity("amgr", 10, 5)
+def test_short_duration_uses_parametric_formula():
+    """APA model now accepts durations below the table minimum (e.g. 5 min).
+    The parametric formula Ip = A / (Td + B)^C is used directly."""
+    result = calculate_intensity("amgr", 10, 5)
+    assert result["intensity_mm_hr"] > 0
 
 
-def test_invalid_duration_too_long_raises_error():
-    """Duration above 240 min (AMGR maximum) must raise ValueError."""
-    with pytest.raises(ValueError, match="outside the valid range"):
-        calculate_intensity("amgr", 10, 300)
+def test_long_duration_uses_parametric_formula():
+    """APA model now accepts durations above the table maximum (e.g. 300 min).
+    The parametric formula is used directly."""
+    result = calculate_intensity("amgr", 10, 300)
+    assert result["intensity_mm_hr"] > 0
 
 
 # ── 7. Interpolation is physically monotonic ──────────────────────────────────
@@ -135,4 +137,27 @@ def test_interpolation_is_linear():
     expected_mid = i_10 + 0.5 * (i_25 - i_10)
     assert abs(i_mid - expected_mid) < 0.01, (
         f"Linear interpolation at TR=17.5: got {i_mid:.3f}, expected {expected_mid:.3f}"
+    )
+
+
+def test_apa_parametric_formula_for_non_discrete_duration():
+    """
+    APA model must use the parametric formula Ip = A / (Td + B)^C for any
+    duration, including values not in the published table (e.g. 37 min or 180 min).
+    Verifies: result is positive, monotonic with duration, and consistent with
+    surrounding discrete values.
+    """
+    # Non-discrete duration between two table values
+    i_30 = calculate_intensity("amgr", 25, 30)["intensity_mm_hr"]
+    i_37 = calculate_intensity("amgr", 25, 37)["intensity_mm_hr"]
+    i_45 = calculate_intensity("amgr", 25, 45)["intensity_mm_hr"]
+    assert i_30 > i_37 > i_45, (
+        f"Intensity should decrease with duration: i(30)={i_30:.2f} i(37)={i_37:.2f} i(45)={i_45:.2f}"
+    )
+
+    # Duration beyond original table max (240 min), up to 1440 min
+    i_300 = calculate_intensity("amgr", 25, 300)["intensity_mm_hr"]
+    i_720 = calculate_intensity("amgr", 25, 720)["intensity_mm_hr"]
+    assert i_300 > i_720 > 0, (
+        f"Parametric formula should work for extended durations: i(300)={i_300:.2f} i(720)={i_720:.2f}"
     )

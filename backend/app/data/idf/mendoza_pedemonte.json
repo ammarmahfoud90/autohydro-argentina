@@ -20,7 +20,8 @@
     "total_storms_analyzed": 101
   },
   "limitations": {
-    "max_reliable_return_period": 200,
+    "max_reliable_return_period": 25,
+    "tr_warning": "ADVERTENCIA: La serie de datos tiene solo 13 años (1982-1995). Aunque la fórmula INA-CRA 2008 permite calcular intensidades para TR hasta 200 años, los resultados para TR > 25 años tienen alta incertidumbre estadística y deben usarse con precaución extrema. La regla estándar en análisis de frecuencias establece que no se recomienda extrapolar más allá de 2-3 veces la longitud del registro.",
     "spatial_coverage": "Piedemonte del Gran Mendoza — precordillera y ciudad, elevaciones entre 775 y 2000 msnm aproximadamente. NO aplicable a Zona 1 (elevaciones mayores a 2000 msnm — precordillera alta).",
     "convective_note": "Las IDF corresponden a tormentas convectivas de verano, características del piedemonte mendocino. Las tormentas frontales de invierno tienen menor intensidad y no generan aluviones.",
     "geographic_note": "Válido para el piedemonte del Gran Mendoza (área de ~625 km²). Para sitios fuera de esta zona, verificar con la Dirección de Hidráulica de Mendoza.",
