@@ -515,11 +515,6 @@ export function Calculator() {
               </div>
             )}
 
-            {/* Fix 1 — Climate change methodological note */}
-            <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-xs text-blue-700">
-              <strong>ℹ️ Cambio climático:</strong> AutoHydro no aplica factores de ajuste automáticos por cambio climático. No existe actualmente en Argentina una publicación oficial que establezca factores de corrección validados para intensidades IDF sub-diarias por escenario climático. Se recomienda al proyectista consultar literatura especializada y aplicar criterio profesional según las características del proyecto.
-            </div>
-
             <ReportOptions formData={formData} onChange={update} />
 
             {errorMessage && (
