@@ -255,6 +255,24 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 className="text-lg font-bold text-gray-800 mb-4">{t('results.title')}</h2>
 
+        {/* Manual IDF warning banner */}
+        {results.is_manual_idf && (
+          <div className="mb-4 rounded-lg border border-amber-400 bg-amber-50 px-4 py-3 flex items-start gap-3">
+            <svg className="w-5 h-5 mt-0.5 shrink-0 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div className="text-sm">
+              <p className="font-bold text-amber-900">
+                Cálculo realizado con datos IDF propios no verificados por AutoHydro.
+              </p>
+              <p className="mt-0.5 text-amber-800">
+                Fuente declarada por el usuario:{' '}
+                <em>{results.manual_idf_source}</em>
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
           <Metric
             label={t('results.peakFlow')}

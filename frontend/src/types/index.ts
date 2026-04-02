@@ -1,3 +1,20 @@
+// ── Manual IDF types ──────────────────────────────────────────────────────────
+
+export interface ManualIDFTable {
+  durations_min: number[];
+  return_periods_years: number[];
+  intensities_mm_hr: number[][];  // [TR_index][duration_index]
+  source: string;
+}
+
+export type IDFFormulaType = 'talbot3' | 'talbot2' | 'sherman' | 'bernard';
+
+export interface ManualIDFFormula {
+  formula_type: IDFFormulaType;
+  parameters_by_tr: { [tr: string]: { [param: string]: number } };
+  source: string;
+}
+
 // ── Input types ───────────────────────────────────────────────────────────────
 
 export type HydroMethod = 'rational' | 'modified_rational' | 'scs_cn';
@@ -48,6 +65,8 @@ export interface HydrologyInput {
   client_name: string;
   language: string;
   cn_override?: number | null;
+  manual_idf_table?: ManualIDFTable | null;
+  manual_idf_formula?: ManualIDFFormula | null;
 }
 
 // ── Response types ────────────────────────────────────────────────────────────
@@ -111,6 +130,8 @@ export interface HydrologyResult {
   time_to_peak_hr?: number;
   base_time_hr?: number;
   idf_verified?: boolean;
+  is_manual_idf?: boolean;
+  manual_idf_source?: string;
 }
 
 export interface CNSensitivityPoint {
@@ -147,4 +168,6 @@ export const DEFAULT_FORM: HydrologyInput = {
   project_name: '',
   client_name: '',
   language: 'es',
+  manual_idf_table: null,
+  manual_idf_formula: null,
 };

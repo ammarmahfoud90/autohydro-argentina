@@ -6,6 +6,52 @@ from typing import Optional
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 
+# ── Manual IDF sub-models ─────────────────────────────────────────────────────
+
+class ManualIDFTable(BaseModel):
+    """IDF data entered manually by the user (table of intensities)."""
+    durations_min: list[float] = Field(..., min_length=3, description="Duration values in minutes (at least 3)")
+    return_periods_years: list[int] = Field(..., min_length=2, description="Return period values in years (at least 2)")
+    intensities_mm_hr: list[list[float]] = Field(
+        ..., description="Intensity matrix [TR_index][duration_index] in mm/h"
+    )
+    source: str = Field(..., min_length=5, description="User-declared source of the IDF data")
+
+    @model_validator(mode="after")
+    def validate_dimensions(self) -> "ManualIDFTable":
+        n_trs = len(self.return_periods_years)
+        n_durs = len(self.durations_min)
+        if len(self.intensities_mm_hr) != n_trs:
+            raise ValueError(
+                f"intensities_mm_hr debe tener {n_trs} filas (una por TR)"
+            )
+        for i, row in enumerate(self.intensities_mm_hr):
+            if len(row) != n_durs:
+                raise ValueError(
+                    f"La fila {i} de intensities_mm_hr debe tener {n_durs} columnas (una por duración)"
+                )
+        return self
+
+
+_VALID_FORMULA_TYPES = {"talbot3", "talbot2", "sherman", "bernard"}
+
+
+class ManualIDFFormula(BaseModel):
+    """IDF formula parameters entered manually by the user."""
+    formula_type: str = Field(..., description="talbot3 | talbot2 | sherman | bernard")
+    parameters_by_tr: dict[str, dict[str, float]] = Field(
+        ..., description='Parameters keyed by TR string, e.g. {"10": {"A": 1500, "B": 15, "C": 0.8}}'
+    )
+    source: str = Field(..., min_length=5, description="User-declared source of the IDF data")
+
+    @field_validator("formula_type")
+    @classmethod
+    def validate_formula_type(cls, v: str) -> str:
+        if v not in _VALID_FORMULA_TYPES:
+            raise ValueError(f"formula_type must be one of {_VALID_FORMULA_TYPES}")
+        return v
+
+
 # ── Enums ────────────────────────────────────────────────────────────────────
 
 VALID_METHODS = {"rational", "modified_rational", "scs_cn"}
@@ -105,6 +151,10 @@ class CalculationRequest(BaseModel):
         None, description="Key of the Tc formula adopted for the design calculation"
     )
 
+    # Manual IDF data (used when locality_id == "manual")
+    manual_idf_table: Optional[ManualIDFTable] = None
+    manual_idf_formula: Optional[ManualIDFFormula] = None
+
     # Report options
     language: str = Field("es", description="es | en")
 
@@ -153,6 +203,11 @@ class CalculationRequest(BaseModel):
                 )
             if self.soil_group is None:
                 raise ValueError("soil_group is required for scs_cn method (unless cn_override is provided)")
+        if self.locality_id == "manual":
+            if self.manual_idf_table is None and self.manual_idf_formula is None:
+                raise ValueError(
+                    "manual_idf_table or manual_idf_formula is required when locality_id is 'manual'"
+                )
         return self
 
 
@@ -205,6 +260,8 @@ class CalculationResponse(BaseModel):
     intensity_mm_hr: float
     idf_source: str
     idf_verified: Optional[bool] = None
+    is_manual_idf: bool = False
+    manual_idf_source: Optional[str] = None
 
     # Tc results
     tc_results: list[TcFormulaResult]

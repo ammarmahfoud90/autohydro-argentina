@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
 import { calculateHydrology } from '../services/api';
 import { CitySelector } from '../components/forms/CitySelector';
+import { ManualIDFInput } from '../components/forms/ManualIDFInput';
 import { BasinInputs } from '../components/forms/BasinInputs';
 import { MethodSelector } from '../components/forms/MethodSelector';
 import { CNSelector } from '../components/forms/CNSelector';
@@ -12,7 +13,7 @@ import { TcCalculator } from '../components/forms/TcCalculator';
 import { ReportOptions } from '../components/forms/ReportOptions';
 import { ResultsPanel } from '../components/results/ResultsPanel';
 import { BasinMap } from '../components/map/BasinMap';
-import type { HydrologyInput, HydrologyResult, SoilGroup, LandUseCategory, TcFormulaKey } from '../types';
+import type { HydrologyInput, HydrologyResult, SoilGroup, LandUseCategory, TcFormulaKey, ManualIDFTable, ManualIDFFormula } from '../types';
 import { DEFAULT_FORM } from '../types';
 import { calculateAllTc } from '../constants/tc-formulas';
 
@@ -220,7 +221,10 @@ export function Calculator() {
 
   // ── Validation ──────────────────────────────────────────────────────────────
 
-  const step1Valid = !!formData.locality_id;
+  const isManualLocality = formData.locality_id === 'manual';
+  const step1Valid =
+    !!formData.locality_id &&
+    (!isManualLocality || (!!formData.manual_idf_table || !!formData.manual_idf_formula));
 
   const step2Valid =
     formData.area_km2 > 0 && formData.length_km > 0 && formData.slope > 0;
@@ -301,8 +305,39 @@ export function Calculator() {
               value={formData.locality_id}
               returnPeriod={formData.return_period}
               duration={formData.duration_min}
-              onChange={(localityId) => update({ locality_id: localityId })}
+              onChange={(localityId) => {
+                // Clear manual IDF data when switching localities
+                update({
+                  locality_id: localityId,
+                  manual_idf_table: null,
+                  manual_idf_formula: null,
+                });
+              }}
             />
+
+            {/* Manual IDF input — shown when "manual" is selected */}
+            {isManualLocality && (
+              <>
+                <ManualIDFInput
+                  onConfirm={(table: ManualIDFTable | null, formula: ManualIDFFormula | null) =>
+                    update({ manual_idf_table: table, manual_idf_formula: formula })
+                  }
+                />
+                {(formData.manual_idf_table || formData.manual_idf_formula) && (
+                  <div className="mt-3 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 flex items-center gap-2">
+                    <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>
+                      Datos IDF confirmados. Fuente:{' '}
+                      <em>
+                        {formData.manual_idf_table?.source ?? formData.manual_idf_formula?.source}
+                      </em>
+                    </span>
+                  </div>
+                )}
+              </>
+            )}
 
             {formData.locality_id === 'el_colorado' && (
               <div className="mt-3 rounded-lg bg-amber-50 border border-amber-300 px-4 py-3 text-sm text-amber-800">
@@ -356,7 +391,13 @@ export function Calculator() {
             <NavButtons
               onNext={() => setStep(2)}
               nextDisabled={!step1Valid}
-              validationHint={t('validation.cityRequired')}
+              validationHint={
+                !formData.locality_id
+                  ? t('validation.cityRequired')
+                  : isManualLocality && !formData.manual_idf_table && !formData.manual_idf_formula
+                    ? 'Confirmá los datos IDF antes de continuar.'
+                    : ''
+              }
             />
           </Card>
         )}

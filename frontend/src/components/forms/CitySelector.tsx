@@ -16,7 +16,8 @@ export function CitySelector({ value, onChange }: Props) {
     getLocalities().then(setLocalities).catch(console.error);
   }, []);
 
-  const selected = localities.find((l) => l.id === value) ?? null;
+  const isManual = value === 'manual';
+  const selected = isManual ? null : (localities.find((l) => l.id === value) ?? null);
   const isShortSeries = selected
     ? selected.source.series_length_years != null && selected.source.series_length_years < 15
     : false;
@@ -34,11 +35,16 @@ export function CitySelector({ value, onChange }: Props) {
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">Seleccionar localidad</option>
-          {localities.map((loc) => (
-            <option key={loc.id} value={loc.id}>
-              {loc.name} · {loc.province}
-            </option>
-          ))}
+          <optgroup label="── Localidades verificadas ──">
+            {localities.map((loc) => (
+              <option key={loc.id} value={loc.id}>
+                {loc.name} · {loc.province}
+              </option>
+            ))}
+          </optgroup>
+          <optgroup label="── Datos propios ──">
+            <option value="manual">Ingresar datos IDF manualmente</option>
+          </optgroup>
         </select>
       </div>
 

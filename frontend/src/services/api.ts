@@ -38,6 +38,8 @@ export async function calculateHydrology(
     tc_formulas: input.tc_formulas,
     tc_adopted_formula: input.tc_adopted_formula ?? undefined,
     cn_override: input.cn_override ?? undefined,
+    manual_idf_table: input.manual_idf_table ?? undefined,
+    manual_idf_formula: input.manual_idf_formula ?? undefined,
   };
   return request<HydrologyResult>('/api/calculate', {
     method: 'POST',

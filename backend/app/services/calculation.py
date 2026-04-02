@@ -12,6 +12,7 @@ import math
 from typing import Optional
 
 from app.services.idf_service import calculate_intensity as idf_calculate_intensity, get_locality
+from app.services import manual_idf_service
 from app.data.cn_argentina import calculate_composite_cn
 from app.services.tc_service import calculate_all_tc
 from app.models.schemas import (
@@ -355,15 +356,42 @@ def run_calculation(payload: dict) -> dict:
     """
     req = CalculationRequest.model_validate(payload)
 
-    # ── 1. Find IDF locality ──────────────────────────────────────────────
-    locality = get_locality(req.locality_id)
+    # ── 1. Find IDF locality / resolve manual IDF ─────────────────────────
+    is_manual = req.locality_id == "manual"
+
+    if is_manual:
+        locality = {
+            "name": "Datos IDF propios",
+            "province": "—",
+            "source": {"document": "Datos ingresados manualmente por el usuario"},
+        }
+    else:
+        locality = get_locality(req.locality_id)
 
     # ── 2. IDF intensity ─────────────────────────────────────────────────
-    idf_result = idf_calculate_intensity(
-        req.locality_id,
-        return_period=float(req.return_period),
-        duration_min=float(req.duration_min),
-    )
+    if is_manual:
+        if req.manual_idf_table is not None:
+            idf_result = manual_idf_service.calculate_intensity_from_table(
+                req.manual_idf_table,
+                return_period=float(req.return_period),
+                duration_min=float(req.duration_min),
+            )
+            manual_source = req.manual_idf_table.source
+        else:
+            idf_result = manual_idf_service.calculate_intensity_from_formula(
+                req.manual_idf_formula,  # type: ignore[arg-type]
+                return_period=float(req.return_period),
+                duration_min=float(req.duration_min),
+            )
+            manual_source = req.manual_idf_formula.source  # type: ignore[union-attr]
+    else:
+        idf_result = idf_calculate_intensity(
+            req.locality_id,
+            return_period=float(req.return_period),
+            duration_min=float(req.duration_min),
+        )
+        manual_source = None
+
     intensity = idf_result["intensity_mm_hr"]
 
     # ── 3. Tc calculation ─────────────────────────────────────────────────
@@ -534,8 +562,10 @@ def run_calculation(payload: dict) -> dict:
         method=req.method,
         location_description=req.location_description,
         intensity_mm_hr=round(intensity, 3),
-        idf_source=locality["source"]["document"],
-        idf_verified=None,
+        idf_source=manual_source if is_manual else locality["source"]["document"],
+        idf_verified=False if is_manual else None,
+        is_manual_idf=is_manual,
+        manual_idf_source=manual_source,
         tc_results=tc_results,
         tc_adopted_hours=round(tc_adopted_hr, 4),
         tc_adopted_minutes=round(tc_adopted_min, 2),

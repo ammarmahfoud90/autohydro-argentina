@@ -1,10 +1,18 @@
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 from app.models.schemas import CalculationRequest, CalculationResponse
 from app.services.calculation import run_calculation
 from app.services.idf_service import get_localities, get_locality
+from app.services.manual_idf_service import validate_idf_table
 from app.data.cn_argentina import CN_ARGENTINA, SOIL_GROUP_DESCRIPTIONS
 
 router = APIRouter()
+
+
+class _IDFTableValidationRequest(BaseModel):
+    durations_min: list[float]
+    return_periods_years: list[int]
+    intensities_mm_hr: list[list[float]]
 
 
 @router.get("/localities")
@@ -37,6 +45,25 @@ def get_cn_categories() -> dict:
         "categories": categories,
         "soilGroups": SOIL_GROUP_DESCRIPTIONS,
     }
+
+
+@router.post("/idf/validate-table")
+def validate_idf_table_endpoint(body: _IDFTableValidationRequest) -> dict:
+    """
+    Validate an IDF table for physical consistency.
+
+    Checks that intensities decrease with duration (per TR) and increase with
+    TR (per duration). Returns a list of warnings (not blocking errors).
+    """
+    try:
+        warnings = validate_idf_table(
+            body.durations_min,
+            body.return_periods_years,
+            body.intensities_mm_hr,
+        )
+        return {"warnings": warnings}
+    except Exception as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 @router.post("/calculate", response_model=CalculationResponse)
