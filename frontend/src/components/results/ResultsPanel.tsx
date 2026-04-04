@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -16,6 +16,7 @@ import {
   Cell,
 } from 'recharts';
 import type { HydrologyResult, HydrologyInput, CNSensitivityPoint } from '../../types';
+import { useCalculationHistory } from '../../hooks/useCalculationHistory';
 import { interpretResults, generateReport, generateDocxReport, generateExcelReport, calculateHydrology, exportShapefile } from '../../services/api';
 
 const RISK_STYLES: Record<string, string> = {
@@ -77,7 +78,27 @@ const RETURN_PERIODS = [2, 5, 10, 25, 50, 100, 200, 500, 1000];
 export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCalculation }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { saveCalculation } = useCalculationHistory();
   const [isDownloading, setIsDownloading] = useState(false);
+
+  // Auto-save to local history on first render (silent, no UI feedback)
+  useEffect(() => {
+    saveCalculation({
+      locality_id: results.locality_id,
+      locality_name: results.city,
+      province: results.province,
+      return_period: results.return_period,
+      duration_min: results.duration_min,
+      area_km2: results.area_km2,
+      peak_flow_m3s: results.peak_flow_m3s,
+      intensity_mm_hr: results.intensity_mm_hr,
+      method: results.method,
+      tc_min: results.tc_adopted_minutes,
+      risk_level: results.risk_level,
+      input_params: formData as unknown as Record<string, unknown>,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [isDownloadingDocx, setIsDownloadingDocx] = useState(false);
   const [isDownloadingExcel, setIsDownloadingExcel] = useState(false);
   const [isExportingShp, setIsExportingShp] = useState(false);

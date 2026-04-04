@@ -9,6 +9,7 @@ import { Manning } from './pages/Manning';
 import { Culvert } from './pages/Culvert';
 import { Hyetograph } from './pages/Hyetograph';
 import { NotFound } from './pages/NotFound';
+import { History } from './pages/History';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
             <Route path="/calculadora/hietograma" element={<Hyetograph />} />
             <Route path="/hyetograph" element={<Navigate to="/calculadora/hietograma" replace />} />
             <Route path="/hietograma" element={<Navigate to="/calculadora/hietograma" replace />} />
+            <Route path="/historial" element={<History />} />
             <Route path="/sources" element={<Sources />} />
             <Route path="/about" element={<About />} />
             <Route path="*" element={<NotFound />} />

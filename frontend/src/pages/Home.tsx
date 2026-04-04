@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { LOCALITIES_SUMMARY } from '../constants/localities-summary';
 import type { LocalitySummary } from '../constants/localities-summary';
 import { MalvinasSection } from '../components/MalvinasSection';
+import { LocalitiesMap } from '../components/LocalitiesMap';
 
 const GITHUB_URL = 'https://github.com/ammarmahfoud90/autohydro-argentina';
 const LINKEDIN_URL = 'https://www.linkedin.com/in/ammar-mahfoud-499212118';
@@ -118,6 +120,7 @@ function LocalityCard({ loc, index }: { loc: LocalitySummary; index: number }) {
 
 export function Home() {
   const { t } = useTranslation();
+  const [localitiesView, setLocalitiesView] = useState<'map' | 'list'>('map');
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -213,27 +216,71 @@ export function Home() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="mb-8"
+          className="flex items-start justify-between gap-4 mb-6 flex-wrap"
         >
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            {t('home.localitiesTitle')}
-          </h2>
-          <p className="text-sm text-gray-500">
-            {t('home.localitiesSubtitle')}
-          </p>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              {t('home.localitiesTitle')}
+            </h2>
+            <p className="text-sm text-gray-500">
+              {t('home.localitiesSubtitle')}
+            </p>
+          </div>
+          {/* Map / List toggle */}
+          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 shrink-0">
+            <button
+              onClick={() => setLocalitiesView('map')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+                localitiesView === 'map'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+              </svg>
+              Mapa
+            </button>
+            <button
+              onClick={() => setLocalitiesView('list')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+                localitiesView === 'list'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+              </svg>
+              Lista
+            </button>
+          </div>
         </motion.div>
 
-        <motion.div
-          variants={stagger}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: '-50px' }}
-          className="grid sm:grid-cols-3 gap-4"
-        >
-          {LOCALITIES_SUMMARY.map((loc, i) => (
-            <LocalityCard key={loc.id} loc={loc} index={i} />
-          ))}
-        </motion.div>
+        {/* Map view */}
+        {localitiesView === 'map' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <LocalitiesMap />
+          </motion.div>
+        )}
+
+        {/* List view */}
+        {localitiesView === 'list' && (
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            animate="show"
+            className="grid sm:grid-cols-3 gap-4"
+          >
+            {LOCALITIES_SUMMARY.map((loc, i) => (
+              <LocalityCard key={loc.id} loc={loc} index={i} />
+            ))}
+          </motion.div>
+        )}
 
         <motion.p
           initial={{ opacity: 0 }}
