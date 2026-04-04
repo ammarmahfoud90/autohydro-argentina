@@ -12,6 +12,7 @@ import { LandUseAssistant } from '../components/forms/LandUseAssistant';
 import { TcCalculator } from '../components/forms/TcCalculator';
 import { ReportOptions } from '../components/forms/ReportOptions';
 import { ResultsPanel } from '../components/results/ResultsPanel';
+import { IDFPreviewChart } from '../components/IDFPreviewChart';
 import { BasinMap } from '../components/map/BasinMap';
 import type { HydrologyInput, HydrologyResult, SoilGroup, LandUseCategory, TcFormulaKey, ManualIDFTable, ManualIDFFormula } from '../types';
 import type { IDFLocality } from '../types/idf';
@@ -398,6 +399,13 @@ export function Calculator() {
                 el período de registro más corto de las tres localidades. Los valores IDF son
                 orientativos y deben verificarse con la autoridad hídrica provincial antes de
                 usarse en diseños definitivos.
+              </div>
+            )}
+
+            {/* IDF preview chart — shown when a pre-loaded locality is selected */}
+            {selectedLocality && !isManualLocality && (
+              <div className="mt-3">
+                <IDFPreviewChart locality={selectedLocality} />
               </div>
             )}
 

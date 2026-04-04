@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { getLocalities } from '../../services/api';
 import type { IDFLocality } from '../../types/idf';
+import { SearchableSelect } from '../SearchableSelect';
 
 interface Props {
   value: string;
@@ -52,57 +53,39 @@ export function CitySelector({ value, onChange }: Props) {
           Seleccionar localidad <span className="text-red-500">*</span>
         </label>
 
-        <div className="relative">
-          <select
+        {status === 'loading' || status === 'slowStart' ? (
+          <div className="w-full flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm bg-gray-50">
+            <span className="text-gray-400">Cargando localidades…</span>
+            <svg className="animate-spin w-4 h-4 text-blue-500 shrink-0" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+            </svg>
+          </div>
+        ) : (
+          <SearchableSelect
             value={value}
-            onChange={(e) => {
-              const id = e.target.value;
+            groups={(() => {
+              const byProvince = localities.reduce<Record<string, IDFLocality[]>>((acc, loc) => {
+                (acc[loc.province] ??= []).push(loc);
+                return acc;
+              }, {});
+              const provinces = Object.keys(byProvince).sort((a, b) => a.localeCompare(b, 'es'));
+              return provinces.map((province) => ({
+                label: province,
+                options: byProvince[province]
+                  .sort((a, b) => a.name.localeCompare(b.name, 'es'))
+                  .map((loc) => ({ value: loc.id, label: loc.name })),
+              }));
+            })()}
+            onChange={(id) => {
               const loc = id === 'manual' ? undefined : localities.find((l) => l.id === id);
               onChange(id, loc);
             }}
-            disabled={status === 'loading' || status === 'slowStart'}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400"
-          >
-            {status === 'loading' || status === 'slowStart' ? (
-              <option value="">Cargando localidades…</option>
-            ) : (
-              <>
-                <option value="">Seleccionar localidad</option>
-                {(() => {
-                  const byProvince = localities.reduce<Record<string, IDFLocality[]>>((acc, loc) => {
-                    (acc[loc.province] ??= []).push(loc);
-                    return acc;
-                  }, {});
-                  const provinces = Object.keys(byProvince).sort((a, b) => a.localeCompare(b, 'es'));
-                  return provinces.map((province) => (
-                    <optgroup key={province} label={province}>
-                      {byProvince[province]
-                        .sort((a, b) => a.name.localeCompare(b.name, 'es'))
-                        .map((loc) => (
-                          <option key={loc.id} value={loc.id}>
-                            {loc.name}
-                          </option>
-                        ))}
-                    </optgroup>
-                  ));
-                })()}
-                <optgroup label="── Datos propios ──">
-                  <option value="manual">Ingresar datos IDF manualmente</option>
-                </optgroup>
-              </>
-            )}
-          </select>
-
-          {/* Spinner overlay while loading */}
-          {(status === 'loading' || status === 'slowStart') && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-              <svg className="animate-spin w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-              </svg>
-            </div>
-          )}
-        </div>
+            placeholder="Seleccionar localidad"
+            searchPlaceholder="Buscar localidad..."
+            footerOption={{ value: 'manual', label: 'Ingresar datos IDF manualmente' }}
+          />
+        )}
 
         {/* Server waking up message */}
         {status === 'slowStart' && (
