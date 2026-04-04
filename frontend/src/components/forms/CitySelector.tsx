@@ -66,13 +66,24 @@ export function CitySelector({ value, onChange }: Props) {
             ) : (
               <>
                 <option value="">Seleccionar localidad</option>
-                <optgroup label="── Localidades verificadas ──">
-                  {localities.map((loc) => (
-                    <option key={loc.id} value={loc.id}>
-                      {loc.name} · {loc.province}
-                    </option>
-                  ))}
-                </optgroup>
+                {(() => {
+                  const byProvince = localities.reduce<Record<string, IDFLocality[]>>((acc, loc) => {
+                    (acc[loc.province] ??= []).push(loc);
+                    return acc;
+                  }, {});
+                  const provinces = Object.keys(byProvince).sort((a, b) => a.localeCompare(b, 'es'));
+                  return provinces.map((province) => (
+                    <optgroup key={province} label={province}>
+                      {byProvince[province]
+                        .sort((a, b) => a.name.localeCompare(b.name, 'es'))
+                        .map((loc) => (
+                          <option key={loc.id} value={loc.id}>
+                            {loc.name}
+                          </option>
+                        ))}
+                    </optgroup>
+                  ));
+                })()}
                 <optgroup label="── Datos propios ──">
                   <option value="manual">Ingresar datos IDF manualmente</option>
                 </optgroup>
