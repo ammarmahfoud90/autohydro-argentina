@@ -8,8 +8,12 @@ import { LOCALITIES_SUMMARY } from '../constants/localities-summary';
 interface IDFLocalityFull extends IDFLocality {
   idf_table?: {
     durations_min: number[];
-    return_periods_years: number[];
-    intensities_mm_hr: number[][];
+    // Some JSONs use return_periods_years, others use return_periods
+    return_periods_years?: number[];
+    return_periods?: number[];
+    // Some JSONs use intensities_mm_hr (2D array), others use intensities (dict keyed by TR)
+    intensities_mm_hr?: number[][];
+    intensities?: Record<string, number[]>;
   };
   idf_formula?: {
     omega_by_return_period?: Record<string, number>;
@@ -217,10 +221,11 @@ function LocalitySourceCard({ localityId }: { localityId: string }) {
             Limitaciones
           </p>
           <div className={`rounded-xl px-4 py-3 text-sm border ${isShortSeries ? 'bg-orange-50 border-orange-200 text-orange-800' : 'bg-gray-50 border-gray-200 text-gray-600'}`}>
-            {data.limitations.max_reliable_return_period != null && (
+            {/* TR máximo confiable — from either field */}
+            {(data.limitations.max_reliable_return_period ?? data.limitations.tr_confiable) != null && (
               <div className="flex justify-between mb-1">
                 <span>TR máximo confiable:</span>
-                <span className="font-semibold">{data.limitations.max_reliable_return_period} años</span>
+                <span className="font-semibold">{data.limitations.max_reliable_return_period ?? data.limitations.tr_confiable} años</span>
               </div>
             )}
             {data.limitations.spatial_coverage != null && (
@@ -229,16 +234,45 @@ function LocalitySourceCard({ localityId }: { localityId: string }) {
                 <span className="font-medium">{data.limitations.spatial_coverage}</span>
               </div>
             )}
+            {data.limitations.geographic_scope != null && (
+              <p className="text-xs leading-relaxed mb-1">{data.limitations.geographic_scope}</p>
+            )}
+            {data.limitations.duration_note != null && (
+              <p className="text-xs leading-relaxed mb-1">{data.limitations.duration_note}</p>
+            )}
+            {data.limitations.scaling_note != null && (
+              <p className="text-xs leading-relaxed mb-1">{data.limitations.scaling_note}</p>
+            )}
+            {data.limitations.altitude_note != null && (
+              <p className="text-xs leading-relaxed mb-1">{data.limitations.altitude_note}</p>
+            )}
+            {data.limitations.normative_status != null && (
+              <p className="text-xs leading-relaxed mb-1">{data.limitations.normative_status}</p>
+            )}
             {data.limitations.series_note != null && (
               <p className="text-xs leading-relaxed border-t border-current/20 pt-2 mt-2">
                 {data.limitations.series_note}
+              </p>
+            )}
+            {data.limitations.tr_note != null && (
+              <p className="text-xs leading-relaxed border-t border-current/20 pt-2 mt-2">
+                {data.limitations.tr_note}
               </p>
             )}
           </div>
         </div>
 
         {/* APA Chaco: IDF Table */}
-        {idfModel === 'apa_chaco' && data.idf_table && (
+        {idfModel === 'apa_chaco' && data.idf_table && (() => {
+          const trs = data.idf_table.return_periods_years ?? data.idf_table.return_periods ?? [];
+          const getIntensity = (tr: number, di: number): string => {
+            const byTr = data.idf_table!.intensities_mm_hr ?? data.idf_table!.intensities;
+            if (!byTr) return '—';
+            if (Array.isArray(byTr)) return (byTr[trs.indexOf(tr)]?.[di])?.toFixed(1) ?? '—';
+            const row = (byTr as Record<string, number[]>)[String(tr)];
+            return row?.[di]?.toFixed(1) ?? '—';
+          };
+          return (
           <div>
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
               Tabla IDF publicada (mm/hr)
@@ -250,7 +284,7 @@ function LocalitySourceCard({ localityId }: { localityId: string }) {
                     <th className="text-left px-3 py-2 text-gray-600 font-semibold border-b border-r border-gray-200">
                       Duración (min)
                     </th>
-                    {data.idf_table.return_periods_years.map((tr) => (
+                    {trs.map((tr) => (
                       <th key={tr} className="text-center px-3 py-2 text-gray-600 font-semibold border-b border-r border-gray-200 last:border-r-0">
                         TR = {tr} años
                       </th>
@@ -258,14 +292,14 @@ function LocalitySourceCard({ localityId }: { localityId: string }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.idf_table.durations_min.map((dur, di) => (
+                  {data.idf_table!.durations_min.map((dur, di) => (
                     <tr key={dur} className={`${di % 2 === 0 ? 'bg-white' : 'bg-gray-50/60'} hover:bg-blue-50/50 transition-colors`}>
                       <td className="px-3 py-1.5 font-medium text-gray-700 border-r border-gray-200">
                         {dur}
                       </td>
-                      {data.idf_table!.return_periods_years.map((_, ti) => (
-                        <td key={ti} className="px-3 py-1.5 text-center tabular-nums text-gray-700 border-r border-gray-200 last:border-r-0">
-                          {data.idf_table!.intensities_mm_hr[ti]?.[di]?.toFixed(1) ?? '—'}
+                      {trs.map((tr) => (
+                        <td key={tr} className="px-3 py-1.5 text-center tabular-nums text-gray-700 border-r border-gray-200 last:border-r-0">
+                          {getIntensity(tr, di)}
                         </td>
                       ))}
                     </tr>
@@ -277,7 +311,8 @@ function LocalitySourceCard({ localityId }: { localityId: string }) {
               Fuente: {data.source.document}. Las fórmulas analíticas se usan para interpolación entre TR.
             </p>
           </div>
-        )}
+          );
+        })()}
 
         {/* INA-CRA Mendoza: formula + omega table */}
         {idfModel === 'ina_cra_mendoza' && data.idf_formula?.omega_by_return_period && (
@@ -381,7 +416,16 @@ function LocalitySourceCard({ localityId }: { localityId: string }) {
         )}
 
         {/* Simple Scaling Table: show IDF table */}
-        {idfModel === 'simple_scaling_table' && data.idf_table && (
+        {idfModel === 'simple_scaling_table' && data.idf_table && (() => {
+          const trs = data.idf_table.return_periods_years ?? data.idf_table.return_periods ?? [];
+          const getIntensity = (tr: number, di: number): string => {
+            const byTr = data.idf_table!.intensities_mm_hr ?? data.idf_table!.intensities;
+            if (!byTr) return '—';
+            if (Array.isArray(byTr)) return (byTr[trs.indexOf(tr)]?.[di])?.toFixed(1) ?? '—';
+            const row = (byTr as Record<string, number[]>)[String(tr)];
+            return row?.[di]?.toFixed(1) ?? '—';
+          };
+          return (
           <div>
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
               Tabla IDF publicada (mm/hr)
@@ -393,7 +437,7 @@ function LocalitySourceCard({ localityId }: { localityId: string }) {
                     <th className="text-left px-3 py-2 text-gray-600 font-semibold border-b border-r border-gray-200">
                       Duración (min)
                     </th>
-                    {data.idf_table.return_periods_years.map((tr) => (
+                    {trs.map((tr) => (
                       <th key={tr} className="text-center px-3 py-2 text-gray-600 font-semibold border-b border-r border-gray-200 last:border-r-0">
                         TR = {tr} años
                       </th>
@@ -401,14 +445,14 @@ function LocalitySourceCard({ localityId }: { localityId: string }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.idf_table.durations_min.map((dur, di) => (
+                  {data.idf_table!.durations_min.map((dur, di) => (
                     <tr key={dur} className={`${di % 2 === 0 ? 'bg-white' : 'bg-gray-50/60'} hover:bg-blue-50/50 transition-colors`}>
                       <td className="px-3 py-1.5 font-medium text-gray-700 border-r border-gray-200">
                         {dur}
                       </td>
-                      {data.idf_table!.return_periods_years.map((_, ti) => (
-                        <td key={ti} className="px-3 py-1.5 text-center tabular-nums text-gray-700 border-r border-gray-200 last:border-r-0">
-                          {data.idf_table!.intensities_mm_hr[ti]?.[di]?.toFixed(1) ?? '—'}
+                      {trs.map((tr) => (
+                        <td key={tr} className="px-3 py-1.5 text-center tabular-nums text-gray-700 border-r border-gray-200 last:border-r-0">
+                          {getIntensity(tr, di)}
                         </td>
                       ))}
                     </tr>
@@ -420,7 +464,8 @@ function LocalitySourceCard({ localityId }: { localityId: string }) {
               Interpolación log-lineal en TR. Fuente: {data.source.document}.
             </p>
           </div>
-        )}
+          );
+        })()}
 
       </div>
     </motion.div>

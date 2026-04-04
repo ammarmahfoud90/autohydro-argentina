@@ -134,6 +134,18 @@ def get_localities() -> list[dict]:
             return_periods = []
             durations_min = []
 
+        # Compute valid TR and duration ranges from formula or table
+        formula = loc.get("formula", {})
+        valid_tr_max = formula.get("valid_tr_max", return_periods[-1] if return_periods else 100)
+        valid_tr_min = formula.get("valid_tr_min", return_periods[0] if return_periods else 2)
+        if idf_model == "simple_scaling_table":
+            table_durs = loc.get("idf_table", {}).get("durations_min", [])
+            valid_duration_min = table_durs[0] if table_durs else 5
+            valid_duration_max = table_durs[-1] if table_durs else 1440
+        else:
+            valid_duration_min = formula.get("valid_duration_min", 5)
+            valid_duration_max = formula.get("valid_duration_max", 1440)
+
         result.append({
             "id": loc["id"],
             "name": loc["name"],
@@ -145,6 +157,10 @@ def get_localities() -> list[dict]:
             "municipalities": loc.get("municipalities", []),
             "return_periods": return_periods,
             "durations_min": durations_min,
+            "valid_tr_min": valid_tr_min,
+            "valid_tr_max": valid_tr_max,
+            "valid_duration_min": valid_duration_min,
+            "valid_duration_max": valid_duration_max,
             "limitations": loc["limitations"],
             "source": {
                 "document": loc["source"]["document"],

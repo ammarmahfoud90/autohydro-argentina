@@ -14,6 +14,7 @@ import { ReportOptions } from '../components/forms/ReportOptions';
 import { ResultsPanel } from '../components/results/ResultsPanel';
 import { BasinMap } from '../components/map/BasinMap';
 import type { HydrologyInput, HydrologyResult, SoilGroup, LandUseCategory, TcFormulaKey, ManualIDFTable, ManualIDFFormula } from '../types';
+import type { IDFLocality } from '../types/idf';
 import { DEFAULT_FORM } from '../types';
 import { calculateAllTc } from '../constants/tc-formulas';
 
@@ -196,6 +197,7 @@ export function Calculator() {
   const [step, setStep] = useState(1);
   const [basinMode, setBasinMode] = useState<'manual' | 'map'>('manual');
   const [formData, setFormData] = useState<HydrologyInput>(caseStudyData ?? DEFAULT_FORM);
+  const [selectedLocality, setSelectedLocality] = useState<IDFLocality | null>(null);
   const [results, setResults] = useState<HydrologyResult | null>(null);
   const [basinPolygon, setBasinPolygon] = useState<[number, number][] | undefined>(undefined);
 
@@ -230,9 +232,18 @@ export function Calculator() {
   const tucumanStations: Record<string, { name: string }> =
     (tucumanLocality as any)?.stations ?? {};
 
-  // ── Validation ──────────────────────────────────────────────────────────────
+  // ── Locality-derived constraints ────────────────────────────────────────────
 
   const isManualLocality = formData.locality_id === 'manual';
+  const validTrMax = selectedLocality?.valid_tr_max ?? 100;
+  const validTrMin = selectedLocality?.valid_tr_min ?? 2;
+  const availableTRs = selectedLocality
+    ? RETURN_PERIODS.filter((tr) => tr >= validTrMin && tr <= validTrMax)
+    : RETURN_PERIODS;
+  const durationMin = selectedLocality?.valid_duration_min ?? 5;
+  const durationMax = selectedLocality?.valid_duration_max ?? 1440;
+
+  // ── Validation ──────────────────────────────────────────────────────────────
   const step1Valid =
     !!formData.locality_id &&
     (!isManualLocality || (!!formData.manual_idf_table || !!formData.manual_idf_formula)) &&
@@ -315,14 +326,21 @@ export function Calculator() {
           <Card title={t('calculator.selectLocation')}>
             <CitySelector
               value={formData.locality_id}
-              returnPeriod={formData.return_period}
-              duration={formData.duration_min}
-              onChange={(localityId) => {
+              onChange={(localityId, locality) => {
+                setSelectedLocality(locality ?? null);
+                const maxTR = locality?.valid_tr_max ?? 100;
+                const minTR = locality?.valid_tr_min ?? 2;
+                const validTRs = RETURN_PERIODS.filter((tr) => tr >= minTR && tr <= maxTR);
+                const newReturnPeriod =
+                  validTRs.includes(formData.return_period)
+                    ? formData.return_period
+                    : validTRs[validTRs.length - 1] ?? formData.return_period;
                 update({
                   locality_id: localityId,
                   manual_idf_table: null,
                   manual_idf_formula: null,
                   station_id: null,
+                  return_period: newReturnPeriod,
                 });
               }}
             />
@@ -393,13 +411,20 @@ export function Calculator() {
                   onChange={(e) => update({ return_period: Number(e.target.value) })}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  {RETURN_PERIODS.map((T) => (
+                  {availableTRs.map((T) => (
                     <option key={T} value={T}>
                       {T} {t('common.years')}
                     </option>
                   ))}
                 </select>
               </div>
+              {selectedLocality && formData.return_period > validTrMax && (
+                <div className="col-span-2 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                  <strong>TR = {formData.return_period} años — fuera del rango confiable.</strong>{' '}
+                  Este modelo tiene resultados confiables solo hasta TR = {validTrMax} años.
+                  Seleccioná un TR ≤ {validTrMax} para diseños definitivos.
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   {t('calculator.stormDuration')}
@@ -410,16 +435,23 @@ export function Calculator() {
                     value={formData.duration_min}
                     onChange={(e) => {
                       const val = Math.round(Number(e.target.value));
-                      if (val >= 5 && val <= 1440) update({ duration_min: val });
+                      if (val >= durationMin && val <= durationMax) update({ duration_min: val });
                     }}
-                    min={5}
-                    max={1440}
+                    min={durationMin}
+                    max={durationMax}
                     step={1}
                     className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <span className="text-sm text-gray-500 whitespace-nowrap">{t('common.minutes')}</span>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">Rango válido: 5 – 1440 min (24 hs)</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Rango válido: {durationMin} – {durationMax} min
+                </p>
+                {durationMin >= 60 && (
+                  <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 mt-1">
+                    Este modelo no tiene datos para duraciones menores a {durationMin} min.
+                  </p>
+                )}
               </div>
             </div>
 

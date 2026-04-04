@@ -4,9 +4,7 @@ import type { IDFLocality } from '../../types/idf';
 
 interface Props {
   value: string;
-  returnPeriod: number;
-  duration: number;
-  onChange: (localityId: string) => void;
+  onChange: (localityId: string, locality?: IDFLocality) => void;
 }
 
 export function CitySelector({ value, onChange }: Props) {
@@ -57,7 +55,11 @@ export function CitySelector({ value, onChange }: Props) {
         <div className="relative">
           <select
             value={value}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={(e) => {
+              const id = e.target.value;
+              const loc = id === 'manual' ? undefined : localities.find((l) => l.id === id);
+              onChange(id, loc);
+            }}
             disabled={status === 'loading' || status === 'slowStart'}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400"
           >

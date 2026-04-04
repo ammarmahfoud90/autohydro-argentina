@@ -69,6 +69,16 @@ class TestEntreRiosParana:
 class TestBuenosAiresAzul:
     """Tests para Azul, Buenos Aires — modelo Talbot-CEF."""
 
+    def test_tr2_out_of_range(self):
+        """buenos_aires_azul solo acepta TR 5, 10, 25, 50. TR=2 debe lanzar error."""
+        with pytest.raises((ValueError, KeyError)):
+            calculate_intensity("buenos_aires_azul", return_period=2, duration_min=60)
+
+    def test_tr100_out_of_range(self):
+        """buenos_aires_azul solo acepta hasta TR=50. TR=100 debe lanzar error."""
+        with pytest.raises((ValueError, KeyError)):
+            calculate_intensity("buenos_aires_azul", return_period=100, duration_min=60)
+
     def test_tr25_d60(self):
         """TR=25, d=60: i = 1964 / (60^0.773 + 7.21) ≈ 63.6 mm/h"""
         result = calculate_intensity(

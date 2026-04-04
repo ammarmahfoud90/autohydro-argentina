@@ -565,7 +565,7 @@ def run_calculation(payload: dict) -> dict:
         location_description=req.location_description,
         intensity_mm_hr=round(intensity, 3),
         idf_source=manual_source if is_manual else locality["source"]["document"],
-        idf_verified=False if is_manual else None,
+        idf_verified=False if is_manual else True,
         is_manual_idf=is_manual,
         manual_idf_source=manual_source,
         tc_results=tc_results,
