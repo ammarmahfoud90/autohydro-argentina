@@ -1,5 +1,19 @@
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { generateManningPdf } from '../services/api';
+
+interface HydroSourceInfo {
+  locality: string;
+  return_period: number;
+  duration_min: number;
+  method: string;
+}
+
+const METHOD_LABEL: Record<string, string> = {
+  rational:          'Racional',
+  modified_rational: 'Racional Mod.',
+  scs_cn:            'SCS-CN',
+};
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -149,6 +163,11 @@ function RegimeBadge({ regime, fr }: { regime: string; fr: number | null }) {
 const BASE = import.meta.env.VITE_API_URL ?? '';
 
 export function Manning() {
+  const location = useLocation();
+  const routeState = location.state as { prefilledFlow?: number; sourceInfo?: HydroSourceInfo } | null;
+  const prefilledFlow = routeState?.prefilledFlow;
+  const sourceInfo = routeState?.sourceInfo;
+
   const [channelType, setChannelType] = useState<ChannelType>('rectangular');
 
   // Shared
@@ -157,7 +176,8 @@ export function Manning() {
   const [nPreset, setNPreset] = useState('Hormigón liso');
   const [slope, setSlope] = useState('0.001');
   const [liningType, setLiningType] = useState('');
-  const [designFlow, setDesignFlow] = useState('');
+  const [designFlow, setDesignFlow] = useState(() => prefilledFlow != null ? prefilledFlow.toFixed(3) : '');
+  const [flowFromCalc, setFlowFromCalc] = useState(!!prefilledFlow);
 
   // Rectangular / shared depth
   const [width, setWidth] = useState('2.0');
@@ -429,6 +449,30 @@ export function Manning() {
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
               <h2 className="text-sm font-semibold text-gray-700 mb-1">Verificar diseño <span className="text-gray-400 font-normal">(opcional)</span></h2>
               <p className="text-xs text-gray-500 mb-3">Ingresá el caudal de diseño del cálculo hidrológico para verificar si el canal tiene capacidad suficiente.</p>
+
+              {flowFromCalc && (
+                <div className="mb-3 rounded-lg bg-blue-50 border border-blue-200 px-4 py-3 text-sm flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-blue-900 text-xs mb-0.5">
+                      Caudal de diseño pre-cargado desde cálculo hidrológico
+                    </p>
+                    {sourceInfo && (
+                      <p className="text-xs text-blue-700">
+                        Q = {designFlow} m³/s · TR = {sourceInfo.return_period} años · {sourceInfo.locality}
+                        {' · '}{METHOD_LABEL[sourceInfo.method] ?? sourceInfo.method} · {sourceInfo.duration_min} min
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setDesignFlow(''); setFlowFromCalc(false); }}
+                    className="shrink-0 text-xs font-semibold text-blue-400 hover:text-blue-700 transition-colors whitespace-nowrap"
+                  >
+                    × Limpiar
+                  </button>
+                </div>
+              )}
+
               <Field label="Caudal de diseño (Q_diseño)" value={designFlow} unit="m³/s" onChange={setDesignFlow} step="0.01" required={false} />
             </div>
 

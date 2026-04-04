@@ -1126,8 +1126,39 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
             <button
               type="button"
               onClick={() =>
+                navigate('/calculadora/manning', {
+                  state: {
+                    prefilledFlow: results.peak_flow_m3s,
+                    sourceInfo: {
+                      locality: results.city,
+                      return_period: results.return_period,
+                      duration_min: results.duration_min,
+                      method: results.method,
+                    },
+                  },
+                })
+              }
+              className="px-5 py-2 rounded-lg bg-cyan-600 text-white text-sm font-semibold hover:bg-cyan-700 transition-colors flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Dimensionar canal (Manning)
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
                 navigate('/calculadora/alcantarilla', {
-                  state: { flow: results.peak_flow_m3s },
+                  state: {
+                    prefilledFlow: results.peak_flow_m3s,
+                    sourceInfo: {
+                      locality: results.city,
+                      return_period: results.return_period,
+                      duration_min: results.duration_min,
+                      method: results.method,
+                    },
+                  },
                 })
               }
               className="px-5 py-2 rounded-lg bg-teal-600 text-white text-sm font-semibold hover:bg-teal-700 transition-colors flex items-center gap-2"

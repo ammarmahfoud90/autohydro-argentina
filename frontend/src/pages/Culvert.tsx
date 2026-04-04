@@ -2,6 +2,19 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { generateCulvertPdf } from '../services/api';
 
+interface HydroSourceInfo {
+  locality: string;
+  return_period: number;
+  duration_min: number;
+  method: string;
+}
+
+const METHOD_LABEL: Record<string, string> = {
+  rational:          'Racional',
+  modified_rational: 'Racional Mod.',
+  scs_cn:            'SCS-CN',
+};
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface CulvertResult {
@@ -143,10 +156,12 @@ const INLET_TYPES = [
 
 export function Culvert() {
   const location = useLocation();
-  const passedFlow = (location.state as { flow?: number } | null)?.flow;
+  const routeState = location.state as { prefilledFlow?: number; flow?: number; sourceInfo?: HydroSourceInfo } | null;
+  const passedFlow = routeState?.prefilledFlow ?? routeState?.flow; // prefilledFlow preferred, flow for back-compat
+  const sourceInfo = routeState?.sourceInfo;
 
   // Inputs
-  const [flow, setFlow] = useState(passedFlow?.toString() ?? '');
+  const [flow, setFlow] = useState(passedFlow != null ? passedFlow.toFixed(3) : '');
   const [culvertType, setCulvertType] = useState<'circular' | 'box'>('circular');
   const [material, setMaterial] = useState('hormigon');
   const [length, setLength] = useState('');
@@ -162,7 +177,7 @@ export function Culvert() {
   const [pdfLoading, setPdfLoading] = useState(false);
 
   // When Q comes from hydrology calculator via router state, highlight the field
-  const [flowFromCalc] = useState(!!passedFlow);
+  const [flowFromCalc, setFlowFromCalc] = useState(!!passedFlow);
 
   useEffect(() => {
     if (passedFlow) setFlow(passedFlow.toFixed(3));
@@ -258,11 +273,25 @@ export function Culvert() {
         {/* ── Step 1: Design flow ─────────────────────────────────────────── */}
         <Card title="Caudal de diseño">
           {flowFromCalc && (
-            <div className="mb-3 rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-xs text-green-800 flex items-center gap-2">
-              <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-              Caudal importado desde el calculador hidrológico.
+            <div className="mb-3 rounded-lg bg-blue-50 border border-blue-200 px-4 py-3 text-sm flex items-start justify-between gap-3">
+              <div>
+                <p className="font-semibold text-blue-900 text-xs mb-0.5">
+                  Caudal de diseño pre-cargado desde cálculo hidrológico
+                </p>
+                {sourceInfo && (
+                  <p className="text-xs text-blue-700">
+                    Q = {flow} m³/s · TR = {sourceInfo.return_period} años · {sourceInfo.locality}
+                    {' · '}{METHOD_LABEL[sourceInfo.method] ?? sourceInfo.method} · {sourceInfo.duration_min} min
+                  </p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => { setFlow(''); setFlowFromCalc(false); }}
+                className="shrink-0 text-xs font-semibold text-blue-400 hover:text-blue-700 transition-colors whitespace-nowrap"
+              >
+                × Limpiar
+              </button>
             </div>
           )}
           <div className="flex items-center gap-3">
@@ -274,9 +303,7 @@ export function Culvert() {
                 value={flow}
                 onChange={(e) => setFlow(e.target.value)}
                 placeholder="ej. 2.50"
-                className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  flowFromCalc ? 'border-green-400 bg-green-50' : 'border-gray-300'
-                }`}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <span className="absolute right-3 top-2.5 text-xs text-gray-400">m³/s</span>
             </div>
