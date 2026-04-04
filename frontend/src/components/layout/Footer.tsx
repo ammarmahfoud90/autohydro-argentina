@@ -115,13 +115,25 @@ export function Footer() {
       </div>
 
       {/* Argentine flag strip + Malvinas banner */}
-      <div className="flex h-[3px] w-full">
-        <div className="flex-1" style={{ backgroundColor: '#74ACDF' }} />
-        <div className="flex-1 bg-white" />
-        <div className="flex-1" style={{ backgroundColor: '#74ACDF' }} />
-      </div>
-      <div className="py-3 px-4 text-center" style={{ backgroundColor: '#071224' }}>
-        <p className="text-xs font-medium" style={{ color: '#a8d4f0' }}>
+      <div
+        className="w-full px-4 py-4 text-center"
+        style={{
+          backgroundColor: '#0d1f35',
+          borderTop: '3px solid transparent',
+          backgroundImage:
+            'linear-gradient(#0d1f35, #0d1f35), linear-gradient(to right, #74ACDF 33%, #ffffff 33% 66%, #74ACDF 66%)',
+          backgroundOrigin: 'border-box',
+          backgroundClip: 'padding-box, border-box',
+          minHeight: '44px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <p
+          className="font-medium"
+          style={{ color: '#74ACDF', fontSize: '13px', lineHeight: '1.4' }}
+        >
           🇦🇷 Las Islas Malvinas, Georgias del Sur y Sandwich del Sur son y serán argentinas
         </p>
       </div>

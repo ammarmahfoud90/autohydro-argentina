@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { LOCALITIES_SUMMARY } from '../constants/localities-summary';
 import type { LocalitySummary } from '../constants/localities-summary';
+import { MalvinasSection } from '../components/MalvinasSection';
 
 const GITHUB_URL = 'https://github.com/ammarmahfoud90/autohydro-argentina';
 const LINKEDIN_URL = 'https://www.linkedin.com/in/ammar-mahfoud-499212118';
@@ -333,6 +334,9 @@ export function Home() {
           </p>
         </motion.div>
       </section>
+
+      {/* ── Malvinas ──────────────────────────────────────────────────────── */}
+      <MalvinasSection />
 
       {/* ── Developer credit ──────────────────────────────────────────────── */}
       <motion.section
