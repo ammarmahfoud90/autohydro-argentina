@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { getLocality } from '../services/api';
 import type { IDFLocality } from '../types/idf';
@@ -63,29 +64,31 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 }
 
 function ReliabilityBadge({ years }: { years: number | null | undefined }) {
+  const { t } = useTranslation();
   if (years == null) return null;
   if (years > 30) {
     return (
       <span className="text-xs font-medium text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full shrink-0">
-        Serie larga ({years} años)
+        {t('sources.seriesLong')} ({years} {t('common.years')})
       </span>
     );
   }
   if (years >= 15) {
     return (
       <span className="text-xs font-medium text-yellow-700 bg-yellow-50 border border-yellow-200 px-2.5 py-1 rounded-full shrink-0">
-        Serie media ({years} años)
+        {t('sources.seriesMedium')} ({years} {t('common.years')})
       </span>
     );
   }
   return (
     <span className="text-xs font-medium text-orange-700 bg-orange-50 border border-orange-200 px-2.5 py-1 rounded-full shrink-0">
-      Serie corta ({years} años)
+      {t('sources.seriesShort')} ({years} {t('common.years')})
     </span>
   );
 }
 
 function LocalitySourceCard({ localityId }: { localityId: string }) {
+  const { t } = useTranslation();
   const [data, setData] = useState<IDFLocalityFull | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -115,7 +118,7 @@ function LocalitySourceCard({ localityId }: { localityId: string }) {
   if (error || !data) {
     return (
       <div className="bg-white rounded-2xl border border-red-200 p-6">
-        <p className="text-sm text-red-600">No se pudo cargar la información de esta localidad.</p>
+        <p className="text-sm text-red-600">{t('errors.networkError')}</p>
       </div>
     );
   }
@@ -169,11 +172,11 @@ function LocalitySourceCard({ localityId }: { localityId: string }) {
         {/* Source metadata */}
         <div>
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-            Fuente oficial
+            {t('sources.officialSource')}
           </p>
           <dl className="space-y-1.5 text-sm">
             <div className="flex gap-3">
-              <dt className="text-gray-400 w-36 shrink-0">Documento</dt>
+              <dt className="text-gray-400 w-36 shrink-0">{t('common.source')}</dt>
               <dd className="text-gray-700 font-medium">{data.source.document}</dd>
             </div>
             <div className="flex gap-3">
@@ -218,7 +221,7 @@ function LocalitySourceCard({ localityId }: { localityId: string }) {
         {/* Limitations */}
         <div>
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-            Limitaciones
+            {t('sources.limitations')}
           </p>
           <div className={`rounded-xl px-4 py-3 text-sm border ${isShortSeries ? 'bg-orange-50 border-orange-200 text-orange-800' : 'bg-gray-50 border-gray-200 text-gray-600'}`}>
             {/* TR máximo confiable — from either field */}
@@ -422,6 +425,7 @@ function LocalitySourceCard({ localityId }: { localityId: string }) {
 }
 
 export function Sources() {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-gray-50">
 
@@ -436,19 +440,19 @@ export function Sources() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-3xl font-bold text-white mb-2">Fuentes y Metodología</h1>
+            <h1 className="text-3xl font-bold text-white mb-2">{t('sources.pageTitle')}</h1>
             <p className="text-blue-300 text-sm">
-              Transparencia total sobre el origen de los datos y los métodos de cálculo implementados.
+              {t('sources.pageSubtitle')}
             </p>
             <div className="flex flex-wrap gap-3 mt-4">
               <span className="text-xs font-medium text-green-300 bg-green-900/40 border border-green-700/50 px-2.5 py-1 rounded-full">
-                Serie larga &gt;30 años
+                {t('sources.seriesLong')}
               </span>
               <span className="text-xs font-medium text-yellow-300 bg-yellow-900/40 border border-yellow-700/50 px-2.5 py-1 rounded-full">
-                Serie media 15–30 años
+                {t('sources.seriesMedium')}
               </span>
               <span className="text-xs font-medium text-orange-300 bg-orange-900/40 border border-orange-700/50 px-2.5 py-1 rounded-full">
-                Serie corta &lt;15 años — datos orientativos
+                {t('sources.seriesShort')}
               </span>
             </div>
           </motion.div>
@@ -463,7 +467,7 @@ export function Sources() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.1 }}
         >
-          <SectionTitle>Datos IDF por localidad</SectionTitle>
+          <SectionTitle>{t('sources.idfDataTitle')}</SectionTitle>
 
           <div className="space-y-10">
             {PROVINCE_ORDER.filter((prov) => LOCALITIES_BY_PROVINCE[prov]).map((province) => (
@@ -503,7 +507,7 @@ export function Sources() {
           transition={{ duration: 0.5 }}
           className="bg-white rounded-2xl border border-gray-200 p-7 shadow-sm"
         >
-          <SectionTitle>Modelos IDF implementados</SectionTitle>
+          <SectionTitle>{t('sources.idfModelsTitle')}</SectionTitle>
 
           <div className="space-y-6">
 
@@ -747,7 +751,7 @@ export function Sources() {
           transition={{ duration: 0.5 }}
           className="bg-white rounded-2xl border border-gray-200 p-7 shadow-sm"
         >
-          <SectionTitle>Métodos de cálculo hidrológico</SectionTitle>
+          <SectionTitle>{t('sources.calcMethodsTitle')}</SectionTitle>
           <div className="space-y-4 text-sm text-gray-600">
             <div>
               <p className="font-semibold text-gray-800">Método Racional</p>
@@ -775,7 +779,7 @@ export function Sources() {
           transition={{ duration: 0.5 }}
           className="bg-white rounded-2xl border border-gray-200 p-7 shadow-sm"
         >
-          <SectionTitle>Fórmulas de Tiempo de Concentración (Tc)</SectionTitle>
+          <SectionTitle>{t('sources.tcFormulasTitle')}</SectionTitle>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -806,7 +810,7 @@ export function Sources() {
           transition={{ duration: 0.5 }}
           className="bg-white rounded-2xl border border-gray-200 p-7 shadow-sm"
         >
-          <SectionTitle>Números de Curva (CN)</SectionTitle>
+          <SectionTitle>{t('sources.cnTitle')}</SectionTitle>
           <p className="text-sm text-gray-600 leading-relaxed">
             Las tablas CN incluyen categorías de uso del suelo adaptadas a la práctica argentina:
             calles pavimentadas, residencial baja/alta densidad, pastizales, zonas agrícolas,
@@ -824,9 +828,7 @@ export function Sources() {
           className="rounded-xl bg-amber-50 border border-amber-200 p-5"
         >
           <p className="text-sm text-amber-800 leading-relaxed">
-            <span className="font-semibold">Aviso:</span> Esta herramienta genera estimaciones para
-            etapas de anteproyecto. Para diseños definitivos, verificar siempre con los estudios
-            hidrológicos locales más recientes y las normativas provinciales vigentes.
+            {t('home.disclaimerFull')}
           </p>
         </motion.div>
 

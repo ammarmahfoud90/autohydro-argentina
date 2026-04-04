@@ -103,7 +103,30 @@
     "downloadReport": "Descargar Informe",
     "newCalculation": "Nuevo cálculo",
     "idfData": "Datos IDF utilizados",
-    "disclaimer": "Aviso: Estos resultados son estimaciones para etapas preliminares. Verifique con estudios locales actualizados para diseños finales."
+    "disclaimer": "Aviso: Estos resultados son estimaciones para etapas preliminares. Verifique con estudios locales actualizados para diseños finales.",
+    "share": "Compartir",
+    "share_copied": "¡URL copiada!",
+    "open_manning": "Dimensionar canal (Manning)",
+    "open_culvert": "Dimensionar alcantarilla"
+  },
+  "warnings": {
+    "prefilled_flow": "Caudal de diseño completado automáticamente desde el análisis hidrológico.",
+    "sf_tr_limit": "Período de retorno limitado a TR ≤ {{tr}} años (máximo confiable para esta serie).",
+    "short_series": "Serie de datos menor a 15 años. Los resultados son orientativos."
+  },
+  "sources": {
+    "pageTitle": "Fuentes y Metodología",
+    "pageSubtitle": "Transparencia total sobre el origen de los datos y los métodos de cálculo implementados.",
+    "seriesLong": "Serie larga > 30 años",
+    "seriesMedium": "Serie media 15–30 años",
+    "seriesShort": "Serie corta < 15 años — datos orientativos",
+    "idfDataTitle": "Datos IDF por localidad",
+    "idfModelsTitle": "Modelos IDF implementados",
+    "calcMethodsTitle": "Métodos de cálculo hidrológico",
+    "tcFormulasTitle": "Fórmulas de Tiempo de Concentración (Tc)",
+    "cnTitle": "Números de Curva (CN)",
+    "officialSource": "Fuente oficial",
+    "limitations": "Limitaciones"
   },
   "risk": {
     "muy_bajo": "Muy Bajo",

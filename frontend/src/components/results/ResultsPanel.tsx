@@ -103,6 +103,14 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
   const [isDownloadingExcel, setIsDownloadingExcel] = useState(false);
   const [isExportingShp, setIsExportingShp] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
+  const [shareCopied, setShareCopied] = useState(false);
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2500);
+    });
+  };
 
   // Scenario comparison
   const [compareState, setCompareState] = useState<CompareState>('idle');
@@ -1143,7 +1151,7 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
-              Dimensionar canal (Manning)
+              {t('results.open_manning')}
             </button>
 
             <button
@@ -1166,7 +1174,29 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
               </svg>
-              Dimensionar alcantarilla
+              {t('results.open_culvert')}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleShare}
+              className="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-semibold hover:bg-gray-50 transition-colors flex items-center gap-2"
+            >
+              {shareCopied ? (
+                <>
+                  <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-green-700">{t('results.share_copied')}</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                  </svg>
+                  {t('results.share')}
+                </>
+              )}
             </button>
 
             <button

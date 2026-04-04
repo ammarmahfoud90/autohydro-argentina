@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { calculateHydrology, getLocality } from '../services/api';
 import { CitySelector } from '../components/forms/CitySelector';
 import { ManualIDFInput } from '../components/forms/ManualIDFInput';
@@ -193,14 +193,53 @@ function CalculatingOverlay() {
 export function Calculator() {
   const { t } = useTranslation();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const caseStudyData = location.state?.caseStudyData as HydrologyInput | undefined;
   const caseStudyName = location.state?.caseStudyName as string | undefined;
   const [step, setStep] = useState(1);
   const [basinMode, setBasinMode] = useState<'manual' | 'map'>('manual');
-  const [formData, setFormData] = useState<HydrologyInput>(caseStudyData ?? DEFAULT_FORM);
+  const [formData, setFormData] = useState<HydrologyInput>(() => {
+    // If arriving from History/Map with caseStudyData, use that
+    if (caseStudyData) return caseStudyData;
+    // Otherwise seed from URL params if present
+    const localidad = searchParams.get('localidad');
+    const tr = searchParams.get('TR');
+    const dur = searchParams.get('t');
+    const area = searchParams.get('area');
+    const slope = searchParams.get('slope');
+    const method = searchParams.get('method');
+    if (!localidad) return DEFAULT_FORM;
+    return {
+      ...DEFAULT_FORM,
+      locality_id: localidad,
+      return_period: tr ? Number(tr) : DEFAULT_FORM.return_period,
+      duration_min: dur ? Number(dur) : DEFAULT_FORM.duration_min,
+      area_km2: area ? Number(area) : DEFAULT_FORM.area_km2,
+      slope: slope ? Number(slope) : DEFAULT_FORM.slope,
+      method: (method as HydrologyInput['method']) ?? DEFAULT_FORM.method,
+    };
+  });
   const [selectedLocality, setSelectedLocality] = useState<IDFLocality | null>(null);
   const [results, setResults] = useState<HydrologyResult | null>(null);
   const [basinPolygon, setBasinPolygon] = useState<[number, number][] | undefined>(undefined);
+
+  // Sync URL params whenever formData changes (skip if caseStudyData — URL stays clean)
+  useEffect(() => {
+    if (caseStudyData) return;
+    if (!formData.locality_id || formData.locality_id === 'manual') return;
+    setSearchParams(
+      {
+        localidad: formData.locality_id,
+        TR: String(formData.return_period),
+        t: String(formData.duration_min),
+        area: formData.area_km2 > 0 ? String(formData.area_km2) : '',
+        slope: formData.slope > 0 ? String(formData.slope) : '',
+        method: formData.method,
+      },
+      { replace: true }
+    );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.locality_id, formData.return_period, formData.duration_min, formData.area_km2, formData.slope, formData.method]);
 
   // Scroll to top whenever the step changes
   useEffect(() => {

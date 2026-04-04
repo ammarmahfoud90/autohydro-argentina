@@ -103,7 +103,30 @@
     "downloadReport": "Download Report",
     "newCalculation": "New calculation",
     "idfData": "IDF data used",
-    "disclaimer": "Notice: These results are estimates for preliminary stages. Verify with updated local studies for final designs."
+    "disclaimer": "Notice: These results are estimates for preliminary stages. Verify with updated local studies for final designs.",
+    "share": "Share",
+    "share_copied": "URL copied!",
+    "open_manning": "Size channel (Manning)",
+    "open_culvert": "Size culvert"
+  },
+  "warnings": {
+    "prefilled_flow": "Design discharge auto-filled from hydrological analysis.",
+    "sf_tr_limit": "Return period limited to TR ≤ {{tr}} yr (maximum reliable for this series).",
+    "short_series": "Data series shorter than 15 years. Results are indicative only."
+  },
+  "sources": {
+    "pageTitle": "Sources & Methodology",
+    "pageSubtitle": "Full transparency on data sources and calculation methods implemented.",
+    "seriesLong": "> 30 yr series",
+    "seriesMedium": "15–30 yr series",
+    "seriesShort": "< 15 yr series — indicative data",
+    "idfDataTitle": "IDF data by locality",
+    "idfModelsTitle": "IDF models implemented",
+    "calcMethodsTitle": "Hydrological calculation methods",
+    "tcFormulasTitle": "Time of Concentration formulas (Tc)",
+    "cnTitle": "Curve Numbers (CN)",
+    "officialSource": "Official source",
+    "limitations": "Limitations"
   },
   "risk": {
     "muy_bajo": "Very Low",
