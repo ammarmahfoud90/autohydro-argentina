@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Tooltip, Popup } from 'react-leaflet';
 import { useNavigate } from 'react-router-dom';
 import { DEFAULT_FORM } from '../types';
