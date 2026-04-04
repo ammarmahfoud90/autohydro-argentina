@@ -1,0 +1,57 @@
+{
+  "id": "entre_rios_parana",
+  "name": "Paraná",
+  "short_name": "Paraná (ER)",
+  "province": "Entre Ríos",
+  "country": "Argentina",
+  "coordinates": {"lat": -31.7333, "lon": -60.5333},
+  "source": {
+    "document": "Tormentas de diseño para la provincia de Entre Ríos",
+    "title": "Tormentas de diseño para la provincia de Entre Ríos",
+    "authors": "Zamanillo, E.A. et al.",
+    "institution": "Dirección de Hidráulica de Entre Ríos + UTN Facultad Regional Concordia",
+    "date": "2008",
+    "url": "https://www.hidraulica.gob.ar/archivos/tormentas_de_diseno_ER.pdf",
+    "isbn": "978-950-42-0109-0"
+  },
+  "station": {
+    "name": "Pluviógrafo Paraná",
+    "period": "1963–2005",
+    "series_length_years": 42
+  },
+  "limitations": {
+    "geographic_scope": "Ciudad de Paraná y zona de influencia, Entre Ríos.",
+    "cross_reference": "Esta misma ecuación (K=601, m=0.23, c=6, n=0.69) es citada por Marcus et al. (2019) como referencia comparativa para Santa Fe, confirmando consistencia entre fuentes.",
+    "tr_note": "TR=20 incluido en tabla de uso práctico del documento fuente.",
+    "normative_status": "La Dirección de Hidráulica de Entre Ríos avaló formalmente este trabajo."
+  },
+  "idf_model": "sherman_4p",
+  "formula": {
+    "expression": "i = K * Tr^m / (d + c)^n",
+    "variables": {
+      "i": "Intensidad en mm/h",
+      "Tr": "Período de retorno en años",
+      "d": "Duración en minutos",
+      "K": 601,
+      "m": 0.23,
+      "c": 6,
+      "n": 0.69
+    },
+    "valid_duration_min": 10,
+    "valid_duration_max": 1440,
+    "valid_tr_max": 50
+  },
+  "idf_table": {
+    "description": "Tabla 3.4 del documento fuente. Intensidades en mm/h.",
+    "durations_min": [10, 15, 30, 60, 120, 180, 360, 720, 1440],
+    "return_periods": [2, 5, 10, 20, 25, 50],
+    "intensities": {
+      "2":  [104, 86, 59, 39, 25, 19, 12, 7, 5],
+      "5":  [128, 106, 73, 48, 31, 24, 15, 9, 6],
+      "10": [151, 125, 86, 57, 36, 28, 17, 11, 7],
+      "20": [177, 146, 101, 66, 43, 33, 20, 13, 8],
+      "25": [186, 154, 106, 70, 45, 34, 21, 13, 8],
+      "50": [218, 181, 125, 82, 53, 40, 25, 16, 10]
+    }
+  }
+}

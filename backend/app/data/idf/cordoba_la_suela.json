@@ -1,0 +1,52 @@
+{
+  "id": "cordoba_la_suela",
+  "name": "Córdoba — La Suela (Sierras)",
+  "short_name": "La Suela (CBA)",
+  "province": "Córdoba",
+  "country": "Argentina",
+  "coordinates": {"lat": -31.6422, "lon": -64.5903},
+  "source": {
+    "document": "Actualización de Curvas IDF — Ficha La Suela",
+    "title": "Actualización de Curvas IDF — Ficha La Suela",
+    "authors": "Rico, A.; Guillén, N.; Eder, M.; Elcano, G.; Terré, M.F.",
+    "institution": "INA-SCIRSA + SMN + FCEFyN (UNC)",
+    "date": "2025",
+    "url": "https://www.ina.gov.ar/cirsa/pdf/idf_2800-LaSuela-actualizada.pdf"
+  },
+  "station": {
+    "name": "La Suela",
+    "ina_code": "2800",
+    "coordinates": "31°38'32\"S; 64°35'25\"O",
+    "altitude_msnm": 904,
+    "period": "1971–2025",
+    "series_length_years": 49
+  },
+  "limitations": {
+    "geographic_scope": "Sierra Chica, Córdoba. Zona serrana a 904 msnm. No aplica a la llanura cordobesa.",
+    "altitude_note": "Intensidades menores que Córdoba Observatorio por el efecto altitudinal serrano."
+  },
+  "idf_model": "dit_3p",
+  "formula": {
+    "model": "DIT 3P (Caamaño Nelli et al. 2012)",
+    "expression": "ln(i) = A * phi_T - B * delta_d + C",
+    "phi_T": "2.584458 * (ln(T))^(3/8) - 2.252573",
+    "delta_d": "(ln(d))^(5/3)",
+    "A": 0.365,
+    "B": 0.148,
+    "C": 5.116,
+    "mu_lognormal": 4.157,
+    "sigma_lognormal": 0.373
+  },
+  "idf_table": {
+    "description": "Tabla de la ficha INA-CIRSA. Intensidades en mm/h.",
+    "durations_min": [60, 120, 180, 360, 1440],
+    "return_periods": [2, 5, 10, 25, 50],
+    "intensities": {
+      "2":  [35.3, 22.2, 16.6, 9.7, 2.9],
+      "5":  [47.9, 30.1, 22.5, 13.2, 4.0],
+      "10": [56.3, 35.5, 26.5, 15.5, 4.7],
+      "25": [66.9, 42.1, 31.5, 18.4, 5.5],
+      "50": [74.8, 47.1, 35.1, 20.6, 6.2]
+    }
+  }
+}

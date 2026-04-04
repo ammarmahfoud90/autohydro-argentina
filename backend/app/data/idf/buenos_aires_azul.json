@@ -1,0 +1,58 @@
+{
+  "id": "buenos_aires_azul",
+  "name": "Azul y aledaños",
+  "short_name": "Azul (BA)",
+  "province": "Buenos Aires",
+  "country": "Argentina",
+  "coordinates": {"lat": -36.7770, "lon": -59.8586},
+  "source": {
+    "document": "Curvas IDF para el centro de la Provincia de Buenos Aires",
+    "title": "Curvas IDF para el centro de la Provincia de Buenos Aires",
+    "authors": "Collazos, G. & Cazenave, G.",
+    "institution": "IHLLA — Instituto de Hidrología de Llanuras 'Dr. Eduardo J. Usunoff', CONICET / UNCPBA",
+    "date": "2015",
+    "congress": "XXV Congreso Nacional del Agua, Paraná, Argentina",
+    "url": "https://digital.cic.gba.gob.ar/server/api/core/bitstreams/aac0a0ca-45f7-4eb9-aef6-f4b149b94a4f/content"
+  },
+  "station": {
+    "name": "Red IHLLA (6 estaciones) + SMN Azul + SMN Olavarría",
+    "period": "2006–2013 (subdiaras) + 1966–2013 (diarias SMN Azul)",
+    "series_length_years": 8
+  },
+  "limitations": {
+    "geographic_scope": "Partido de Azul y entorno cercano, centro de la provincia de Buenos Aires. No aplica al GBA, La Plata, Mar del Plata ni zona costera.",
+    "series_note": "Series subdiarias de solo 8 años (con faltante en 2009). Los autores advierten mayor incertidumbre para TR=25 y 50. Series diarias del SMN tienen 50 años.",
+    "tr_limitation": "No cubre TR=2. Para obras que requieren TR=2 esta fuente no es aplicable.",
+    "adjustment": "Ajuste estadístico: GEV tres parámetros (EasyFitXL)."
+  },
+  "idf_model": "talbot_cef",
+  "formula": {
+    "expression": "i = c / (d^e + f)",
+    "variables": {
+      "i": "Intensidad en mm/h",
+      "d": "Duración en minutos"
+    },
+    "parameters_by_tr": {
+      "5":  {"c": 1941, "e": 0.803, "f": 12.8},
+      "10": {"c": 1913, "e": 0.787, "f": 8.58},
+      "25": {"c": 1964, "e": 0.773, "f": 7.21},
+      "50": {"c": 1963, "e": 0.760, "f": 6.17}
+    },
+    "valid_duration_min": 10,
+    "valid_duration_max": 2880,
+    "valid_tr_min": 5,
+    "valid_tr_max": 50,
+    "valid_tr_note": "Solo TR 5, 10, 25 y 50 años. El documento no incluye TR=2 ni TR=100+."
+  },
+  "idf_table": {
+    "description": "Curvas IDF generadas con ecuación Talbot-CEF para Azul, Buenos Aires.",
+    "durations_min": [10, 20, 30, 60, 120, 180, 360, 720, 1440, 2880],
+    "return_periods": [5, 10, 25, 50],
+    "intensities": {
+      "5":  [154.0, 108.0, 84.0, 53.0, 33.0, 25.0, 15.0, 9.0, 5.5, 3.5],
+      "10": [162.0, 114.0, 89.0, 56.0, 35.0, 26.0, 16.0, 9.5, 5.8, 3.7],
+      "25": [170.0, 120.0, 94.0, 59.0, 37.0, 28.0, 17.0, 10.0, 6.0, 3.8],
+      "50": [175.0, 124.0, 97.0, 61.0, 38.0, 29.0, 17.5, 10.5, 6.2, 4.0]
+    }
+  }
+}

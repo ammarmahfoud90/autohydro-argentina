@@ -389,6 +389,8 @@ def run_calculation(payload: dict) -> dict:
             req.locality_id,
             return_period=float(req.return_period),
             duration_min=float(req.duration_min),
+            station_name=getattr(req, "station_name", None),
+            station_id=getattr(req, "station_id", None),
         )
         manual_source = None
 

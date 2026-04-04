@@ -1,0 +1,52 @@
+{
+  "id": "cordoba_pampa_olaen",
+  "name": "Córdoba — Pampa de Olaen (Punilla Norte)",
+  "short_name": "Pampa de Olaen (CBA)",
+  "province": "Córdoba",
+  "country": "Argentina",
+  "coordinates": {"lat": -31.1908, "lon": -64.6072},
+  "source": {
+    "document": "Actualización de Curvas IDF — Ficha Pampa de Olaen",
+    "title": "Actualización de Curvas IDF — Ficha Pampa de Olaen",
+    "authors": "Rico, A.; Guillén, N.; Eder, M.; Elcano, G.; Terré, M.F.",
+    "institution": "INA-SCIRSA + SMN + FCEFyN (UNC)",
+    "date": "2025",
+    "url": "https://www.ina.gov.ar/cirsa/pdf/idf_2400-PampadeOlaen-actualizada.pdf"
+  },
+  "station": {
+    "name": "Pampa de Olaen",
+    "ina_code": "2400",
+    "coordinates": "31°11'27\"S; 64°36'26\"O",
+    "altitude_msnm": 1256,
+    "period": "1992–2025",
+    "series_length_years": 27
+  },
+  "limitations": {
+    "geographic_scope": "Valle de Punilla norte, Córdoba. Zona serrana a 1256 msnm.",
+    "series_note": "27 años de registro — la más corta de las 4 estaciones cordobesas de esta expansión. Resultados confiables hasta TR=25 años."
+  },
+  "idf_model": "dit_3p",
+  "formula": {
+    "model": "DIT 3P (Caamaño Nelli et al. 2012)",
+    "expression": "ln(i) = A * phi_T - B * delta_d + C",
+    "phi_T": "2.584458 * (ln(T))^(3/8) - 2.252573",
+    "delta_d": "(ln(d))^(5/3)",
+    "A": 0.352,
+    "B": 0.141,
+    "C": 5.023,
+    "mu_lognormal": 4.126,
+    "sigma_lognormal": 0.401
+  },
+  "idf_table": {
+    "description": "Tabla de la ficha INA-CIRSA. Intensidades en mm/h.",
+    "durations_min": [60, 120, 180, 360, 1440],
+    "return_periods": [2, 5, 10, 25, 50],
+    "intensities": {
+      "2":  [34.6, 22.2, 16.8, 10.1, 3.2],
+      "5":  [46.4, 29.9, 22.6, 13.6, 4.3],
+      "10": [54.3, 34.9, 26.4, 15.9, 5.0],
+      "25": [64.2, 41.3, 31.2, 18.8, 6.0],
+      "50": [71.4, 46.0, 34.8, 20.9, 6.6]
+    }
+  }
+}

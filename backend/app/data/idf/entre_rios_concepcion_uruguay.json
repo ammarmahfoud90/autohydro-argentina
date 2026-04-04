@@ -1,0 +1,56 @@
+{
+  "id": "entre_rios_concepcion_uruguay",
+  "name": "Concepción del Uruguay",
+  "short_name": "Concepción del Uruguay (ER)",
+  "province": "Entre Ríos",
+  "country": "Argentina",
+  "coordinates": {"lat": -32.4833, "lon": -58.2333},
+  "source": {
+    "document": "Tormentas de diseño para la provincia de Entre Ríos",
+    "title": "Tormentas de diseño para la provincia de Entre Ríos",
+    "authors": "Zamanillo, E.A. et al.",
+    "institution": "Dirección de Hidráulica de Entre Ríos + UTN Facultad Regional Concordia",
+    "date": "2008",
+    "url": "https://www.hidraulica.gob.ar/archivos/tormentas_de_diseno_ER.pdf",
+    "isbn": "978-950-42-0109-0"
+  },
+  "station": {
+    "name": "Pluviógrafo Concepción del Uruguay",
+    "period": "1980–2005",
+    "series_length_years": 25
+  },
+  "limitations": {
+    "geographic_scope": "Ciudad de Concepción del Uruguay y zona de influencia, Entre Ríos.",
+    "tr_note": "TR=20 incluido en tabla de uso práctico del documento fuente.",
+    "normative_status": "La Dirección de Hidráulica de Entre Ríos avaló formalmente este trabajo."
+  },
+  "idf_model": "sherman_4p",
+  "formula": {
+    "expression": "i = K * Tr^m / (d + c)^n",
+    "variables": {
+      "i": "Intensidad en mm/h",
+      "Tr": "Período de retorno en años",
+      "d": "Duración en minutos",
+      "K": 1086.9,
+      "m": 0.19,
+      "c": 9,
+      "n": 0.78
+    },
+    "valid_duration_min": 10,
+    "valid_duration_max": 1440,
+    "valid_tr_max": 50
+  },
+  "idf_table": {
+    "description": "Tabla 3.3 del documento fuente. Intensidades en mm/h.",
+    "durations_min": [10, 15, 30, 60, 120, 180, 360, 720, 1440],
+    "return_periods": [2, 5, 10, 20, 25, 50],
+    "intensities": {
+      "2":  [125, 104, 71, 46, 28, 21, 12, 7, 4],
+      "5":  [148, 124, 85, 54, 33, 25, 15, 9, 5],
+      "10": [169, 141, 97, 62, 38, 28, 17, 10, 6],
+      "20": [193, 161, 110, 71, 43, 32, 19, 11, 7],
+      "25": [202, 168, 115, 74, 45, 34, 20, 12, 7],
+      "50": [230, 192, 131, 84, 52, 38, 23, 13, 8]
+    }
+  }
+}

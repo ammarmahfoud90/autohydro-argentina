@@ -1,0 +1,68 @@
+{
+  "id": "tucuman_estaciones",
+  "name": "Tucumán — Red provincial",
+  "short_name": "Tucumán (red)",
+  "province": "Tucumán",
+  "country": "Argentina",
+  "coordinates": {"lat": -26.8241, "lon": -65.2226},
+  "source": {
+    "document": "Predicción de Lluvias Máximas para Diseño Hidrológico. Desarrollo Experimental en la Provincia de Tucumán",
+    "institution": "UNT — FACET — Doctorado en Ciencias Exactas e Ingeniería",
+    "date": "2019",
+    "series_period": "2001–2015",
+    "series_length_years": 15
+  },
+  "idf_model": "dit_tucuman",
+  "model_parameters": {
+    "B_fixed": 0.1458,
+    "B_note": "Parámetro fijo calibrado en pluviógrafo base EEAOC San Miguel de Tucumán",
+    "phi_T_method": "Factor de Frecuencia Normal de Chow (cuantil normal estándar)",
+    "phi_T_table": {
+      "2": 0.000,
+      "5": 0.842,
+      "10": 1.282,
+      "25": 1.751,
+      "50": 2.054,
+      "100": 2.326,
+      "200": 2.576
+    },
+    "delta_d_formula": "(ln(d))^(5/3)",
+    "delta_d_note": "d en minutos"
+  },
+  "stations": {
+    "san_miguel_cc": {"A_prime": 0.290, "C_prime": 5.405, "name": "San Miguel de Tucumán (CC)"},
+    "central_drh": {"A_prime": 0.349, "C_prime": 5.425, "name": "Central DRH"},
+    "concepcion_rrhh": {"A_prime": 0.311, "C_prime": 5.499, "name": "Concepción RRHH"},
+    "villa_benjamin_araoz": {"A_prime": 0.342, "C_prime": 5.372, "name": "Villa Benjamín Araoz"},
+    "la_trinidad": {"A_prime": 0.419, "C_prime": 5.554, "name": "La Trinidad"},
+    "bella_vista": {"A_prime": 0.425, "C_prime": 5.437, "name": "Bella Vista"},
+    "el_arenal": {"A_prime": 0.456, "C_prime": 5.360, "name": "El Arenal"},
+    "aguilares_3": {"A_prime": 0.259, "C_prime": 5.452, "name": "Aguilares 3"},
+    "aguilares_fc": {"A_prime": 0.259, "C_prime": 5.452, "name": "Aguilares FC"},
+    "tafi_viejo": {"A_prime": 0.370, "C_prime": 5.337, "name": "Tafí Viejo"},
+    "el_cadillal": {"A_prime": 0.370, "C_prime": 5.337, "name": "El Cadillal"},
+    "la_tala": {"A_prime": 0.333, "C_prime": 5.229, "name": "La Tala"},
+    "dique_la_aguadita": {"A_prime": 0.402, "C_prime": 5.245, "name": "Dique La Aguadita"},
+    "ralos_mayo": {"A_prime": 0.421, "C_prime": 5.374, "name": "Ralos Mayo"},
+    "rio_seco": {"A_prime": 0.364, "C_prime": 5.787, "name": "Río Seco"},
+    "villa_alberdi": {"A_prime": 0.409, "C_prime": 5.480, "name": "Villa Alberdi"},
+    "yanima": {"A_prime": 0.363, "C_prime": 5.488, "name": "Yanima"},
+    "monte_bello": {"A_prime": 0.292, "C_prime": 5.494, "name": "Monte Bello"},
+    "monte_redondo": {"A_prime": 0.253, "C_prime": 5.422, "name": "Monte Redondo"},
+    "los_pereyras": {"A_prime": 0.388, "C_prime": 5.192, "name": "Los Pereyras"},
+    "los_sarmiento": {"A_prime": 0.280, "C_prime": 5.465, "name": "Los Sarmiento"},
+    "mate_de_luna": {"A_prime": 0.306, "C_prime": 5.405, "name": "Mate de Luna"},
+    "alberdi_rrhh": {"A_prime": 0.516, "C_prime": 5.323, "name": "Alberdi RRHH"},
+    "dique_marapa": {"A_prime": 0.321, "C_prime": 5.438, "name": "Dique Marapa"},
+    "monteros": {"A_prime": 0.283, "C_prime": 5.467, "name": "Monteros"},
+    "la_ramada": {"A_prime": 0.367, "C_prime": 5.506, "name": "La Ramada"},
+    "pampa_pozo": {"A_prime": 0.426, "C_prime": 5.442, "name": "Pampa Pozo"},
+    "tapia": {"A_prime": 0.513, "C_prime": 4.959, "name": "Tapia"}
+  },
+  "limitations": {
+    "geographic_scope": "Provincia de Tucumán. Red de estaciones EEAOC + DRH + SMN. Período calibración: 2001–2015.",
+    "series_note": "15 años de datos pluviográficos. Resultados confiables hasta TR=25 años según el volumen de datos.",
+    "station_selection_note": "El usuario debe seleccionar la estación geográficamente más próxima a su cuenca de estudio dentro de la red provincial.",
+    "source_note": "Tabla 5.6, página 89 de la tesis. El documento indica que la tabla incluye ~60 estaciones; se implementan las 28 documentadas con parámetros explícitos."
+  }
+}

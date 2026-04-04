@@ -151,6 +151,10 @@ class CalculationRequest(BaseModel):
         None, description="Key of the Tc formula adopted for the design calculation"
     )
 
+    # Station selection (required for neuquen_ssrh and dit_tucuman models)
+    station_name: Optional[str] = Field(None, description="Station name for neuquen_ssrh model")
+    station_id: Optional[str] = Field(None, description="Station ID for dit_tucuman model")
+
     # Manual IDF data (used when locality_id == "manual")
     manual_idf_table: Optional[ManualIDFTable] = None
     manual_idf_formula: Optional[ManualIDFFormula] = None

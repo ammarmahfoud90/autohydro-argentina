@@ -1,0 +1,53 @@
+{
+  "id": "cordoba_observatorio",
+  "name": "Córdoba — Observatorio",
+  "short_name": "Córdoba Obs. (CBA)",
+  "province": "Córdoba",
+  "country": "Argentina",
+  "coordinates": {"lat": -31.4208, "lon": -64.1986},
+  "source": {
+    "document": "Actualización de Curvas IDF — Ficha Córdoba Observatorio",
+    "title": "Actualización de Curvas IDF — Ficha Córdoba Observatorio",
+    "authors": "Rico, A.; Guillén, N.; Eder, M.; Elcano, G.; Terré, M.F.",
+    "institution": "INA-SCIRSA + Servicio Meteorológico Nacional + FCEFyN (UNC)",
+    "date": "2025",
+    "url": "https://www.ina.gov.ar/cirsa/pdf/idF-Cba-Observatorio.pdf"
+  },
+  "station": {
+    "name": "Córdoba Observatorio",
+    "smn_code": "87345",
+    "coordinates": "31°25'15\"S; 64°11'54\"O",
+    "altitude_msnm": 425,
+    "period": "1943–2025",
+    "series_length_years": 82
+  },
+  "limitations": {
+    "geographic_scope": "Córdoba capital y área metropolitana inmediata.",
+    "duration_note": "Las fichas INA-CIRSA solo publican duraciones 1, 2, 3, 6 y 24 horas. Para duraciones subhorarias usar la fórmula DIT 3P con precaución.",
+    "series_note": "82 años de datos — la serie más larga de esta expansión."
+  },
+  "idf_model": "dit_3p",
+  "formula": {
+    "model": "DIT 3P (Caamaño Nelli et al. 2012)",
+    "expression": "ln(i) = A * phi_T - B * delta_d + C",
+    "phi_T": "2.584458 * (ln(T))^(3/8) - 2.252573",
+    "delta_d": "(ln(d))^(5/3)",
+    "A": 0.381,
+    "B": 0.154,
+    "C": 5.054,
+    "mu_lognormal": 3.963,
+    "sigma_lognormal": 0.390
+  },
+  "idf_table": {
+    "description": "Tabla de la ficha INA-CIRSA. Intensidades en mm/h.",
+    "durations_min": [60, 120, 180, 360, 1440],
+    "return_periods": [2, 5, 10, 25, 50],
+    "intensities": {
+      "2":  [43.1, 26.6, 19.7, 11.3, 3.2],
+      "5":  [58.0, 35.9, 26.5, 15.2, 4.3],
+      "10": [67.9, 42.0, 31.0, 17.7, 5.1],
+      "25": [80.4, 49.7, 36.7, 21.0, 6.0],
+      "50": [89.5, 55.4, 40.8, 23.4, 6.7]
+    }
+  }
+}

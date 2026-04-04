@@ -1,0 +1,58 @@
+{
+  "id": "buenos_aires_balcarce",
+  "name": "Balcarce",
+  "short_name": "Balcarce (BA)",
+  "province": "Buenos Aires",
+  "country": "Argentina",
+  "coordinates": {"lat": -37.8460, "lon": -58.2540},
+  "source": {
+    "document": "Actualización y análisis de las curvas intensidad–duración–frecuencia para la localidad de Balcarce, provincia de Buenos Aires, Argentina",
+    "title": "Actualización y análisis de las curvas intensidad–duración–frecuencia para la localidad de Balcarce, provincia de Buenos Aires, Argentina",
+    "authors": "Puricelli, Marino",
+    "institution": "INTA — Estación Experimental Agropecuaria Balcarce",
+    "date": "2014",
+    "journal": "Revista de Geología Aplicada a la Ingeniería y al Ambiente, Nº 32, pp. 61–70",
+    "doi": "https://doi.org/10.59069/ng407f17"
+  },
+  "station": {
+    "name": "EEA Balcarce INTA",
+    "coordinates": "37.75°S, 58.30°O",
+    "period": "1972–1979 (Vidal & Cousillas) + 1991–2006 (Puricelli)",
+    "series_length_years": 23
+  },
+  "limitations": {
+    "geographic_scope": "Sudeste bonaerense (Llanura Chacopampeana sur). No extrapolar al GBA, La Plata, Pampa Húmeda nordeste ni zona centro-oeste provincial.",
+    "duration_note": "Duración mínima verificada: 30 min. No usar para duraciones de 10–20 min.",
+    "model_note": "El artículo prueba dos modelos (Ecuación 12 y Koutsoyiannis et al. 1998) y concluye que son estadísticamente indistinguibles para este período de datos. Se implementa el modelo tradicional (Ecuación 12) por simplicidad."
+  },
+  "idf_model": "sherman_power",
+  "formula": {
+    "expression": "i = tau * T^epsilon / d^eta",
+    "variables": {
+      "i": "Intensidad en mm/h",
+      "T": "Período de retorno en años",
+      "d": "Duración en minutos",
+      "tau": 381.12,
+      "epsilon": 0.37,
+      "eta": 0.85
+    },
+    "r_squared": 0.87,
+    "valid_duration_min": 30,
+    "valid_duration_max": 360,
+    "valid_tr_max": 100,
+    "valid_duration_note": "Duraciones analizadas en el estudio: 30, 60, 120, 180, 300, 360 minutos. No extrapolar a duraciones menores de 30 min."
+  },
+  "idf_table": {
+    "description": "Tabla IDF para Balcarce — modelo Sherman modificado. Intensidades en mm/h.",
+    "durations_min": [30, 60, 120, 180, 300, 360],
+    "return_periods": [2, 5, 10, 25, 50, 100],
+    "intensities": {
+      "2":   [58.2, 35.8, 22.0, 16.5, 11.8, 10.2],
+      "5":   [71.5, 44.0, 27.0, 20.3, 14.5, 12.5],
+      "10":  [82.0, 50.5, 31.0, 23.3, 16.7, 14.4],
+      "25":  [95.8, 59.0, 36.2, 27.2, 19.5, 16.8],
+      "50":  [106.5, 65.6, 40.3, 30.3, 21.7, 18.7],
+      "100": [117.2, 72.2, 44.3, 33.3, 23.9, 20.6]
+    }
+  }
+}

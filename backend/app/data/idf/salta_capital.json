@@ -1,0 +1,54 @@
+{
+  "id": "salta_capital",
+  "name": "Salta Capital",
+  "short_name": "Salta (SA)",
+  "province": "Salta",
+  "country": "Argentina",
+  "coordinates": {"lat": -24.8436, "lon": -65.4759},
+  "source": {
+    "document": "Lluvias para diseño hidrológico — Relación IDF, Salta - Pcia. Salta",
+    "title": "Lluvias para diseño hidrológico — Relación IDF, Salta - Pcia. Salta",
+    "authors": "Rico et al.",
+    "institution": "INA-CIRSA + SMN + UCASAL (Facultad de Ingeniería)",
+    "date": "2025",
+    "url": "https://www.ina.gov.ar/cirsa/pdf/idF-Salta.pdf"
+  },
+  "station": {
+    "name": "Salta Aero",
+    "smn_code": "87047",
+    "coordinates": "24°50'40\"S; 65°28'33\"O",
+    "altitude_msnm": 1221,
+    "period": "1963–2014",
+    "series_length_years": 23,
+    "series_note": "23 años de registro pluviográfico efectivo de los 51 años del período total."
+  },
+  "limitations": {
+    "geographic_scope": "Salta capital y zona inmediata. No aplica al interior provincial (Orán, Tartagal, San Ramón de la Nueva Orán).",
+    "series_note": "Solo 23 años de registro pluviográfico efectivo. Resultados confiables hasta TR=25 años.",
+    "second_source_note": "Existe también el estudio Bermudez 2015 (UNSa) para Salta y alrededores — publicado en Academia.edu. Pendiente de verificación en repositorio oficial UNSa antes de implementar como fuente alternativa."
+  },
+  "idf_model": "dit_3p",
+  "formula": {
+    "model": "DIT 3P (Caamaño Nelli et al. 2012)",
+    "expression": "ln(i) = A * phi_T - B * delta_d + C",
+    "phi_T": "2.584458 * (ln(T))^(3/8) - 2.252573",
+    "delta_d": "(ln(d))^(5/3)",
+    "A": 0.380,
+    "B": 0.150,
+    "C": 5.179,
+    "mu_lognormal": 4.296,
+    "sigma_lognormal": 0.331
+  },
+  "idf_table": {
+    "description": "Tabla de la ficha INA-CIRSA. Intensidades en mm/h.",
+    "durations_min": [60, 120, 180, 360, 1440],
+    "return_periods": [2, 5, 10, 25, 50],
+    "intensities": {
+      "2":  [36.8, 23.1, 17.1, 10.0, 2.9],
+      "5":  [50.6, 31.8, 23.7, 13.9, 4.1],
+      "10": [59.9, 37.5, 27.9, 16.2, 4.8],
+      "25": [71.7, 44.9, 33.4, 19.4, 5.7],
+      "50": [80.4, 50.4, 37.4, 21.8, 6.4]
+    }
+  }
+}

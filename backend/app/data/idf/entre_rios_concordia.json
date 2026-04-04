@@ -1,0 +1,56 @@
+{
+  "id": "entre_rios_concordia",
+  "name": "Concordia",
+  "short_name": "Concordia (ER)",
+  "province": "Entre Ríos",
+  "country": "Argentina",
+  "coordinates": {"lat": -31.3930, "lon": -58.0209},
+  "source": {
+    "document": "Tormentas de diseño para la provincia de Entre Ríos",
+    "title": "Tormentas de diseño para la provincia de Entre Ríos",
+    "authors": "Zamanillo, E.A. et al.",
+    "institution": "Dirección de Hidráulica de Entre Ríos + UTN Facultad Regional Concordia",
+    "date": "2008",
+    "url": "https://www.hidraulica.gob.ar/archivos/tormentas_de_diseno_ER.pdf",
+    "isbn": "978-950-42-0109-0"
+  },
+  "station": {
+    "name": "Pluviógrafo Concordia",
+    "period": "1961–2004",
+    "series_length_years": 43
+  },
+  "limitations": {
+    "geographic_scope": "Ciudad de Concordia y zona de influencia, Entre Ríos.",
+    "tr_note": "TR=20 incluido en tabla de uso práctico del documento fuente.",
+    "normative_status": "La Dirección de Hidráulica de Entre Ríos y la Dirección Provincial de Vialidad avalaron formalmente este trabajo en el Taller de Presentación de noviembre 2008."
+  },
+  "idf_model": "sherman_4p",
+  "formula": {
+    "expression": "i = K * Tr^m / (d + c)^n",
+    "variables": {
+      "i": "Intensidad en mm/h",
+      "Tr": "Período de retorno en años",
+      "d": "Duración en minutos",
+      "K": 652.4,
+      "m": 0.26,
+      "c": 5,
+      "n": 0.71
+    },
+    "valid_duration_min": 10,
+    "valid_duration_max": 1440,
+    "valid_tr_max": 50
+  },
+  "idf_table": {
+    "description": "Tabla 3.2 del documento fuente. Intensidades en mm/h.",
+    "durations_min": [10, 15, 30, 60, 120, 180, 360, 720, 1440],
+    "return_periods": [2, 5, 10, 20, 25, 50],
+    "intensities": {
+      "2":  [114, 93,  63, 40, 25, 19, 12, 7, 4],
+      "5":  [145, 118, 79, 51, 32, 24, 15, 9, 6],
+      "10": [173, 142, 95, 61, 38, 29, 18, 11, 7],
+      "20": [208, 169, 114, 73, 46, 35, 22, 13, 8],
+      "25": [220, 180, 121, 78, 49, 37, 23, 14, 9],
+      "50": [263, 215, 144, 93, 58, 44, 27, 17, 10]
+    }
+  }
+}
