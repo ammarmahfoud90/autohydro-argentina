@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const GITHUB_URL = 'https://github.com/ammarmahfoud90/autohydro-argentina';
 const LINKEDIN_URL = 'https://www.linkedin.com/in/ammar-mahfoud-499212118';
@@ -21,6 +22,17 @@ function LinkedInIcon() {
 }
 
 export function Footer() {
+  const { t } = useTranslation();
+
+  const FOOTER_LINKS = [
+    { to: '/calculator', labelKey: 'footer.linkHydrology' },
+    { to: '/calculadora/manning', labelKey: 'footer.linkManning' },
+    { to: '/calculadora/alcantarilla', labelKey: 'footer.linkCulvert' },
+    { to: '/calculadora/hietograma', labelKey: 'footer.linkHyetogram' },
+    { to: '/sources', labelKey: 'footer.linkSources' },
+    { to: '/about', labelKey: 'footer.linkAbout' },
+  ];
+
   return (
     <motion.footer
       className="text-white mt-auto"
@@ -47,34 +59,26 @@ export function Footer() {
               <p className="font-semibold text-sm text-white">AutoHydro Argentina</p>
             </div>
             <p className="text-blue-300/80 text-xs leading-relaxed mb-4">
-              Herramienta de cálculo hidrológico con datos IDF verificados.
-              Open source, libre uso profesional.
+              {t('footer.description')}
             </p>
             <p className="text-white/30 text-xs">
-              © 2025 Ing. Ammar Mahfoud · MIT License
+              {t('footer.rights')}
             </p>
           </div>
 
           {/* Column 2: Links */}
           <div>
             <p className="text-xs font-semibold text-blue-400/70 uppercase tracking-wider mb-3">
-              Herramientas
+              {t('footer.toolsHeader')}
             </p>
             <div className="space-y-2">
-              {[
-                { to: '/calculator', label: 'Calculadora hidrológica' },
-                { to: '/calculadora/manning', label: 'Cálculo Manning' },
-                { to: '/calculadora/alcantarilla', label: 'Dimensionar alcantarilla' },
-                { to: '/calculadora/hietograma', label: 'Hietogramas' },
-                { to: '/sources', label: 'Fuentes y Metodología' },
-                { to: '/about', label: 'Acerca de' },
-              ].map(({ to, label }) => (
+              {FOOTER_LINKS.map(({ to, labelKey }) => (
                 <Link
                   key={to}
                   to={to}
                   className="block text-xs text-white/50 hover:text-blue-300 transition-colors duration-200"
                 >
-                  {label}
+                  {t(labelKey)}
                 </Link>
               ))}
             </div>
@@ -83,11 +87,10 @@ export function Footer() {
           {/* Column 3: Contact */}
           <div>
             <p className="text-xs font-semibold text-blue-400/70 uppercase tracking-wider mb-3">
-              Contacto
+              {t('footer.contactHeader')}
             </p>
             <p className="text-xs text-white/50 mb-4 leading-relaxed">
-              Ing. Ammar Mahfoud — Ingeniero Civil, Hidrología e Hidráulica.
-              Errores y sugerencias a través de GitHub o LinkedIn.
+              {t('footer.contactText')}
             </p>
             <div className="flex items-center gap-4">
               <a
@@ -116,7 +119,7 @@ export function Footer() {
 
       {/* Argentine flag strip + Malvinas banner */}
       <div
-        className="w-full px-4 py-4 text-center"
+        className="w-full px-4 text-center"
         style={{
           backgroundColor: '#0d1f35',
           borderTop: '3px solid transparent',
@@ -124,15 +127,16 @@ export function Footer() {
             'linear-gradient(#0d1f35, #0d1f35), linear-gradient(to right, #74ACDF 33%, #ffffff 33% 66%, #74ACDF 66%)',
           backgroundOrigin: 'border-box',
           backgroundClip: 'padding-box, border-box',
-          minHeight: '44px',
+          minHeight: '56px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          padding: '14px 16px',
         }}
       >
         <p
-          className="font-medium"
-          style={{ color: '#74ACDF', fontSize: '13px', lineHeight: '1.4' }}
+          className="font-semibold"
+          style={{ color: '#e2e8f0', fontSize: '13px', lineHeight: '1.5' }}
         >
           🇦🇷 Las Islas Malvinas, Georgias del Sur y Sandwich del Sur son y serán argentinas
         </p>

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const GITHUB_URL = 'https://github.com/ammarmahfoud90/autohydro-argentina';
 const LINKEDIN_URL = 'https://www.linkedin.com/in/ammar-mahfoud-499212118';
@@ -67,6 +68,8 @@ const fadeUp = {
 };
 
 export function About() {
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-screen bg-gray-50">
 
@@ -81,9 +84,9 @@ export function About() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-3xl font-bold text-white mb-2">Acerca de</h1>
+            <h1 className="text-3xl font-bold text-white mb-2">{t('about.pageTitle')}</h1>
             <p className="text-blue-300 text-sm">
-              AutoHydro Argentina — herramienta open source de cálculo hidrológico.
+              {t('about.pageSubtitle')}
             </p>
           </motion.div>
         </div>
@@ -111,13 +114,13 @@ export function About() {
                   AM
                 </motion.div>
                 <div>
-                  <h1 className="text-xl font-bold text-gray-900">Ing. Ammar Mahfoud</h1>
+                  <h1 className="text-xl font-bold text-gray-900">{t('about.developerName')}</h1>
                   <p className="text-sm text-gray-500 mt-0.5">
-                    Ingeniero Civil · Hidrología e Hidráulica
+                    {t('about.developerRole')}
                   </p>
                   <p className="text-sm text-blue-600 font-medium mt-1">
                     <span role="img" aria-label="Argentine flag">🇦🇷</span>{' '}
-                    Buenos Aires, Argentina
+                    {t('about.developerLocation')}
                   </p>
                 </div>
               </div>
@@ -147,9 +150,7 @@ export function About() {
               </div>
             </div>
             <p className="text-sm text-gray-600 leading-relaxed mt-5">
-              Ingeniero civil con experiencia en hidrología e hidráulica. Trabajó en la Administración
-              Provincial del Agua (APA) del Chaco en estudios hidrológicos y diseño de desagües
-              pluviales urbanos.
+              {t('about.developerBio')}
             </p>
           </div>
         </motion.div>
@@ -162,19 +163,12 @@ export function About() {
           transition={{ duration: 0.5 }}
           className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7"
         >
-          <SectionTitle>Sobre AutoHydro Argentina</SectionTitle>
+          <SectionTitle>{t('about.projectTitle')}</SectionTitle>
           <p className="text-sm text-gray-600 leading-relaxed mb-3">
-            AutoHydro Argentina es un proyecto <strong>open source</strong> de cálculo hidrológico
-            para la práctica profesional en Argentina. Los datos IDF incluidos cubren <strong>18 localidades
-            en 9 provincias</strong> y provienen de fuentes verificadas: APA (Chaco), UTN-ER / Dirección de Hidráulica
-            (Entre Ríos), UNL-CURIHAM (Santa Fe), IHLLA-CONICET (Buenos Aires), INTA (Buenos Aires),
-            INA-CIRSA (Córdoba y Salta), INA-CRA (Mendoza y Catamarca), SsRH (Neuquén) y UNT-FACET (Tucumán).
+            {t('about.projectText1')}
           </p>
           <p className="text-sm text-gray-600 leading-relaxed mb-5">
-            El proyecto incorpora <strong>9 modelos IDF</strong> distintos para adaptarse a la diversidad
-            metodológica de las fuentes argentinas. Se agregan nuevas localidades únicamente cuando se
-            dispone de datos provenientes de publicaciones técnicas verificables: resoluciones oficiales,
-            papers arbitrados e informes técnicos de organismos hídricos.
+            {t('about.projectText2')}
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
@@ -182,7 +176,7 @@ export function About() {
               className="inline-flex items-center gap-2 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 hover:scale-[1.02]"
               style={{ background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)' }}
             >
-              Ir a la calculadora
+              {t('about.goToCalculator')}
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
@@ -194,7 +188,7 @@ export function About() {
               className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-gray-50 transition-colors"
             >
               <GitHubIcon />
-              Ver código fuente
+              {t('about.viewSourceCode')}
             </a>
           </div>
         </motion.div>
@@ -207,7 +201,7 @@ export function About() {
           transition={{ duration: 0.5 }}
           className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7"
         >
-          <SectionTitle>Stack Tecnológico</SectionTitle>
+          <SectionTitle>{t('about.techTitle')}</SectionTitle>
           <motion.div
             className="flex flex-wrap gap-2"
             variants={{ show: { transition: { staggerChildren: 0.05 } } }}
@@ -236,7 +230,7 @@ export function About() {
           transition={{ duration: 0.5 }}
           className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7"
         >
-          <SectionTitle>Referencias</SectionTitle>
+          <SectionTitle>{t('about.referencesTitle')}</SectionTitle>
           <ul className="space-y-2">
             {REFERENCES.map((ref) => (
               <li key={ref} className="flex gap-2.5 text-sm text-gray-600">
@@ -255,10 +249,9 @@ export function About() {
           transition={{ duration: 0.5 }}
           className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7"
         >
-          <SectionTitle>Contacto y Feedback</SectionTitle>
+          <SectionTitle>{t('about.contactTitle')}</SectionTitle>
           <p className="text-sm text-gray-600 leading-relaxed mb-4">
-            ¿Encontraste un error, tenés una sugerencia o querés colaborar?
-            Podés abrir un issue en GitHub o contactarme directamente por LinkedIn.
+            {t('about.contactText')}
           </p>
           <div className="flex gap-3 flex-wrap">
             <motion.a
@@ -270,7 +263,7 @@ export function About() {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900 text-white text-xs font-semibold hover:bg-gray-700 transition-colors"
             >
               <GitHubIcon />
-              Abrir issue en GitHub
+              {t('about.openIssue')}
             </motion.a>
             <motion.a
               href={LINKEDIN_URL}
@@ -281,7 +274,7 @@ export function About() {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0077b5] text-white text-xs font-semibold hover:bg-[#006399] transition-colors"
             >
               <LinkedInIcon />
-              Contactar por LinkedIn
+              {t('about.contactLinkedIn')}
             </motion.a>
           </div>
         </motion.div>

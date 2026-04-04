@@ -262,9 +262,9 @@ function LocalitySourceCard({ localityId }: { localityId: string }) {
           </div>
         </div>
 
-        {/* APA Chaco: IDF Table */}
-        {idfModel === 'apa_chaco' && data.idf_table && (() => {
-          const trs = data.idf_table.return_periods_years ?? data.idf_table.return_periods ?? [];
+        {/* Generic IDF Table — shown for any model that has idf_table (except ina_cra_mendoza and neuquen_ssrh which have their own displays) */}
+        {data.idf_table && idfModel !== 'ina_cra_mendoza' && idfModel !== 'neuquen_ssrh' && (() => {
+          const trs = data.idf_table!.return_periods_years ?? data.idf_table!.return_periods ?? [];
           const getIntensity = (tr: number, di: number): string => {
             const byTr = data.idf_table!.intensities_mm_hr ?? data.idf_table!.intensities;
             if (!byTr) return '—';
@@ -308,7 +308,7 @@ function LocalitySourceCard({ localityId }: { localityId: string }) {
               </table>
             </div>
             <p className="text-xs text-gray-400 mt-1.5">
-              Fuente: {data.source.document}. Las fórmulas analíticas se usan para interpolación entre TR.
+              Fuente: {data.source.document}.
             </p>
           </div>
           );
@@ -415,57 +415,6 @@ function LocalitySourceCard({ localityId }: { localityId: string }) {
           </div>
         )}
 
-        {/* Simple Scaling Table: show IDF table */}
-        {idfModel === 'simple_scaling_table' && data.idf_table && (() => {
-          const trs = data.idf_table.return_periods_years ?? data.idf_table.return_periods ?? [];
-          const getIntensity = (tr: number, di: number): string => {
-            const byTr = data.idf_table!.intensities_mm_hr ?? data.idf_table!.intensities;
-            if (!byTr) return '—';
-            if (Array.isArray(byTr)) return (byTr[trs.indexOf(tr)]?.[di])?.toFixed(1) ?? '—';
-            const row = (byTr as Record<string, number[]>)[String(tr)];
-            return row?.[di]?.toFixed(1) ?? '—';
-          };
-          return (
-          <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-              Tabla IDF publicada (mm/hr)
-            </p>
-            <div className="overflow-x-auto rounded-xl border border-gray-200">
-              <table className="w-full text-xs border-collapse">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="text-left px-3 py-2 text-gray-600 font-semibold border-b border-r border-gray-200">
-                      Duración (min)
-                    </th>
-                    {trs.map((tr) => (
-                      <th key={tr} className="text-center px-3 py-2 text-gray-600 font-semibold border-b border-r border-gray-200 last:border-r-0">
-                        TR = {tr} años
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.idf_table!.durations_min.map((dur, di) => (
-                    <tr key={dur} className={`${di % 2 === 0 ? 'bg-white' : 'bg-gray-50/60'} hover:bg-blue-50/50 transition-colors`}>
-                      <td className="px-3 py-1.5 font-medium text-gray-700 border-r border-gray-200">
-                        {dur}
-                      </td>
-                      {trs.map((tr) => (
-                        <td key={tr} className="px-3 py-1.5 text-center tabular-nums text-gray-700 border-r border-gray-200 last:border-r-0">
-                          {getIntensity(tr, di)}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p className="text-xs text-gray-400 mt-1.5">
-              Interpolación log-lineal en TR. Fuente: {data.source.document}.
-            </p>
-          </div>
-          );
-        })()}
 
       </div>
     </motion.div>

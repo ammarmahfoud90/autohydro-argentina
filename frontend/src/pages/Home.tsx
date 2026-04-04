@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { LOCALITIES_SUMMARY } from '../constants/localities-summary';
 import type { LocalitySummary } from '../constants/localities-summary';
 import { MalvinasSection } from '../components/MalvinasSection';
@@ -9,8 +10,8 @@ const LINKEDIN_URL = 'https://www.linkedin.com/in/ammar-mahfoud-499212118';
 
 const TOOLS = [
   {
-    label: 'Hidrología',
-    desc: 'Caudales de diseño con métodos Racional y SCS-CN. Análisis de Tc, CN y generación de memorias PDF.',
+    labelKey: 'home.toolHydrologyLabel',
+    descKey: 'home.toolHydrologyDesc',
     href: '/calculator',
     icon: (
       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -22,8 +23,8 @@ const TOOLS = [
     iconBg: 'bg-blue-500/10 text-blue-600',
   },
   {
-    label: 'Hidráulica (Manning)',
-    desc: 'Capacidad de canales abiertos: trapecial, rectangular, circular y triangular.',
+    labelKey: 'home.toolManningLabel',
+    descKey: 'home.toolManningDesc',
     href: '/calculadora/manning',
     icon: (
       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -34,8 +35,8 @@ const TOOLS = [
     iconBg: 'bg-cyan-500/10 text-cyan-600',
   },
   {
-    label: 'Alcantarillas',
-    desc: 'Dimensionamiento de alcantarillas según FHWA HDS-5: control por entrada y salida.',
+    labelKey: 'home.toolCulvertsLabel',
+    descKey: 'home.toolCulvertsDesc',
     href: '/calculadora/alcantarilla',
     icon: (
       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -46,8 +47,8 @@ const TOOLS = [
     iconBg: 'bg-indigo-500/10 text-indigo-600',
   },
   {
-    label: 'Hietogramas',
-    desc: 'Tormenta de diseño con distribución temporal: Bloques Alternos, SCS Tipo II, Chicago, Uniforme.',
+    labelKey: 'home.toolHyetogramLabel',
+    descKey: 'home.toolHyetogramDesc',
     href: '/calculadora/hietograma',
     icon: (
       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -116,6 +117,8 @@ function LocalityCard({ loc, index }: { loc: LocalitySummary; index: number }) {
 }
 
 export function Home() {
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-screen bg-gray-50">
 
@@ -144,7 +147,7 @@ export function Home() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-400" />
             </span>
-            Datos IDF verificados · 18 localidades · 9 provincias
+            {t('home.verifiedBadge')}
           </motion.div>
 
           {/* Title */}
@@ -164,7 +167,7 @@ export function Home() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="text-blue-300 text-lg sm:text-xl font-medium mb-3"
           >
-            Cálculo hidrológico con datos IDF verificados
+            {t('home.heroTitle')}
           </motion.p>
 
           <motion.p
@@ -173,9 +176,7 @@ export function Home() {
             transition={{ duration: 0.5, delay: 0.35 }}
             className="text-white/60 text-base max-w-2xl leading-relaxed mb-9"
           >
-            Calculá caudales de diseño con datos IDF de fuentes oficiales argentinas: APA Chaco,
-            INA-CRA, SsRH Neuquén, UTN-ER, UNL, INA-CIRSA, INTA, UNT-FACET. Método Racional,
-            SCS-CN, fórmulas de Tc, Manning y alcantarillas.
+            {t('home.heroDescription')}
           </motion.p>
 
           {/* CTAs */}
@@ -190,7 +191,7 @@ export function Home() {
               className="inline-flex items-center gap-2 font-semibold px-7 py-3 rounded-xl text-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
               style={{ background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)', color: 'white', boxShadow: '0 4px 20px rgba(79,70,229,0.4)' }}
             >
-              Iniciar Cálculo
+              {t('home.cta')}
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
@@ -199,7 +200,7 @@ export function Home() {
               to="/sources"
               className="inline-flex items-center gap-2 text-white/75 hover:text-white border border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 px-5 py-3 rounded-xl text-sm font-medium transition-all duration-200"
             >
-              Ver Fuentes y Metodología
+              {t('home.ctaSources')}
             </Link>
           </motion.div>
         </div>
@@ -215,11 +216,10 @@ export function Home() {
           className="mb-8"
         >
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Localidades con datos IDF verificados
+            {t('home.localitiesTitle')}
           </h2>
           <p className="text-sm text-gray-500">
-            18 localidades en 9 provincias. Fuentes: APA (Chaco/Formosa), INA-CRA (Mendoza/Catamarca),
-            SsRH Neuquén, UTN Concordia, UNL, INA-CIRSA (Córdoba/Salta), INTA (Buenos Aires), UNT-FACET (Tucumán).
+            {t('home.localitiesSubtitle')}
           </p>
         </motion.div>
 
@@ -242,9 +242,9 @@ export function Home() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="text-xs text-gray-400 mt-5"
         >
-          Se incorporarán nuevas localidades a medida que se verifiquen fuentes oficiales.{' '}
+          {t('home.moreLocalities')}{' '}
           <Link to="/sources" className="text-blue-600 hover:underline">
-            Ver detalles completos y tablas IDF →
+            {t('home.viewFullDetails')}
           </Link>
         </motion.p>
       </section>
@@ -259,9 +259,9 @@ export function Home() {
             transition={{ duration: 0.5 }}
             className="mb-8"
           >
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Calculadoras disponibles</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('home.calculatorsTitle')}</h2>
             <p className="text-sm text-gray-500">
-              Herramientas de cálculo hidrológico e hidráulico integradas.
+              {t('home.calculatorsSubtitle')}
             </p>
           </motion.div>
 
@@ -284,13 +284,13 @@ export function Home() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
                       <h3 className="font-semibold text-gray-900 text-sm group-hover:text-blue-700 transition-colors">
-                        {tool.label}
+                        {t(tool.labelKey)}
                       </h3>
                       <svg className="w-4 h-4 text-gray-300 group-hover:text-blue-400 shrink-0 transition-all duration-300 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1 leading-relaxed">{tool.desc}</p>
+                    <p className="text-xs text-gray-500 mt-1 leading-relaxed">{t(tool.descKey)}</p>
                   </div>
                 </Link>
               </motion.div>
@@ -308,12 +308,9 @@ export function Home() {
           transition={{ duration: 0.5 }}
           className="rounded-2xl bg-blue-50 border border-blue-200 p-6"
         >
-          <h2 className="text-sm font-semibold text-blue-900 mb-2">Metodología</h2>
+          <h2 className="text-sm font-semibold text-blue-900 mb-2">{t('home.methodologyTitle')}</h2>
           <p className="text-sm text-blue-800 leading-relaxed">
-            AutoHydro implementa métodos estándar de ingeniería hidrológica: Método Racional,
-            SCS-CN (USDA), 6 fórmulas de Tiempo de Concentración, ecuación de Manning y
-            dimensionamiento de alcantarillas según FHWA HDS-5. Los datos IDF provienen
-            exclusivamente de fuentes oficiales verificadas.
+            {t('home.methodologyText')}
           </p>
         </motion.div>
       </section>
@@ -328,9 +325,8 @@ export function Home() {
           className="rounded-2xl bg-amber-50 border border-amber-200 p-5"
         >
           <p className="text-sm text-amber-800">
-            <span className="font-semibold">Aviso:</span> Esta herramienta genera estimaciones para
-            etapas de anteproyecto. Para diseños definitivos, verificar siempre con los estudios
-            hidrológicos locales más recientes y las normativas provinciales vigentes.
+            <span className="font-semibold">{t('home.disclaimerTitle')}:</span>{' '}
+            {t('home.disclaimerFull')}
           </p>
         </motion.div>
       </section>
@@ -385,7 +381,7 @@ export function Home() {
         </div>
         <div className="max-w-4xl mx-auto mt-5 pt-4 border-t border-white/10 text-center">
           <p className="text-white/30 text-xs">
-            AutoHydro Argentina · Código abierto bajo licencia MIT
+            AutoHydro Argentina · {t('home.openSource')}
           </p>
         </div>
       </motion.section>
