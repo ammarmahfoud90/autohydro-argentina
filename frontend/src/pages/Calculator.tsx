@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
-import { calculateHydrology } from '../services/api';
+import { calculateHydrology, getLocality } from '../services/api';
 import { CitySelector } from '../components/forms/CitySelector';
 import { ManualIDFInput } from '../components/forms/ManualIDFInput';
 import { BasinInputs } from '../components/forms/BasinInputs';
@@ -219,12 +219,24 @@ export function Calculator() {
     mutation.mutate(formData);
   };
 
+  // Fetch full locality detail to get stations (used for dit_tucuman)
+  const isTucuman = formData.locality_id === 'tucuman_estaciones';
+  const { data: tucumanLocality } = useQuery({
+    queryKey: ['locality', 'tucuman_estaciones'],
+    queryFn: () => getLocality('tucuman_estaciones'),
+    enabled: isTucuman,
+    staleTime: Infinity,
+  });
+  const tucumanStations: Record<string, { name: string }> =
+    (tucumanLocality as any)?.stations ?? {};
+
   // ── Validation ──────────────────────────────────────────────────────────────
 
   const isManualLocality = formData.locality_id === 'manual';
   const step1Valid =
     !!formData.locality_id &&
-    (!isManualLocality || (!!formData.manual_idf_table || !!formData.manual_idf_formula));
+    (!isManualLocality || (!!formData.manual_idf_table || !!formData.manual_idf_formula)) &&
+    (!isTucuman || !!formData.station_id);
 
   const step2Valid =
     formData.area_km2 > 0 && formData.length_km > 0 && formData.slope > 0;
@@ -306,11 +318,11 @@ export function Calculator() {
               returnPeriod={formData.return_period}
               duration={formData.duration_min}
               onChange={(localityId) => {
-                // Clear manual IDF data when switching localities
                 update({
                   locality_id: localityId,
                   manual_idf_table: null,
                   manual_idf_formula: null,
+                  station_id: null,
                 });
               }}
             />
@@ -337,6 +349,29 @@ export function Calculator() {
                   </div>
                 )}
               </>
+            )}
+
+            {/* Tucumán station selector — required for dit_tucuman model */}
+            {isTucuman && (
+              <div className="mt-4 space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Estación pluviográfica <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.station_id ?? ''}
+                  onChange={(e) => update({ station_id: e.target.value || null })}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Seleccionar estación más cercana a la cuenca</option>
+                  {Object.entries(tucumanStations).map(([id, s]) => (
+                    <option key={id} value={id}>{s.name}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500">
+                  Seleccioná la estación geográficamente más próxima a tu área de estudio.
+                  Red EEAOC + DRH + SMN — Tesis doctoral Bazzano 2019 (UNT-FACET).
+                </p>
+              </div>
             )}
 
             {formData.locality_id === 'el_colorado' && (

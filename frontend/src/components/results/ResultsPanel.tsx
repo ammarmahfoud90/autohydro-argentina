@@ -255,6 +255,25 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <h2 className="text-lg font-bold text-gray-800 mb-4">{t('results.title')}</h2>
 
+        {/* TR reliability warning for localities with limited series */}
+        {results.locality_id === 'santa_fe_cim_fich' && results.return_period > 25 && (
+          <div className="mb-4 rounded-lg border border-orange-300 bg-orange-50 px-4 py-3 flex items-start gap-3">
+            <svg className="w-5 h-5 mt-0.5 shrink-0 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div className="text-sm">
+              <p className="font-bold text-orange-900">
+                TR = {results.return_period} años — extrapolación fuera del rango confiable.
+              </p>
+              <p className="mt-0.5 text-orange-800">
+                La fuente CIM-FICH (Marcus et al. 2019) solo garantiza resultados confiables hasta TR = 25 años
+                (serie de 31 años). Los valores para TR = {results.return_period} años son extrapolación estadística.
+                Verificar con la autoridad hídrica provincial para diseños definitivos.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Manual IDF warning banner */}
         {results.is_manual_idf && (
           <div className="mb-4 rounded-lg border border-amber-400 bg-amber-50 px-4 py-3 flex items-start gap-3">

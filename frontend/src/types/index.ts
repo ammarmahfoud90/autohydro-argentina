@@ -67,6 +67,7 @@ export interface HydrologyInput {
   cn_override?: number | null;
   manual_idf_table?: ManualIDFTable | null;
   manual_idf_formula?: ManualIDFFormula | null;
+  station_id?: string | null;
 }
 
 // ── Response types ────────────────────────────────────────────────────────────
@@ -170,4 +171,5 @@ export const DEFAULT_FORM: HydrologyInput = {
   language: 'es',
   manual_idf_table: null,
   manual_idf_formula: null,
+  station_id: null,
 };
