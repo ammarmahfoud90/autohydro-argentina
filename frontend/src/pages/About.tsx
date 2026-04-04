@@ -33,10 +33,19 @@ const TECH_STACK = [
 ];
 
 const REFERENCES = [
+  // IDF data sources
   'Resolución APA 1334/21 — Administración Provincial del Agua, Chaco (2021)',
+  'Zamanillo, E. et al. (2008). Relaciones IDF para Entre Ríos (Concordia, Concepción del Uruguay, Paraná). Dirección de Hidráulica, Entre Ríos.',
+  'Marcus, J. et al. (2019). Relaciones IDF para Santa Fe (Estación CIM-FICH). Cuadernos CURIHAM, UNL.',
+  'Collazos, G. y Cazenave, G. (2015). Curvas IDF para Azul y aledaños, Buenos Aires. IHLLA / CONICET.',
+  'Puricelli, M. y Marino, M.A. (2014). Relaciones IDF para Balcarce, Buenos Aires. INTA Balcarce.',
+  'Rico, C. et al. (2024–2025). Relaciones IDF para Córdoba (Observatorio, La Suela, Pampa de Olaen, Altas Cumbres) y Salta Capital. INA-CIRSA.',
   'INA-CRA (2008). Relaciones IDF para el pedemonte del Gran Mendoza. Instituto Nacional del Agua — Centro Regional Andino.',
   'Dirección de Hidráulica, Mendoza (2019). Resolución DH 034/2019. Gobierno de Mendoza.',
   'SsRH Neuquén (2018). Instructivo para la Realización de Estudios de Riesgo Hídrico. Subsecretaría de Recursos Hídricos, Provincia del Neuquén.',
+  'Bazzano, M.G. (2019). Análisis de frecuencia de precipitaciones en Tucumán — Red provincial 28 estaciones. Tesis UNT-FACET.',
+  'INA-CRA (2012). Relaciones IDF para El Rodeo, Catamarca. Informe Técnico N° 145. INA-CRA.',
+  // Hydrological methods
   'Fernández, P.C. y Fornero, L.A. (2000). Sistemas Hidrometeorológicos en Tiempo Real. INA-CRA, Mendoza.',
   'USDA-SCS (1972). National Engineering Handbook, Section 4: Hydrology',
   'Témez, J.R. (1978). Cálculo hidrometeorológico de caudales máximos',
@@ -156,14 +165,16 @@ export function About() {
           <SectionTitle>Sobre AutoHydro Argentina</SectionTitle>
           <p className="text-sm text-gray-600 leading-relaxed mb-3">
             AutoHydro Argentina es un proyecto <strong>open source</strong> de cálculo hidrológico
-            para la práctica profesional en Argentina. Los datos IDF incluidos provienen de fuentes
-            oficiales verificadas: Resolución APA 1334/21 (Chaco), INA-CRA 2008 (Mendoza) y SsRH Neuquén 2018 (Neuquén).
+            para la práctica profesional en Argentina. Los datos IDF incluidos cubren <strong>18 localidades
+            en 9 provincias</strong> y provienen de fuentes verificadas: APA (Chaco), UTN-ER / Dirección de Hidráulica
+            (Entre Ríos), UNL-CURIHAM (Santa Fe), IHLLA-CONICET (Buenos Aires), INTA (Buenos Aires),
+            INA-CIRSA (Córdoba y Salta), INA-CRA (Mendoza y Catamarca), SsRH (Neuquén) y UNT-FACET (Tucumán).
           </p>
           <p className="text-sm text-gray-600 leading-relaxed mb-5">
-            El proyecto se construye de forma incremental: se incorporan nuevas localidades
-            únicamente cuando se dispone de datos IDF provenientes de publicaciones técnicas
-            verificables (resoluciones oficiales, papers arbitrados, informes técnicos de organismos
-            hídricos).
+            El proyecto incorpora <strong>9 modelos IDF</strong> distintos para adaptarse a la diversidad
+            metodológica de las fuentes argentinas. Se agregan nuevas localidades únicamente cuando se
+            dispone de datos provenientes de publicaciones técnicas verificables: resoluciones oficiales,
+            papers arbitrados e informes técnicos de organismos hídricos.
           </p>
           <div className="flex flex-wrap gap-3">
             <Link

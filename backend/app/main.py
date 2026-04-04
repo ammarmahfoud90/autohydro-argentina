@@ -33,3 +33,8 @@ app.include_router(hyetograph.router, prefix="/api", tags=["hyetograph"])
 @app.get("/health")
 def health_check() -> dict:
     return {"status": "ok", "service": "AutoHydro Argentina API"}
+
+
+@app.get("/api/health")
+def api_health_check() -> dict:
+    return {"status": "ok", "service": "AutoHydro Argentina API"}

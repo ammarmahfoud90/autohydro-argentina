@@ -143,7 +143,7 @@ export function Home() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-400" />
             </span>
-            Datos IDF verificados — 5 localidades
+            Datos IDF verificados · 18 localidades · 9 provincias
           </motion.div>
 
           {/* Title */}
@@ -172,8 +172,9 @@ export function Home() {
             transition={{ duration: 0.5, delay: 0.35 }}
             className="text-white/60 text-base max-w-2xl leading-relaxed mb-9"
           >
-            Calculá caudales de diseño usando datos de intensidad-duración-frecuencia de fuentes
-            oficiales argentinas. Método Racional, SCS-CN, fórmulas de Tc, Manning y alcantarillas.
+            Calculá caudales de diseño con datos IDF de fuentes oficiales argentinas: APA Chaco,
+            INA-CRA, SsRH Neuquén, UTN-ER, UNL, INA-CIRSA, INTA, UNT-FACET. Método Racional,
+            SCS-CN, fórmulas de Tc, Manning y alcantarillas.
           </motion.p>
 
           {/* CTAs */}
@@ -216,8 +217,8 @@ export function Home() {
             Localidades con datos IDF verificados
           </h2>
           <p className="text-sm text-gray-500">
-            Datos IDF de fuentes oficiales verificadas: Resolución APA 1334/21 (Chaco),
-            INA-CRA 2008 (Mendoza) y SsRH Neuquén 2018.
+            18 localidades en 9 provincias. Fuentes: APA (Chaco/Formosa), INA-CRA (Mendoza/Catamarca),
+            SsRH Neuquén, UTN Concordia, UNL, INA-CIRSA (Córdoba/Salta), INTA (Buenos Aires), UNT-FACET (Tucumán).
           </p>
         </motion.div>
 

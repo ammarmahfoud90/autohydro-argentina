@@ -15,7 +15,14 @@
       "Bash(pip install:*)",
       "Bash(python -c \":*)",
       "Bash(python -m pytest tests/test_data_layer.py -v)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(python -c \"from app.services.idf_service import get_localities; locs = get_localities\\(\\); print\\(f''Loaded {len\\(locs\\)} localities:'', [l[''id''] for l in locs]\\)\")",
+      "Bash(python -m pytest tests/test_idf_mendoza_neuquen.py -v)",
+      "Bash(python -m pytest tests/test_idf_service.py -v)",
+      "Bash(python -m pytest tests/ -v)",
+      "Bash(git commit:*)",
+      "Bash(python -m pytest tests/test_idf_fase_a.py -v)",
+      "Bash(python:*)"
     ]
   }
 }

@@ -27,11 +27,12 @@ from app.services.idf_service import (
 # ── 1. All localities load ─────────────────────────────────────────────────────
 
 def test_all_localities_load():
-    """get_localities() must return exactly 5 localities with the correct IDs."""
+    """get_localities() must return at least 18 localities (Fase 2 expansion)."""
     localities = get_localities()
-    assert len(localities) == 5
+    assert len(localities) >= 18
     ids = {loc["id"] for loc in localities}
-    assert ids == {"amgr", "el_colorado", "pr_saenz_pena", "mendoza_pedemonte", "neuquen_zona_aluvional"}
+    # Original 5 localities must still be present
+    assert {"amgr", "el_colorado", "pr_saenz_pena", "mendoza_pedemonte", "neuquen_zona_aluvional"}.issubset(ids)
 
 
 # ── 2. AMGR: formula matches table (±2%) ──────────────────────────────────────

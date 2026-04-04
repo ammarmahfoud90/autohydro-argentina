@@ -28,11 +28,12 @@ from app.services.tc_service import (
 class TestIDFData:
     def test_three_localities_loaded(self):
         localities = get_localities()
-        assert len(localities) == 5
+        assert len(localities) >= 18  # 18 localities as of Fase 2
 
     def test_locality_ids(self):
         ids = {loc["id"] for loc in get_localities()}
-        assert ids == {"amgr", "el_colorado", "pr_saenz_pena", "mendoza_pedemonte", "neuquen_zona_aluvional"}
+        # Original 5 localities must still be present
+        assert {"amgr", "el_colorado", "pr_saenz_pena", "mendoza_pedemonte", "neuquen_zona_aluvional"}.issubset(ids)
 
     def test_all_localities_have_required_fields(self):
         required = {"id", "name", "province", "return_periods", "durations_min", "source"}
