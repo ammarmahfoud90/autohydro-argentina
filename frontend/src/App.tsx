@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { Home } from './pages/Home';
@@ -8,6 +8,7 @@ import { Sources } from './pages/Sources';
 import { Manning } from './pages/Manning';
 import { Culvert } from './pages/Culvert';
 import { Hyetograph } from './pages/Hyetograph';
+import { NotFound } from './pages/NotFound';
 
 function App() {
   return (
@@ -22,9 +23,13 @@ function App() {
             <Route path="/manning" element={<Manning />} />
             <Route path="/calculadora/alcantarilla" element={<Culvert />} />
             <Route path="/alcantarilla" element={<Culvert />} />
+            <Route path="/culverts" element={<Navigate to="/calculadora/alcantarilla" replace />} />
             <Route path="/calculadora/hietograma" element={<Hyetograph />} />
+            <Route path="/hyetograph" element={<Navigate to="/calculadora/hietograma" replace />} />
+            <Route path="/hietograma" element={<Navigate to="/calculadora/hietograma" replace />} />
             <Route path="/sources" element={<Sources />} />
             <Route path="/about" element={<About />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
         <Footer />
