@@ -1,7 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { getLocalities } from '../../services/api';
 import type { IDFLocality } from '../../types/idf';
 import { SearchableSelect } from '../SearchableSelect';
+
+const PMD_CITIES = [
+  'Buenos Aires', 'Catamarca', 'Córdoba', 'Corrientes', 'Formosa',
+  'Jujuy', 'La Plata', 'La Rioja', 'Mar del Plata', 'Mendoza',
+  'Neuquén', 'Paraná', 'Posadas', 'Rawson', 'Resistencia',
+  'Rosario', 'Salta', 'San Juan', 'San Luis', 'San Miguel de Tucumán',
+  'Santa Fe', 'Santa Rosa', 'Santiago del Estero', 'Ushuaia', 'Viedma',
+];
 
 interface Props {
   value: string;
@@ -40,7 +49,8 @@ export function CitySelector({ value, onChange }: Props) {
   }, []);
 
   const isManual = value === 'manual';
-  const selected = isManual ? null : (localities.find((l) => l.id === value) ?? null);
+  const isPmd = value.startsWith('pmd:');
+  const selected = (isManual || isPmd) ? null : (localities.find((l) => l.id === value) ?? null);
   const isShortSeries = selected
     ? selected.source.series_length_years != null && selected.source.series_length_years < 15
     : false;
@@ -70,12 +80,22 @@ export function CitySelector({ value, onChange }: Props) {
                 return acc;
               }, {});
               const provinces = Object.keys(byProvince).sort((a, b) => a.localeCompare(b, 'es'));
-              return provinces.map((province) => ({
+              const verifiedGroups = provinces.map((province) => ({
                 label: province,
                 options: byProvince[province]
                   .sort((a, b) => a.name.localeCompare(b.name, 'es'))
                   .map((loc) => ({ value: loc.id, label: loc.name })),
               }));
+              return [
+                ...verifiedGroups,
+                {
+                  label: '── Estimación PMD nacional (Atlas INA-CIRSA) ──',
+                  options: PMD_CITIES.map(c => ({
+                    value: `pmd:${c}`,
+                    label: `${c} (estimación PMD)`,
+                  })),
+                },
+              ];
             })()}
             onChange={(id) => {
               const loc = id === 'manual' ? undefined : localities.find((l) => l.id === id);
@@ -168,6 +188,28 @@ export function CitySelector({ value, onChange }: Props) {
               Verificar con la autoridad hídrica provincial para diseños definitivos.
             </div>
           )}
+        </div>
+      )}
+
+      {/* PMD city info card */}
+      {isPmd && (
+        <div className="rounded-lg border-2 border-amber-300 bg-amber-50 p-4 text-sm space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-amber-800">{value.replace('pmd:', '')}</span>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300">
+              Estimación PMD
+            </span>
+          </div>
+          <p className="text-xs text-amber-700">
+            Datos derivados del <strong>Atlas PMD INA-CIRSA/UNC (2020)</strong> + Modelo DIT.
+            Son estimaciones para zonas sin datos pluviográficos verificados.
+          </p>
+          <Link
+            to="/calculadora/pmd"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 hover:text-amber-900 underline underline-offset-2"
+          >
+            Ver estimación IDF completa →
+          </Link>
         </div>
       )}
 

@@ -13,6 +13,7 @@ import { History } from './pages/History';
 import { Proyecto } from './pages/Proyecto';
 import { FrequencyAnalysis } from './pages/FrequencyAnalysis';
 import { FloodRouting } from './pages/FloodRouting';
+import { PMDEstimator } from './pages/PMDEstimator';
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
             <Route path="/calculadora/hietograma" element={<Hyetograph />} />
             <Route path="/calculadora/frecuencia" element={<FrequencyAnalysis />} />
             <Route path="/calculadora/transito" element={<FloodRouting />} />
+            <Route path="/calculadora/pmd" element={<PMDEstimator />} />
             <Route path="/hyetograph" element={<Navigate to="/calculadora/hietograma" replace />} />
             <Route path="/hietograma" element={<Navigate to="/calculadora/hietograma" replace />} />
             <Route path="/historial" element={<History />} />
