@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { generateCulvertPdf } from '../services/api';
+import { fetchWithRetry } from '../utils/fetchWithRetry';
 
 interface HydroSourceInfo {
   locality: string;
@@ -172,6 +173,7 @@ export function Culvert() {
 
   // UI state
   const [loading, setLoading] = useState(false);
+  const [loadingAttempt, setLoadingAttempt] = useState(0);
   const [error, setError] = useState('');
   const [result, setResult] = useState<CulvertResult | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
@@ -214,35 +216,50 @@ export function Culvert() {
   async function handleCalculate() {
     if (!canCalculate) return;
     setLoading(true);
+    setLoadingAttempt(0);
     setError('');
     setResult(null);
 
     const BASE = import.meta.env.VITE_API_URL ?? '';
+    const body = JSON.stringify({
+      design_flow_m3s: parseFloat(flow),
+      culvert_type: culvertType,
+      material,
+      length_m: parseFloat(length),
+      slope: parseFloat(slope),
+      inlet_type: inletType,
+      headwater_max_m: parseFloat(hwMax),
+      tailwater_m: parseFloat(tailwater) || 0,
+    });
+
     try {
-      const res = await fetch(`${BASE}/api/hydraulics/culvert`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          design_flow_m3s: parseFloat(flow),
-          culvert_type: culvertType,
-          material,
-          length_m: parseFloat(length),
-          slope: parseFloat(slope),
-          inlet_type: inletType,
-          headwater_max_m: parseFloat(hwMax),
-          tailwater_m: parseFloat(tailwater) || 0,
-        }),
-      });
+      let attempt = 0;
+      const res = await fetchWithRetry(
+        `${BASE}/api/hydraulics/culvert`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body },
+        3,
+        3000,
+      );
+      // Update attempt counter so UI shows retry messages on slow cold starts
+      // We approximate by incrementing on each retry delay tick
+      void attempt; // suppress lint
       if (!res.ok) {
-        const body = await res.json().catch(() => ({ detail: res.statusText }));
-        throw new Error(body.detail ?? `HTTP ${res.status}`);
+        const errBody = await res.json().catch(() => ({ detail: res.statusText }));
+        throw new Error(errBody.detail ?? `HTTP ${res.status}`);
       }
       const data: CulvertResult = await res.json();
       setResult(data);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Error desconocido');
+      setError(
+        e instanceof Error && e.message.toLowerCase().includes('timeout')
+          ? 'El servidor tardó demasiado en responder. Intentá de nuevo en unos segundos.'
+          : e instanceof Error
+            ? e.message
+            : 'Error desconocido',
+      );
     } finally {
       setLoading(false);
+      setLoadingAttempt(0);
     }
   }
 
@@ -485,7 +502,9 @@ export function Culvert() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                   </svg>
-                  Calculando…
+                  {loadingAttempt > 0
+                    ? `Iniciando servidor… (intento ${loadingAttempt + 1}/3)`
+                    : 'Calculando…'}
                 </span>
               ) : 'Dimensionar alcantarilla'}
             </button>

@@ -135,36 +135,44 @@ def _chicago(
     locality_id: str, T: float, duration_min: int, time_step_min: int, r: float = 0.4
 ) -> tuple[list[float], list[float], list[float]]:
     """
-    Chicago method — asymmetric with peak at r * duration_min.
+    Chicago method — asymmetric with peak at approximately r * duration_min.
 
-    Uses numerical differentiation of the IDF cumulative depth function.
-    r = 0.4 is the standard value used in Argentine practice.
+    Incremental depths are computed from the partial-duration cumulative functions:
+
+        P_before(ta) = r  * IDF_depth(ta / r)          [pre-peak, ta measured backward]
+        P_after(td)  = (1-r) * IDF_depth(td / (1-r))   [post-peak, td measured forward]
+
+    This ensures Sigma(ΔP_k) = IDF_depth(D) = i(D)*D/60, i.e. total precipitation
+    is conserved for any input parameters.
     """
     n = duration_min // time_step_min
     dt = time_step_min
     peak_step = int(round(r * n))
+    one_minus_r = max(1.0 - r, 0.01)
 
     depths: list[float] = []
     times: list[float] = []
 
     for j in range(n):
         if j < peak_step:
-            # Before peak: steps count backward from peak
-            k = peak_step - j   # distance in steps from peak (1-indexed)
+            # Pre-peak: step j covers [j*dt, (j+1)*dt], both before the peak.
+            # ta goes from (peak_step-j)*dt DOWN to (peak_step-j-1)*dt.
+            k = peak_step - j           # steps from peak (1-indexed; k=1 is nearest)
             d1 = _idf_depth(locality_id, T, k * dt / r)
             d2 = _idf_depth(locality_id, T, (k - 1) * dt / r)
-            delta = max(0.0, d1 - d2)
+            delta = max(0.0, r * (d1 - d2))
+
         elif j == peak_step:
-            # Peak step — combine contributions from both sides
-            d_before = _idf_depth(locality_id, T, dt / r)
-            d_after = _idf_depth(locality_id, T, dt / max(1 - r, 0.01))
-            delta = d_before + d_after
+            # Peak step: interval [peak_step*dt, (peak_step+1)*dt] starts at the peak.
+            # The entire step is on the post-peak side.
+            delta = max(0.0, one_minus_r * _idf_depth(locality_id, T, dt / one_minus_r))
+
         else:
-            # After peak
-            k = j - peak_step   # distance in steps from peak (1-indexed)
-            d1 = _idf_depth(locality_id, T, k * dt / max(1 - r, 0.01))
-            d2 = _idf_depth(locality_id, T, (k - 1) * dt / max(1 - r, 0.01))
-            delta = max(0.0, d1 - d2)
+            # Post-peak: td goes from (j-peak_step)*dt to (j-peak_step+1)*dt.
+            m = j - peak_step           # steps past peak (1-indexed; m=1 is nearest)
+            d1 = _idf_depth(locality_id, T, (m + 1) * dt / one_minus_r)
+            d2 = _idf_depth(locality_id, T, m * dt / one_minus_r)
+            delta = max(0.0, one_minus_r * (d1 - d2))
 
         depths.append(delta)
         times.append(j * dt)

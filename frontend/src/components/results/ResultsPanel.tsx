@@ -17,7 +17,7 @@ import {
 } from 'recharts';
 import type { HydrologyResult, HydrologyInput, CNSensitivityPoint } from '../../types';
 import { useCalculationHistory } from '../../hooks/useCalculationHistory';
-import { interpretResults, generateReport, generateDocxReport, generateExcelReport, calculateHydrology, exportShapefile } from '../../services/api';
+import { interpretResults, generateReport, generateDocxReport, generateExcelReport, calculateHydrology, exportShapefile, getLocality } from '../../services/api';
 
 const RISK_STYLES: Record<string, string> = {
   muy_bajo: 'bg-green-100 text-green-800 border-green-300',
@@ -106,16 +106,23 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
   const [shareCopied, setShareCopied] = useState(false);
 
   const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href).then(() => {
-      setShareCopied(true);
-      setTimeout(() => setShareCopied(false), 2500);
-    });
+    const url = window.location.href;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => {
+        setShareCopied(true);
+        setTimeout(() => setShareCopied(false), 2500);
+      }).catch(() => {
+        window.prompt('Copiar URL:', url);
+      });
+    } else {
+      window.prompt('Copiar URL:', url);
+    }
   };
 
   // Scenario comparison
   const [compareState, setCompareState] = useState<CompareState>('idle');
   const [returnPeriod2, setReturnPeriod2] = useState<number>(
-    RETURN_PERIODS.find((t) => t > results.return_period) ?? results.return_period * 2,
+    RETURN_PERIODS.find((t) => t > results.return_period) ?? results.return_period,
   );
   const [cnOverride2, setCnOverride2] = useState<string>('');
   const [cOverride2, setCOverride2] = useState<string>(
@@ -124,6 +131,18 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
   const [results2, setResults2] = useState<HydrologyResult | null>(null);
   const [compareError, setCompareError] = useState<string | null>(null);
   const compareRef = useRef<HTMLDivElement>(null);
+
+  // Locality constraints for comparison TR selector
+  const { data: localityData } = useQuery({
+    queryKey: ['locality', results.locality_id],
+    queryFn: () => getLocality(results.locality_id),
+    staleTime: Infinity,
+    enabled: !!results.locality_id,
+  });
+  const validTrMax: number = (localityData as { valid_tr_max?: number } | undefined)?.valid_tr_max ?? 100;
+  const comparisonTRs = RETURN_PERIODS.filter(
+    (tp) => tp !== results.return_period && tp <= validTrMax,
+  );
 
   // AI interpretation — fires automatically when the panel mounts
   const interpretQuery = useQuery({
@@ -335,12 +354,19 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
         {/* Info row */}
         <div className="mt-4 text-sm text-gray-600 space-y-1">
           <p>
-            <span className="font-medium">{results.city}</span>
-            {results.province ? `, ${results.province}` : ''} — T={results.return_period}{' '}
+            {results.is_manual_idf ? (
+              <span className="font-medium">Datos IDF propios</span>
+            ) : (
+              <>
+                <span className="font-medium">{results.city}</span>
+                {results.province ? `, ${results.province}` : ''}
+              </>
+            )}
+            {' '}— T={results.return_period}{' '}
             {t('common.years')}, t={results.duration_min} {t('common.minutes')}
           </p>
           <p>
-            {t('common.source')}: {results.idf_source}
+            {t('common.source')}: {results.is_manual_idf ? (results.manual_idf_source || 'IDF manual') : results.idf_source}
           </p>
           {results.cn != null && (
             <p>
@@ -391,7 +417,7 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
                 onChange={(e) => setReturnPeriod2(Number(e.target.value))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
               >
-                {RETURN_PERIODS.filter((tp) => tp !== results.return_period).map((tp) => (
+                {comparisonTRs.map((tp) => (
                   <option key={tp} value={tp}>
                     T = {tp} años
                   </option>

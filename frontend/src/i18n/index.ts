@@ -8,11 +8,15 @@ i18n.use(initReactI18next).init({
     es: { translation: es },
     en: { translation: en },
   },
-  lng: import.meta.env.VITE_DEFAULT_LANGUAGE || 'es',
+  lng: localStorage.getItem('autohydro-lang') || import.meta.env.VITE_DEFAULT_LANGUAGE || 'es',
   fallbackLng: 'es',
   interpolation: {
     escapeValue: false,
   },
+});
+
+i18n.on('languageChanged', (lang) => {
+  localStorage.setItem('autohydro-lang', lang);
 });
 
 export default i18n;

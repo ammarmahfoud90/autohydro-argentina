@@ -185,7 +185,7 @@ export function Header() {
                   : 'text-blue-100 hover:bg-white/10 hover:text-white'
               }`}
             >
-              Calculadoras
+              {t('nav.calculators')}
               <motion.span
                 animate={{ rotate: calcOpen ? 180 : 0 }}
                 transition={{ duration: 0.2 }}
@@ -334,7 +334,7 @@ export function Header() {
                 {t('nav.home')}
               </Link>
               <div className="pt-1 pb-0.5 px-1 text-[10px] font-semibold text-blue-400 uppercase tracking-wider">
-                Calculadoras
+                {t('nav.calculators')}
               </div>
               {CALC_ITEMS.map(({ to, label }) => (
                 <Link
