@@ -339,12 +339,12 @@ export function Proyecto() {
     setStep1Loading(true);
     setStep1Error(null);
     try {
-      // Fetch intensity via uniform hyetograph
+      // Fetch intensity via uniform hyetograph — use fixed Δt=5 min (always valid, min duration is 30 min)
       const res = await generateHyetograph({
         locality_id: localityId,
         return_period: returnPeriod,
         duration_min: durationMin,
-        time_step_min: durationMin,
+        time_step_min: 5,
         method: 'uniform',
       });
       updateStep('paso1', {
