@@ -56,6 +56,17 @@ const CALC_ITEMS = [
     ),
   },
   {
+    to: '/calculadora/frecuencia',
+    label: 'Análisis de Frecuencia',
+    desc: 'Gumbel, Log-Pearson III y GEV',
+    icon: (
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round"
+          d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+      </svg>
+    ),
+  },
+  {
     to: '/historial',
     label: 'Historial',
     desc: 'Últimos 10 cálculos guardados localmente',

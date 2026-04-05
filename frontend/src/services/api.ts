@@ -357,6 +357,37 @@ export async function generateCulvertPdf(options: {
 
 // ── Proyecto consolidado ──────────────────────────────────────────────────────
 
+export interface FrequencyAnalysisResult {
+  statistics: {
+    n: number;
+    mean: number;
+    std: number;
+    cv: number;
+    skewness: number;
+    min: number;
+    max: number;
+    median: number;
+  };
+  distributions: {
+    gumbel: { distribution: string; parameters: { alpha: number; u: number }; method: string; quantiles: Record<string, number> };
+    log_pearson_iii: { distribution: string; parameters: { mean_log: number; std_log: number; skew_log: number }; method: string; quantiles: Record<string, number> };
+    gev: { distribution: string; parameters: { shape: number; loc: number; scale: number } | null; method: string; quantiles: Record<string, number | null>; error?: string };
+  };
+  plotting_positions: Array<{ rank: number; flow: number; probability: number; return_period: number }>;
+  return_periods: number[];
+}
+
+export async function analyzeFrequency(payload: {
+  flows: number[];
+  station_name?: string;
+  return_periods?: number[];
+}): Promise<FrequencyAnalysisResult> {
+  return request<FrequencyAnalysisResult>('/api/frequency/analyze', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function generateProyectoPdf(options: {
   proyectoData: Record<string, unknown>;
   projectName: string;
