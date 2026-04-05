@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet-async';
 
 export function NotFound() {
   const { i18n } = useTranslation();
@@ -7,6 +8,9 @@ export function NotFound() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
+      <Helmet>
+        <title>Página no encontrada — AutoHydro Argentina</title>
+      </Helmet>
       <div className="text-8xl font-extrabold text-blue-200 select-none mb-2">404</div>
       <h1 className="text-2xl font-bold text-gray-800 mb-2">
         {isEs ? 'Página no encontrada' : 'Page not found'}

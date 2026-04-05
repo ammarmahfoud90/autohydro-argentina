@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import {
   ComposedChart,
@@ -178,6 +179,10 @@ export function FrequencyAnalysis() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+      <Helmet>
+        <title>Análisis de Frecuencia de Caudales — AutoHydro Argentina</title>
+        <meta name="description" content="Ajuste de distribuciones Gumbel EV1, Log-Pearson III y GEV a series históricas de caudales máximos anuales." />
+      </Helmet>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
 
         {/* Header */}

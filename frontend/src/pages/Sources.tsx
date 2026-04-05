@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { getLocality } from '../services/api';
@@ -428,6 +429,10 @@ export function Sources() {
   const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-gray-50">
+      <Helmet>
+        <title>Fuentes y Metodología — AutoHydro Argentina</title>
+        <meta name="description" content="Datos IDF verificados de 18 localidades argentinas. APA Chaco, INA-CRA Mendoza, UTN Entre Ríos, UNL Santa Fe, INA-CIRSA Córdoba y Salta, UNT Tucumán." />
+      </Helmet>
 
       {/* Header with gradient */}
       <section

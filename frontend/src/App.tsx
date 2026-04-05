@@ -36,6 +36,12 @@ function App() {
             <Route path="/calculadora/pmd" element={<PMDEstimator />} />
             <Route path="/hyetograph" element={<Navigate to="/calculadora/hietograma" replace />} />
             <Route path="/hietograma" element={<Navigate to="/calculadora/hietograma" replace />} />
+            <Route path="/calculadora" element={<Navigate to="/calculator" replace />} />
+            <Route path="/calculadora/alcantarillas" element={<Navigate to="/calculadora/alcantarilla" replace />} />
+            <Route path="/fuentes" element={<Navigate to="/sources" replace />} />
+            <Route path="/inicio" element={<Navigate to="/" replace />} />
+            <Route path="/acerca" element={<Navigate to="/about" replace />} />
+            <Route path="/acerca-de" element={<Navigate to="/about" replace />} />
             <Route path="/historial" element={<History />} />
             <Route path="/sources" element={<Sources />} />
             <Route path="/about" element={<About />} />

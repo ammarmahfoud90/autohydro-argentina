@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import {
   LineChart,
   Line,
@@ -99,6 +100,10 @@ export function PMDEstimator() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900 py-10 px-4">
+      <Helmet>
+        <title>Estimación IDF Nacional PMD — AutoHydro Argentina</title>
+        <meta name="description" content="Estimación de curvas IDF para 25 ciudades argentinas usando el Atlas PMD del INA-CIRSA/UNC (2020)." />
+      </Helmet>
       <div className="max-w-4xl mx-auto space-y-8">
 
         {/* Header */}
@@ -263,7 +268,7 @@ export function PMDEstimator() {
               <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-4">
                 Curvas IDF — {result.city}
               </h3>
-              <div className="h-72">
+              <div className="h-72" role="img" aria-label={`Gráfico de curvas IDF — ${result.city}`}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />

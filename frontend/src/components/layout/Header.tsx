@@ -336,6 +336,7 @@ export function Header() {
             onClick={toggleLang}
             className="px-2.5 py-1 rounded-md border border-white/20 text-xs font-semibold text-blue-200 hover:bg-white/10 hover:text-white transition-colors"
             title="Toggle language / Cambiar idioma"
+            aria-label={`Cambiar idioma a ${i18n.language === 'es' ? 'English' : 'Español'}`}
           >
             {i18n.language === 'es' ? 'EN' : 'ES'}
           </button>
@@ -367,6 +368,7 @@ export function Header() {
           <button
             onClick={toggleLang}
             className="px-2.5 py-1 rounded-md border border-white/20 text-xs font-semibold text-blue-200 hover:bg-white/10 transition-colors"
+            aria-label={`Cambiar idioma a ${i18n.language === 'es' ? 'English' : 'Español'}`}
           >
             {i18n.language === 'es' ? 'EN' : 'ES'}
           </button>

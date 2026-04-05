@@ -28,7 +28,7 @@ export function useOnboarding() {
             popover: {
               title: 'Bienvenido a AutoHydro Argentina',
               description:
-                'Calculá caudales de diseño con datos IDF verificados de 18 localidades en 9 provincias argentinas. Todos los datos provienen de fuentes oficiales.',
+                'Calculá caudales de diseño con datos IDF verificados de 18 localidades en 11 provincias argentinas. Todos los datos provienen de fuentes oficiales.',
               side: 'bottom',
             },
           },

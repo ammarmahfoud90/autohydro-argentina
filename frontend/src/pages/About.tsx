@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
@@ -72,6 +73,10 @@ export function About() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+      <Helmet>
+        <title>Acerca de — AutoHydro Argentina</title>
+        <meta name="description" content="AutoHydro Argentina — Herramienta open source de cálculo hidrológico. Ing. Ammar Mahfoud, Ingeniero Civil, Buenos Aires." />
+      </Helmet>
 
       {/* Header with gradient */}
       <section

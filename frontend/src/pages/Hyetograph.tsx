@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import {
   BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -172,6 +173,10 @@ export function Hyetograph() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Helmet>
+        <title>Hietogramas de Diseño — AutoHydro Argentina</title>
+        <meta name="description" content="Tormenta de diseño con distribución temporal: Bloques Alternos, SCS Tipo II, Chicago, Uniforme." />
+      </Helmet>
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-6">
@@ -400,7 +405,12 @@ export function Hyetograph() {
               {[
                 { label: 'Precipitación total', value: `${result.total_depth_mm.toFixed(1)} mm` },
                 { label: 'Intensidad pico', value: `${result.peak_intensity_mm_hr.toFixed(1)} mm/hr` },
-                { label: 'Tiempo al pico', value: formatTime(result.peak_time_min) },
+                {
+                  label: 'Tiempo al pico',
+                  value: result.method === 'uniform' || result.method === 'uniforme'
+                    ? '— (distribución plana)'
+                    : formatTime(result.peak_time_min),
+                },
                 { label: 'Intervalo Δt', value: `${result.time_step_min} min` },
               ].map((s) => (
                 <div key={s.label} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 text-center">

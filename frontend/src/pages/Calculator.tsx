@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useLocation, useSearchParams } from 'react-router-dom';
@@ -342,6 +343,10 @@ export function Calculator() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+      <Helmet>
+        <title>Calculadora Hidrológica — AutoHydro Argentina</title>
+        <meta name="description" content="Calculá caudales de diseño paso a paso. Seleccioná localidad, ingresá parámetros de cuenca y obtené el caudal de diseño con trazabilidad completa." />
+      </Helmet>
       {mutation.isPending && <CalculatingOverlay />}
 
       <StepIndicator current={step} />

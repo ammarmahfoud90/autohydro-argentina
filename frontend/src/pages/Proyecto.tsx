@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { CitySelector } from '../components/forms/CitySelector';
 import { ChannelCrossSectionSVG } from '../components/manning/ChannelCrossSectionSVG';
@@ -568,6 +569,10 @@ export function Proyecto() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+      <Helmet>
+        <title>Modo Proyecto Hidráulico — AutoHydro Argentina</title>
+        <meta name="description" content="Diseño integral guiado: IDF → cuenca → hietograma → hidrograma → canal → informe consolidado." />
+      </Helmet>
       <ProgressBar step={step} />
 
       <div className="max-w-3xl mx-auto px-4 py-8">

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import {
   ComposedChart,
   Line,
@@ -308,6 +309,10 @@ export function FloodRouting() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900 py-10 px-4">
+      <Helmet>
+        <title>Tránsito de Crecidas Muskingum — AutoHydro Argentina</title>
+        <meta name="description" content="Propagación de hidrogramas mediante método Muskingum y Muskingum-Cunge." />
+      </Helmet>
       <div className="max-w-4xl mx-auto space-y-8">
 
         {/* Header */}
@@ -412,7 +417,7 @@ export function FloodRouting() {
                 if (!h) return null;
                 const previewData = h.times.map((t, i) => ({ time: t, flow: h.flows[i] }));
                 return (
-                  <div className="h-36">
+                  <div className="h-36" role="img" aria-label="Vista previa del hidrograma de entrada">
                     <ResponsiveContainer width="100%" height="100%">
                       <ComposedChart data={previewData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -670,7 +675,7 @@ export function FloodRouting() {
               <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-4">
                 Hidrogramas de entrada y salida
               </h3>
-              <div className="h-72">
+              <div className="h-72" role="img" aria-label="Gráfico de hidrogramas de entrada y salida">
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={chartData} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useCalculationHistory, type CalculationHistoryEntry } from '../hooks/useCalculationHistory';
@@ -66,6 +67,10 @@ export function History() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+      <Helmet>
+        <title>Historial de Cálculos — AutoHydro Argentina</title>
+        <meta name="description" content="Últimos 10 cálculos guardados localmente en tu navegador." />
+      </Helmet>
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
 
         {/* Header row */}

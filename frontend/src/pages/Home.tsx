@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -126,6 +127,13 @@ export function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+      <Helmet>
+        <title>AutoHydro Argentina — Cálculo Hidrológico con Datos IDF Verificados</title>
+        <meta name="description" content="Calculá caudales de diseño con datos IDF verificados de 18 localidades en 11 provincias argentinas. Método Racional, SCS-CN, Manning, alcantarillas, hietogramas. Open source." />
+        <meta property="og:title" content="AutoHydro Argentina" />
+        <meta property="og:description" content="Herramienta de cálculo hidrológico e hidráulico con datos IDF oficiales argentinos." />
+        <meta property="og:url" content="https://autohydro-argentina.onrender.com" />
+      </Helmet>
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <section

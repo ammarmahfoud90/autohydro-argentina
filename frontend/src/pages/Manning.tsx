@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 import { generateManningPdf } from '../services/api';
 import { ManningEfficiencyCurves } from '../components/manning/ManningEfficiencyCurves';
@@ -231,6 +232,10 @@ export function Manning() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Helmet>
+        <title>Cálculo Manning — AutoHydro Argentina</title>
+        <meta name="description" content="Capacidad de conducción en canales abiertos. Secciones rectangular, trapezoidal, circular y triangular. Curvas de eficiencia hidráulica." />
+      </Helmet>
       <div className="max-w-5xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-6">
