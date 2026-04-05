@@ -49,21 +49,21 @@ function Metric({
   return (
     <div
       className={`rounded-lg p-3 text-center ${
-        highlight ? 'bg-blue-600 text-white' : 'bg-gray-50 border border-gray-200'
+        highlight ? 'bg-blue-600 text-white' : 'bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600'
       }`}
     >
-      <div className={`text-xs mb-1 ${highlight ? 'text-blue-200' : 'text-gray-500'}`}>
+      <div className={`text-xs mb-1 ${highlight ? 'text-blue-200' : 'text-gray-500 dark:text-slate-400'}`}>
         {label}
       </div>
       <div
         className={`font-bold text-lg leading-tight ${
-          highlight ? 'text-white' : 'text-gray-800'
+          highlight ? 'text-white' : 'text-gray-800 dark:text-slate-100'
         }`}
       >
         {value}
       </div>
       {sub && (
-        <div className={`text-xs mt-0.5 ${highlight ? 'text-blue-200' : 'text-gray-400'}`}>
+        <div className={`text-xs mt-0.5 ${highlight ? 'text-blue-200' : 'text-gray-400 dark:text-slate-500'}`}>
           {sub}
         </div>
       )}
@@ -300,8 +300,8 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
     <div className="space-y-4">
 
       {/* ── Summary ─────────────────────────────────────────────────────── */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-bold text-gray-800 mb-4">{t('results.title')}</h2>
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+        <h2 className="text-lg font-bold text-gray-800 dark:text-slate-100 mb-4">{t('results.title')}</h2>
 
         {/* Manual IDF warning banner */}
         {results.is_manual_idf && (
@@ -352,7 +352,7 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
         </div>
 
         {/* Info row */}
-        <div className="mt-4 text-sm text-gray-600 space-y-1">
+        <div className="mt-4 text-sm text-gray-600 dark:text-slate-300 space-y-1">
           <p>
             {results.is_manual_idf ? (
               <span className="font-medium">Datos IDF propios</span>
@@ -388,7 +388,7 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
           <button
             type="button"
             onClick={() => setCompareState('form')}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-violet-400 text-violet-700 text-sm font-semibold hover:bg-violet-50 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-violet-400 text-violet-700 dark:text-violet-300 text-sm font-semibold hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
@@ -400,9 +400,9 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
 
       {/* ── Scenario Comparison form ──────────────────────────────────────── */}
       {(compareState === 'form' || compareState === 'loading') && (
-        <div className="bg-white rounded-xl shadow-sm border border-violet-200 p-6">
-          <h3 className="font-semibold text-violet-800 mb-1">Escenario de Comparación</h3>
-          <p className="text-xs text-gray-500 mb-4">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-violet-200 dark:border-violet-800 p-6">
+          <h3 className="font-semibold text-violet-800 dark:text-violet-300 mb-1">Escenario de Comparación</h3>
+          <p className="text-xs text-gray-500 dark:text-slate-400 mb-4">
             Modificá los parámetros del segundo escenario. El resto de los datos de la cuenca se
             mantienen iguales.
           </p>
@@ -541,7 +541,7 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
         ];
 
         return (
-          <div ref={compareRef} className="bg-white rounded-xl shadow-sm border border-violet-200 p-6">
+          <div ref={compareRef} className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-violet-200 dark:border-violet-800 p-6">
             <div className="flex items-center justify-between mb-1">
               <h3 className="font-semibold text-violet-800">Comparación de Escenarios</h3>
               <button
@@ -609,9 +609,9 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
 
       {/* ── Method comparison ────────────────────────────────────────────── */}
       {results.method_comparison.length > 1 && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="font-semibold text-gray-700 mb-1">{t('results.methodComparison')}</h3>
-          <p className="text-xs text-gray-400 mb-4">{t('results.comparisonDisclaimer')}</p>
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+          <h3 className="font-semibold text-gray-700 dark:text-slate-200 mb-1">{t('results.methodComparison')}</h3>
+          <p className="text-xs text-gray-400 dark:text-slate-500 mb-4">{t('results.comparisonDisclaimer')}</p>
 
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -636,16 +636,16 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
           </ResponsiveContainer>
 
           <div className="mt-4 overflow-x-auto">
-            <table className="w-full text-xs text-gray-600">
+            <table className="w-full text-xs text-gray-600 dark:text-slate-300">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-1.5 font-medium text-gray-700">
+                <tr className="border-b border-gray-200 dark:border-slate-600">
+                  <th className="text-left py-1.5 font-medium text-gray-700 dark:text-slate-200">
                     {t('common.method')}
                   </th>
-                  <th className="text-right py-1.5 font-medium text-gray-700">Q (m³/s)</th>
-                  <th className="text-right py-1.5 font-medium text-gray-700">Tc (min)</th>
-                  <th className="text-right py-1.5 font-medium text-gray-700">i (mm/hr)</th>
-                  <th className="text-left py-1.5 font-medium text-gray-700 pl-3">
+                  <th className="text-right py-1.5 font-medium text-gray-700 dark:text-slate-200">Q (m³/s)</th>
+                  <th className="text-right py-1.5 font-medium text-gray-700 dark:text-slate-200">Tc (min)</th>
+                  <th className="text-right py-1.5 font-medium text-gray-700 dark:text-slate-200">i (mm/hr)</th>
+                  <th className="text-left py-1.5 font-medium text-gray-700 dark:text-slate-200 pl-3">
                     {t('common.notes')}
                   </th>
                 </tr>
@@ -654,8 +654,8 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
                 {results.method_comparison.map((m) => (
                   <tr
                     key={m.method}
-                    className={`border-b border-gray-50 ${
-                      m.method === results.method ? 'bg-blue-50 font-semibold' : ''
+                    className={`border-b border-gray-50 dark:border-slate-700 ${
+                      m.method === results.method ? 'bg-blue-50 dark:bg-blue-900/20 font-semibold' : ''
                     }`}
                   >
                     <td className="py-1.5 pr-2">
@@ -678,30 +678,30 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
 
       {/* ── Tc comparison table ──────────────────────────────────────────── */}
       {results.tc_results.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="font-semibold text-gray-700 mb-3">{t('results.tcComparison')}</h3>
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+          <h3 className="font-semibold text-gray-700 dark:text-slate-200 mb-3">{t('results.tcComparison')}</h3>
           <div className="overflow-x-auto">
-            <table className="w-full text-xs text-gray-600">
+            <table className="w-full text-xs text-gray-600 dark:text-slate-300">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-2 font-medium text-gray-700">Fórmula</th>
-                  <th className="text-right py-2 font-medium text-gray-700">Tc (hr)</th>
-                  <th className="text-right py-2 font-medium text-gray-700">Tc (min)</th>
-                  <th className="text-left py-2 font-medium text-gray-700 pl-3">
+                <tr className="border-b border-gray-200 dark:border-slate-600">
+                  <th className="text-left py-2 font-medium text-gray-700 dark:text-slate-200">Fórmula</th>
+                  <th className="text-right py-2 font-medium text-gray-700 dark:text-slate-200">Tc (hr)</th>
+                  <th className="text-right py-2 font-medium text-gray-700 dark:text-slate-200">Tc (min)</th>
+                  <th className="text-left py-2 font-medium text-gray-700 dark:text-slate-200 pl-3">
                     Aplicabilidad
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {results.tc_results.map((tc) => (
-                  <tr key={tc.formula} className="border-b border-gray-50">
+                  <tr key={tc.formula} className="border-b border-gray-50 dark:border-slate-700">
                     <td className="py-2 pr-2 font-medium">{tc.formulaName}</td>
                     <td className="text-right py-2">{tc.tcHours.toFixed(3)}</td>
                     <td className="text-right py-2">{tc.tcMinutes.toFixed(1)}</td>
-                    <td className="pl-3 py-2 text-gray-400">{tc.applicability}</td>
+                    <td className="pl-3 py-2 text-gray-400 dark:text-slate-500">{tc.applicability}</td>
                   </tr>
                 ))}
-                <tr className="bg-blue-50 font-semibold text-blue-700">
+                <tr className="bg-blue-50 dark:bg-blue-900/20 font-semibold text-blue-700 dark:text-blue-300">
                   <td className="py-2 pr-2">{t('results.tcAdopted')} (promedio)</td>
                   <td className="text-right py-2">{results.tc_adopted_hours.toFixed(3)}</td>
                   <td className="text-right py-2">{results.tc_adopted_minutes.toFixed(1)}</td>
@@ -715,9 +715,9 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
 
       {/* ── CN Sensitivity Analysis ──────────────────────────────────────────── */}
       {results.method === 'scs_cn' && results.cn_sensitivity && results.cn_sensitivity.length > 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="font-semibold text-gray-700 mb-1">Análisis de Sensibilidad — CN</h3>
-          <p className="text-xs text-gray-500 mb-4">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+          <h3 className="font-semibold text-gray-700 dark:text-slate-200 mb-1">Análisis de Sensibilidad — CN</h3>
+          <p className="text-xs text-gray-500 dark:text-slate-400 mb-4">
             Este análisis muestra cómo varía el caudal pico ante cambios de ±5 unidades en el
             Número de Curva. Esto refleja la incertidumbre inherente en la estimación del CN.
           </p>
@@ -806,9 +806,9 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
           const peakQ = results.hydrograph_flows![peakIdx];
 
           return (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="font-semibold text-gray-700 mb-1">Hidrograma de Escorrentía</h3>
-              <p className="text-xs text-gray-500 mb-4">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+              <h3 className="font-semibold text-gray-700 dark:text-slate-200 mb-1">Hidrograma de Escorrentía</h3>
+              <p className="text-xs text-gray-500 dark:text-slate-400 mb-4">
                 El hidrograma muestra la variación temporal del caudal durante el evento de
                 tormenta. El volumen total de escorrentía es el área bajo la curva.
                 Basado en el Hidrograma Unitario Adimensional SCS (USDA-SCS, 1986).
@@ -935,9 +935,9 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
 
       {/* ── Recommendations ──────────────────────────────────────────────── */}
       {results.risk_recommendations && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="font-semibold text-gray-700 mb-3">{t('results.recommendations')}</h3>
-          <div className="space-y-2 text-sm text-gray-600">
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+          <h3 className="font-semibold text-gray-700 dark:text-slate-200 mb-3">{t('results.recommendations')}</h3>
+          <div className="space-y-2 text-sm text-gray-600 dark:text-slate-300">
             <p>
               <span className="font-medium text-gray-700">Situación: </span>
               {results.risk_recommendations.general}
@@ -960,8 +960,8 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
       )}
 
       {/* ── AI Interpretation ────────────────────────────────────────────── */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h3 className="font-semibold text-gray-700 mb-3">{t('results.aiInterpretation')}</h3>
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+        <h3 className="font-semibold text-gray-700 dark:text-slate-200 mb-3">{t('results.aiInterpretation')}</h3>
 
         {interpretQuery.isPending && (
           <div className="flex items-center gap-2 text-sm text-blue-600">
@@ -991,25 +991,25 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
         )}
 
         {interpretQuery.data && (
-          <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+          <div className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">
             {interpretQuery.data.interpretation}
           </div>
         )}
       </div>
 
       {/* ── Disclaimer ───────────────────────────────────────────────────── */}
-      <div className="rounded-lg bg-yellow-50 border border-yellow-200 px-4 py-3 text-xs text-yellow-700">
+      <div className="rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 px-4 py-3 text-xs text-yellow-700 dark:text-yellow-300">
         {t('results.disclaimer')}
       </div>
 
       {/* ── Actions ──────────────────────────────────────────────────────── */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-5">
         {reportError && <p className="text-sm text-red-600 mb-3">{reportError}</p>}
         <div className="flex flex-col sm:flex-row gap-3 justify-between">
           <button
             type="button"
             onClick={onBack}
-            className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+            className="px-5 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-sm font-medium text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
           >
             {t('common.back')}
           </button>
@@ -1206,7 +1206,7 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
             <button
               type="button"
               onClick={handleShare}
-              className="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-semibold hover:bg-gray-50 transition-colors flex items-center gap-2"
+              className="px-5 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
             >
               {shareCopied ? (
                 <>

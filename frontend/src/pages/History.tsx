@@ -63,14 +63,14 @@ export function History() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
 
         {/* Header row */}
         <div className="flex items-start justify-between mb-6 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Historial de cálculos</h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Historial de cálculos</h1>
+            <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
               Últimos 10 cálculos guardados en este navegador
             </p>
           </div>
@@ -81,7 +81,7 @@ export function History() {
               className={`shrink-0 text-sm font-medium px-4 py-2 rounded-lg border transition-colors ${
                 confirmClear
                   ? 'bg-red-600 text-white border-red-600 hover:bg-red-700'
-                  : 'text-red-600 border-red-200 hover:bg-red-50'
+                  : 'text-red-600 border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20'
               }`}
             >
               {confirmClear ? '¿Confirmar?' : 'Limpiar todo'}
@@ -129,23 +129,23 @@ export function History() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
-              className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm"
+              className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-4 shadow-sm"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center flex-wrap gap-x-2 gap-y-0.5">
-                    <h3 className="font-semibold text-gray-900 text-sm leading-snug">
+                    <h3 className="font-semibold text-gray-900 dark:text-slate-100 text-sm leading-snug">
                       {entry.locality_name}
                     </h3>
-                    <span className="text-xs text-gray-400">{entry.province}</span>
+                    <span className="text-xs text-gray-400 dark:text-slate-500">{entry.province}</span>
                   </div>
-                  <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-gray-600">
+                  <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-gray-600 dark:text-slate-300">
                     <span>TR = <strong>{entry.return_period}</strong> años</span>
-                    <span className="text-gray-300">·</span>
+                    <span className="text-gray-300 dark:text-slate-600">·</span>
                     <span><strong>{entry.duration_min}</strong> min</span>
-                    <span className="text-gray-300">·</span>
+                    <span className="text-gray-300 dark:text-slate-600">·</span>
                     <span>Q = <strong>{entry.peak_flow_m3s.toFixed(3)}</strong> m³/s</span>
-                    <span className="text-gray-300">·</span>
+                    <span className="text-gray-300 dark:text-slate-600">·</span>
                     <span className="text-gray-500">{METHOD_LABEL[entry.method] ?? entry.method}</span>
                   </div>
                 </div>
@@ -158,8 +158,8 @@ export function History() {
                 </span>
               </div>
 
-              <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-gray-100">
-                <span className="text-xs text-gray-400">{formatDate(entry.timestamp)}</span>
+              <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-gray-100 dark:border-slate-700">
+                <span className="text-xs text-gray-400 dark:text-slate-500">{formatDate(entry.timestamp)}</span>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleView(entry)}
@@ -169,7 +169,7 @@ export function History() {
                   </button>
                   <button
                     onClick={() => handleDelete(entry.id)}
-                    className="text-xs font-medium text-gray-400 hover:text-red-600 hover:bg-red-50 border border-gray-200 hover:border-red-200 px-3 py-1.5 rounded-lg transition-colors"
+                    className="text-xs font-medium text-gray-400 dark:text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 border border-gray-200 dark:border-slate-600 hover:border-red-200 px-3 py-1.5 rounded-lg transition-colors"
                   >
                     Eliminar
                   </button>
@@ -180,7 +180,7 @@ export function History() {
         </div>
 
         {entries.length > 0 && (
-          <p className="text-xs text-gray-400 text-center mt-6">
+          <p className="text-xs text-gray-400 dark:text-slate-500 text-center mt-6">
             {entries.length} cálculo{entries.length !== 1 ? 's' : ''} guardado{entries.length !== 1 ? 's' : ''} · Máximo 10 · Almacenado localmente en este navegador
           </p>
         )}

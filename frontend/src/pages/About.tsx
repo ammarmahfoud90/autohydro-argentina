@@ -55,7 +55,7 @@ const REFERENCES = [
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
+    <h2 className="text-base font-semibold text-gray-900 dark:text-slate-100 mb-3 flex items-center gap-2">
       <span className="w-1 h-5 rounded-full bg-blue-400 inline-block shrink-0" />
       {children}
     </h2>
@@ -71,7 +71,7 @@ export function About() {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
 
       {/* Header with gradient */}
       <section
@@ -99,7 +99,7 @@ export function About() {
           variants={fadeUp}
           initial="hidden"
           animate="show"
-          className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden"
+          className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden"
         >
           <div className="h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
           <div className="px-7 pt-6 pb-7">
@@ -114,8 +114,8 @@ export function About() {
                   AM
                 </motion.div>
                 <div>
-                  <h1 className="text-xl font-bold text-gray-900">{t('about.developerName')}</h1>
-                  <p className="text-sm text-gray-500 mt-0.5">
+                  <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100">{t('about.developerName')}</h1>
+                  <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">
                     {t('about.developerRole')}
                   </p>
                   <p className="text-sm text-blue-600 font-medium mt-1">
@@ -149,7 +149,7 @@ export function About() {
                 </motion.a>
               </div>
             </div>
-            <p className="text-sm text-gray-600 leading-relaxed mt-5">
+            <p className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed mt-5">
               {t('about.developerBio')}
             </p>
           </div>
@@ -161,10 +161,10 @@ export function About() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7"
+          className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 p-7"
         >
           <SectionTitle>{t('about.projectTitle')}</SectionTitle>
-          <p className="text-sm text-gray-600 leading-relaxed mb-3">
+          <p className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed mb-3">
             {t('about.projectText1')}
           </p>
           <p className="text-sm text-gray-600 leading-relaxed mb-5">
@@ -185,7 +185,7 @@ export function About() {
               href={GITHUB_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-gray-50 transition-colors"
+              className="inline-flex items-center gap-2 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
             >
               <GitHubIcon />
               {t('about.viewSourceCode')}
@@ -199,7 +199,7 @@ export function About() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7"
+          className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 p-7"
         >
           <SectionTitle>{t('about.techTitle')}</SectionTitle>
           <motion.div
@@ -228,12 +228,12 @@ export function About() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7"
+          className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 p-7"
         >
           <SectionTitle>{t('about.referencesTitle')}</SectionTitle>
           <ul className="space-y-2">
             {REFERENCES.map((ref) => (
-              <li key={ref} className="flex gap-2.5 text-sm text-gray-600">
+              <li key={ref} className="flex gap-2.5 text-sm text-gray-600 dark:text-slate-300">
                 <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />
                 {ref}
               </li>
@@ -247,10 +247,10 @@ export function About() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-7"
+          className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 p-7"
         >
           <SectionTitle>{t('about.contactTitle')}</SectionTitle>
-          <p className="text-sm text-gray-600 leading-relaxed mb-4">
+          <p className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed mb-4">
             {t('about.contactText')}
           </p>
           <div className="flex gap-3 flex-wrap">
@@ -279,7 +279,7 @@ export function About() {
           </div>
         </motion.div>
 
-        <p className="text-center text-xs text-gray-400 pb-2">
+        <p className="text-center text-xs text-gray-400 dark:text-slate-500 pb-2">
           AutoHydro Argentina · © 2025 Ing. Ammar Mahfoud 🇦🇷 · MIT License
         </p>
       </div>

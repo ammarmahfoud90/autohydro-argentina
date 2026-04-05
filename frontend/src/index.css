@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -14,6 +16,17 @@ html {
 body {
   margin: 0;
   background-color: #f9fafb;
+  transition: background-color 0.2s ease, color 0.1s ease;
+}
+
+.dark body {
+  background-color: #0f172a;
+}
+
+*, *::before, *::after {
+  transition-property: background-color, border-color, color;
+  transition-duration: 0.2s;
+  transition-timing-function: ease;
 }
 
 #root {

@@ -78,10 +78,10 @@ function LocalityCard({ loc, index }: { loc: LocalitySummary; index: number }) {
       variants={fadeUp}
       whileHover={{ scale: 1.02, y: -4 }}
       transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-      className={`bg-white rounded-2xl border p-5 cursor-default ${
+      className={`bg-white dark:bg-slate-800 rounded-2xl border p-5 cursor-default ${
         loc.warning_badge
-          ? 'border-amber-200 hover:border-amber-300 hover:shadow-[0_8px_30px_rgba(251,191,36,0.15)]'
-          : 'border-gray-200 hover:border-blue-200 hover:shadow-[0_8px_30px_rgba(59,130,246,0.12)]'
+          ? 'border-amber-200 dark:border-amber-700 hover:border-amber-300 hover:shadow-[0_8px_30px_rgba(251,191,36,0.15)]'
+          : 'border-gray-200 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-600 hover:shadow-[0_8px_30px_rgba(59,130,246,0.12)]'
       } shadow-sm transition-all duration-300`}
     >
       <div className="flex items-start justify-between gap-2 mb-3">
@@ -89,8 +89,8 @@ function LocalityCard({ loc, index }: { loc: LocalitySummary; index: number }) {
           <div className="flex items-center gap-1.5 mb-0.5">
             <span className="text-xs font-medium text-gray-400">{String(index + 1).padStart(2, '0')}</span>
           </div>
-          <h3 className="font-semibold text-gray-900 text-sm leading-snug">{loc.name}</h3>
-          <p className="text-xs text-gray-500 mt-0.5 font-medium">{loc.province}</p>
+          <h3 className="font-semibold text-gray-900 dark:text-slate-100 text-sm leading-snug">{loc.name}</h3>
+          <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5 font-medium">{loc.province}</p>
         </div>
         {loc.warning_badge && (
           <span className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full shrink-0">
@@ -98,19 +98,19 @@ function LocalityCard({ loc, index }: { loc: LocalitySummary; index: number }) {
           </span>
         )}
       </div>
-      <dl className="space-y-1.5 text-xs text-gray-600">
+      <dl className="space-y-1.5 text-xs text-gray-600 dark:text-slate-300">
         <div className="flex justify-between gap-2">
-          <dt className="text-gray-400 shrink-0">Fuente</dt>
-          <dd className="text-right max-w-[62%] leading-tight text-gray-600">{loc.source_document}</dd>
+          <dt className="text-gray-400 dark:text-slate-500 shrink-0">Fuente</dt>
+          <dd className="text-right max-w-[62%] leading-tight text-gray-600 dark:text-slate-300">{loc.source_document}</dd>
         </div>
         <div className="flex justify-between gap-2">
-          <dt className="text-gray-400 shrink-0">Período</dt>
-          <dd className="text-right text-gray-600">{loc.series_period}</dd>
+          <dt className="text-gray-400 dark:text-slate-500 shrink-0">Período</dt>
+          <dd className="text-right text-gray-600 dark:text-slate-300">{loc.series_period}</dd>
         </div>
         {loc.max_reliable_return_period != null && (
-          <div className="flex justify-between gap-2 pt-1.5 border-t border-gray-100">
-            <dt className="text-gray-400 shrink-0">TR máximo confiable</dt>
-            <dd className="font-semibold text-gray-800">{loc.max_reliable_return_period} años</dd>
+          <div className="flex justify-between gap-2 pt-1.5 border-t border-gray-100 dark:border-slate-700">
+            <dt className="text-gray-400 dark:text-slate-500 shrink-0">TR máximo confiable</dt>
+            <dd className="font-semibold text-gray-800 dark:text-slate-200">{loc.max_reliable_return_period} años</dd>
           </div>
         )}
       </dl>
@@ -123,7 +123,7 @@ export function Home() {
   const [localitiesView, setLocalitiesView] = useState<'map' | 'list'>('map');
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <section
@@ -219,21 +219,21 @@ export function Home() {
           className="flex items-start justify-between gap-4 mb-6 flex-wrap"
         >
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-2">
               {t('home.localitiesTitle')}
             </h2>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-slate-400">
               {t('home.localitiesSubtitle')}
             </p>
           </div>
           {/* Map / List toggle */}
-          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 shrink-0">
+          <div className="flex items-center gap-1 bg-gray-100 dark:bg-slate-700 rounded-lg p-1 shrink-0">
             <button
               onClick={() => setLocalitiesView('map')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
                 localitiesView === 'map'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-white dark:bg-slate-600 text-gray-900 dark:text-slate-100 shadow-sm'
+                  : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
               }`}
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -245,8 +245,8 @@ export function Home() {
               onClick={() => setLocalitiesView('list')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
                 localitiesView === 'list'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-white dark:bg-slate-600 text-gray-900 dark:text-slate-100 shadow-sm'
+                  : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
               }`}
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -287,7 +287,7 @@ export function Home() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="text-xs text-gray-400 mt-5"
+          className="text-xs text-gray-400 dark:text-slate-500 mt-5"
         >
           {t('home.moreLocalities')}{' '}
           <Link to="/sources" className="text-blue-600 hover:underline">
@@ -297,7 +297,7 @@ export function Home() {
       </section>
 
       {/* ── Tools ─────────────────────────────────────────────────────────── */}
-      <section className="bg-white border-y border-gray-200">
+      <section className="bg-white dark:bg-slate-800 border-y border-gray-200 dark:border-slate-700">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-14">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -306,8 +306,8 @@ export function Home() {
             transition={{ duration: 0.5 }}
             className="mb-8"
           >
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('home.calculatorsTitle')}</h2>
-            <p className="text-sm text-gray-500">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-2">{t('home.calculatorsTitle')}</h2>
+            <p className="text-sm text-gray-500 dark:text-slate-400">
               {t('home.calculatorsSubtitle')}
             </p>
           </motion.div>
@@ -323,21 +323,21 @@ export function Home() {
               <motion.div key={tool.href} variants={fadeUp}>
                 <Link
                   to={tool.href}
-                  className={`group flex items-start gap-4 bg-gradient-to-br ${tool.color} border border-gray-200 hover:border-gray-300 rounded-2xl p-5 transition-all duration-300 hover:shadow-md`}
+                  className={`group flex items-start gap-4 bg-gradient-to-br ${tool.color} border border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500 rounded-2xl p-5 transition-all duration-300 hover:shadow-md`}
                 >
                   <div className={`shrink-0 w-10 h-10 rounded-xl ${tool.iconBg} flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}>
                     {tool.icon}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <h3 className="font-semibold text-gray-900 text-sm group-hover:text-blue-700 transition-colors">
+                      <h3 className="font-semibold text-gray-900 dark:text-slate-100 text-sm group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
                         {t(tool.labelKey)}
                       </h3>
                       <svg className="w-4 h-4 text-gray-300 group-hover:text-blue-400 shrink-0 transition-all duration-300 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1 leading-relaxed">{t(tool.descKey)}</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 leading-relaxed">{t(tool.descKey)}</p>
                   </div>
                 </Link>
               </motion.div>
@@ -353,10 +353,10 @@ export function Home() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="rounded-2xl bg-blue-50 border border-blue-200 p-6"
+          className="rounded-2xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-6"
         >
-          <h2 className="text-sm font-semibold text-blue-900 mb-2">{t('home.methodologyTitle')}</h2>
-          <p className="text-sm text-blue-800 leading-relaxed">
+          <h2 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">{t('home.methodologyTitle')}</h2>
+          <p className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed">
             {t('home.methodologyText')}
           </p>
         </motion.div>
@@ -369,9 +369,9 @@ export function Home() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="rounded-2xl bg-amber-50 border border-amber-200 p-5"
+          className="rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 p-5"
         >
-          <p className="text-sm text-amber-800">
+          <p className="text-sm text-amber-800 dark:text-amber-300">
             <span className="font-semibold">{t('home.disclaimerTitle')}:</span>{' '}
             {t('home.disclaimerFull')}
           </p>

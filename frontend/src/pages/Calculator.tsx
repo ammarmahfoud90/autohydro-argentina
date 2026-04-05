@@ -43,7 +43,7 @@ function StepIndicator({ current }: StepIndicatorProps) {
     t('steps.results'),
   ];
   return (
-    <div className="bg-white border-b border-gray-200 sticky top-16 z-10">
+    <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-16 z-10">
       <div className="max-w-4xl mx-auto px-4 py-3">
         <div className="flex items-center gap-0">
           {steps.map((label, idx) => {
@@ -59,7 +59,7 @@ function StepIndicator({ current }: StepIndicatorProps) {
                         ? 'bg-green-500 text-white'
                         : active
                         ? 'bg-blue-600 text-white'
-                        : 'bg-gray-200 text-gray-500'
+                        : 'bg-gray-200 dark:bg-slate-600 text-gray-500 dark:text-slate-400'
                     }`}
                   >
                     {done ? (
@@ -72,7 +72,7 @@ function StepIndicator({ current }: StepIndicatorProps) {
                   </div>
                   <span
                     className={`text-xs font-medium hidden sm:block truncate ${
-                      active ? 'text-blue-700' : done ? 'text-green-600' : 'text-gray-400'
+                      active ? 'text-blue-700 dark:text-blue-400' : done ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-slate-500'
                     }`}
                   >
                     {label}
@@ -81,7 +81,7 @@ function StepIndicator({ current }: StepIndicatorProps) {
                 {num < TOTAL_STEPS && (
                   <div
                     className={`flex-1 h-0.5 mx-2 transition-colors ${
-                      done ? 'bg-green-400' : 'bg-gray-200'
+                      done ? 'bg-green-400' : 'bg-gray-200 dark:bg-slate-600'
                     }`}
                   />
                 )}
@@ -96,8 +96,8 @@ function StepIndicator({ current }: StepIndicatorProps) {
 
 function Card({ children, title }: { children: React.ReactNode; title?: string }) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      {title && <h2 className="text-lg font-bold text-gray-800 mb-5">{title}</h2>}
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+      {title && <h2 className="text-lg font-bold text-gray-800 dark:text-slate-100 mb-5">{title}</h2>}
       {children}
     </div>
   );
@@ -131,7 +131,7 @@ function NavButtons({
   }
 
   return (
-    <div className="mt-6 pt-4 border-t border-gray-100">
+    <div className="mt-6 pt-4 border-t border-gray-100 dark:border-slate-700">
       {triedNext && nextDisabled && validationHint && (
         <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2 mb-3">
           {validationHint}
@@ -142,7 +142,7 @@ function NavButtons({
           type="button"
           onClick={onBack}
           disabled={!onBack}
-          className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:invisible transition-colors"
+          className="px-5 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-sm font-medium text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:invisible transition-colors"
         >
           {t('common.back')}
         </button>
@@ -341,7 +341,7 @@ export function Calculator() {
   // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
       {mutation.isPending && <CalculatingOverlay />}
 
       <StepIndicator current={step} />
@@ -418,7 +418,7 @@ export function Calculator() {
                 <select
                   value={formData.station_id ?? ''}
                   onChange={(e) => update({ station_id: e.target.value || null })}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Seleccionar estación más cercana a la cuenca</option>
                   {Object.entries(tucumanStations).map(([id, s]) => (
@@ -450,13 +450,13 @@ export function Calculator() {
 
             <div className="grid grid-cols-2 gap-4 mt-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                   {t('calculator.returnPeriod')}
                 </label>
                 <select
                   value={formData.return_period}
                   onChange={(e) => update({ return_period: Number(e.target.value) })}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {availableTRs.map((T) => (
                     <option key={T} value={T}>
@@ -473,7 +473,7 @@ export function Calculator() {
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
                   {t('calculator.stormDuration')}
                 </label>
                 <div className="flex items-center gap-2">
@@ -487,7 +487,7 @@ export function Calculator() {
                     min={durationMin}
                     max={durationMax}
                     step={1}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <span className="text-sm text-gray-500 whitespace-nowrap">{t('common.minutes')}</span>
                 </div>
