@@ -12,6 +12,7 @@ httpx>=0.28.1
 python-dotenv>=1.0.1
 numpy>=1.24
 scipy>=1.11
+pytest>=7.0
 # Note: rasterio, pysheds, shapely, staticmap excluded — they require native
 # compilation (GDAL, GEOS) and are only used by the watershed delineation
 # endpoint, which is not covered by the test suite.
