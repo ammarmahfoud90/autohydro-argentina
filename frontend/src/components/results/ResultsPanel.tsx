@@ -104,6 +104,20 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
   const [isExportingShp, setIsExportingShp] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
   const [shareCopied, setShareCopied] = useState(false);
+  const [copyOpen, setCopyOpen] = useState(false);
+  const [copyToast, setCopyToast] = useState(false);
+  const copyDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close copy dropdown on outside click
+  useEffect(() => {
+    function onOutside(e: MouseEvent) {
+      if (copyDropdownRef.current && !copyDropdownRef.current.contains(e.target as Node)) {
+        setCopyOpen(false);
+      }
+    }
+    if (copyOpen) document.addEventListener('mousedown', onOutside);
+    return () => document.removeEventListener('mousedown', onOutside);
+  }, [copyOpen]);
 
   const handleShare = () => {
     const url = window.location.href;
@@ -158,6 +172,73 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
     flow: s.peak_flow_m3s,
     isBase: s.label === 'CN',
   }));
+
+  function generateMarkdown(r: HydrologyResult): string {
+    const methodLabel = r.method === 'rational' ? 'Racional' : r.method === 'modified_rational' ? 'Racional Modificado' : 'SCS-CN';
+    const lines = [
+      `# Memoria de Cálculo Hidrológico`,
+      ``,
+      `**Localidad:** ${r.city}, ${r.province}`,
+      `**Período de retorno:** ${r.return_period} años`,
+      `**Duración de tormenta:** ${r.duration_min} min`,
+      `**Área de cuenca:** ${r.area_km2} km²`,
+      `**Método:** ${methodLabel}`,
+      ``,
+      `## Resultados`,
+      ``,
+      `| Parámetro | Valor |`,
+      `|-----------|-------|`,
+      `| Intensidad de diseño | ${r.intensity_mm_hr.toFixed(1)} mm/h |`,
+      `| Tiempo de concentración | ${r.tc_adopted_minutes.toFixed(0)} min |`,
+    ];
+    if (r.runoff_coeff != null) lines.push(`| Coeficiente de escorrentía (C) | ${r.runoff_coeff.toFixed(3)} |`);
+    if (r.cn != null) lines.push(`| Número de curva (CN) | ${r.cn.toFixed(0)} |`);
+    if (r.runoff_depth_mm != null) lines.push(`| Lámina escurrida | ${r.runoff_depth_mm.toFixed(1)} mm |`);
+    lines.push(
+      `| **Caudal pico (Q)** | **${r.peak_flow_m3s.toFixed(3)} m³/s** |`,
+      `| Caudal específico | ${r.specific_flow_m3s_km2.toFixed(4)} m³/s/km² |`,
+      ``,
+      `> Datos IDF: ${r.idf_source}`,
+      `> Generado con AutoHydro Argentina`,
+    );
+    return lines.join('\n');
+  }
+
+  function generateCSV(r: HydrologyResult): string {
+    const rows: string[][] = [
+      ['Parámetro', 'Valor', 'Unidad'],
+      ['Localidad', r.city, ''],
+      ['Provincia', r.province, ''],
+      ['Período de retorno', String(r.return_period), 'años'],
+      ['Duración tormenta', String(r.duration_min), 'min'],
+      ['Área cuenca', String(r.area_km2), 'km²'],
+      ['Método', r.method, ''],
+      ['Intensidad diseño', r.intensity_mm_hr.toFixed(1), 'mm/h'],
+      ['Tiempo de concentración', r.tc_adopted_minutes.toFixed(0), 'min'],
+    ];
+    if (r.runoff_coeff != null) rows.push(['Coeficiente escorrentía C', r.runoff_coeff.toFixed(3), '']);
+    if (r.cn != null) rows.push(['Número de curva CN', r.cn.toFixed(0), '']);
+    if (r.runoff_depth_mm != null) rows.push(['Lámina escurrida', r.runoff_depth_mm.toFixed(1), 'mm']);
+    if (r.areal_reduction_k != null) rows.push(['Factor reducción areal', r.areal_reduction_k.toFixed(3), '']);
+    rows.push(
+      ['Caudal pico Q', r.peak_flow_m3s.toFixed(3), 'm³/s'],
+      ['Caudal específico', r.specific_flow_m3s_km2.toFixed(4), 'm³/s/km²'],
+      ['Fuente IDF', r.idf_source, ''],
+    );
+    return rows.map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n');
+  }
+
+  function copyText(text: string) {
+    setCopyOpen(false);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        setCopyToast(true);
+        setTimeout(() => setCopyToast(false), 2500);
+      }).catch(() => window.prompt('Copiar:', text));
+    } else {
+      window.prompt('Copiar:', text);
+    }
+  }
 
   // Bar chart data
   const chartData = results.method_comparison.map((m) => ({
@@ -1203,6 +1284,47 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
               {t('results.open_culvert')}
             </button>
 
+            {/* Copy dropdown */}
+            <div ref={copyDropdownRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setCopyOpen((o) => !o)}
+                className="px-5 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 text-sm font-semibold hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                Copiar
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {copyOpen && (
+                <div className="absolute bottom-full right-0 mb-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 py-1.5 z-30">
+                  <button
+                    type="button"
+                    onClick={() => copyText(generateMarkdown(results))}
+                    className="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Copiar como Markdown
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => copyText(generateCSV(results))}
+                    className="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M3 14h18M10 3v18M6 3h12a1 1 0 011 1v16a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1z" />
+                    </svg>
+                    Copiar como CSV
+                  </button>
+                </div>
+              )}
+            </div>
+
             <button
               type="button"
               onClick={handleShare}
@@ -1235,6 +1357,16 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
           </div>
         </div>
       </div>
+
+      {/* Copy toast */}
+      {copyToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-green-600 text-white text-sm font-semibold px-5 py-2.5 rounded-full shadow-lg pointer-events-none">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          ¡Copiado al portapapeles!
+        </div>
+      )}
     </div>
   );
 }

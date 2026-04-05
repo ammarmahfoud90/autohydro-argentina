@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { resetOnboarding } from '../../hooks/useOnboarding';
 
 const GITHUB_URL = 'https://github.com/ammarmahfoud90/autohydro-argentina';
 const LINKEDIN_URL = 'https://www.linkedin.com/in/ammar-mahfoud-499212118';
@@ -113,6 +114,16 @@ export function Footer() {
                 LinkedIn
               </a>
             </div>
+            <button
+              type="button"
+              onClick={() => { resetOnboarding(); window.location.assign('/'); }}
+              className="mt-3 flex items-center gap-1.5 text-xs text-blue-400/60 hover:text-blue-300 transition-colors duration-200"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Ver tour de bienvenida
+            </button>
           </div>
         </div>
       </div>

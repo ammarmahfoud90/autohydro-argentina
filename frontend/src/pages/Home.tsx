@@ -6,6 +6,7 @@ import { LOCALITIES_SUMMARY } from '../constants/localities-summary';
 import type { LocalitySummary } from '../constants/localities-summary';
 import { MalvinasSection } from '../components/MalvinasSection';
 import { LocalitiesMap } from '../components/LocalitiesMap';
+import { useOnboarding } from '../hooks/useOnboarding';
 
 const GITHUB_URL = 'https://github.com/ammarmahfoud90/autohydro-argentina';
 const LINKEDIN_URL = 'https://www.linkedin.com/in/ammar-mahfoud-499212118';
@@ -121,6 +122,7 @@ function LocalityCard({ loc, index }: { loc: LocalitySummary; index: number }) {
 export function Home() {
   const { t } = useTranslation();
   const [localitiesView, setLocalitiesView] = useState<'map' | 'list'>('map');
+  useOnboarding();
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
@@ -155,6 +157,7 @@ export function Home() {
 
           {/* Title */}
           <motion.h1
+            data-tour="hero-title"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
@@ -190,6 +193,7 @@ export function Home() {
             className="flex flex-wrap gap-3"
           >
             <Link
+              data-tour="iniciar-calculo"
               to="/calculator"
               className="inline-flex items-center gap-2 font-semibold px-7 py-3 rounded-xl text-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
               style={{ background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)', color: 'white', boxShadow: '0 4px 20px rgba(79,70,229,0.4)' }}
@@ -260,6 +264,7 @@ export function Home() {
         {/* Map view */}
         {localitiesView === 'map' && (
           <motion.div
+            data-tour="mapa-localidades"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}

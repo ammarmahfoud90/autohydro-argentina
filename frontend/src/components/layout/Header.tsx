@@ -193,6 +193,7 @@ export function Header() {
           {/* Calculadoras dropdown */}
           <div ref={calcRef} className="relative">
             <button
+              data-tour="nav-calculadoras"
               type="button"
               onClick={() => setCalcOpen((o) => !o)}
               className={`${navLinkBase} flex items-center gap-1 ${
@@ -267,7 +268,7 @@ export function Header() {
             </AnimatePresence>
           </div>
 
-          <Link to="/sources" className={navLinkClass('/sources')}>
+          <Link data-tour="nav-fuentes" to="/sources" className={navLinkClass('/sources')}>
             {t('nav.sources')}
             {pathname === '/sources' && (
               <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-blue-400 rounded-full" />
