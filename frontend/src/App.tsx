@@ -12,6 +12,7 @@ import { NotFound } from './pages/NotFound';
 import { History } from './pages/History';
 import { Proyecto } from './pages/Proyecto';
 import { FrequencyAnalysis } from './pages/FrequencyAnalysis';
+import { FloodRouting } from './pages/FloodRouting';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
             <Route path="/culverts" element={<Navigate to="/calculadora/alcantarilla" replace />} />
             <Route path="/calculadora/hietograma" element={<Hyetograph />} />
             <Route path="/calculadora/frecuencia" element={<FrequencyAnalysis />} />
+            <Route path="/calculadora/transito" element={<FloodRouting />} />
             <Route path="/hyetograph" element={<Navigate to="/calculadora/hietograma" replace />} />
             <Route path="/hietograma" element={<Navigate to="/calculadora/hietograma" replace />} />
             <Route path="/historial" element={<History />} />
