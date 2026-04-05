@@ -5,6 +5,7 @@ from app.services.docx_service import MemoriaCalculoDocxGenerator
 from app.services.excel_service import ExcelReportGenerator
 from app.services.ai_service import generate_report_sections
 from app.services.hydraulic_report_service import ManningReportGenerator, CulvertReportGenerator
+from app.services.proyecto_report_service import ProyectoReportGenerator
 
 router = APIRouter()
 
@@ -227,6 +228,54 @@ def generate_manning_pdf(payload: dict) -> StreamingResponse:
         for c in project_name[:40]
     ).strip()
     filename = f"memoria_hidraulica_manning_{safe_name}.pdf"
+
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.post("/report/proyecto-pdf")
+def generate_proyecto_pdf(payload: dict) -> StreamingResponse:
+    """
+    Generate consolidated PDF Memoria de Cálculo Hidrológico-Hidráulica.
+
+    Request body:
+        proyectoData: full ProyectoHidraulico object (paso1..paso6)
+        projectName: project name for cover page
+        comitente: client/company name
+        profesional: responsible engineer
+        fecha: date string
+        notas: optional notes
+    """
+    proyecto_data = payload.get("proyectoData", {})
+    project_name = payload.get("projectName", "Proyecto Hidráulico")
+    comitente = payload.get("comitente", "")
+    profesional = payload.get("profesional", "")
+    fecha = payload.get("fecha", "")
+    notas = payload.get("notas", "")
+
+    try:
+        generator = ProyectoReportGenerator(
+            project_name=project_name,
+            comitente=comitente,
+            profesional=profesional,
+            fecha=fecha,
+            notas=notas,
+        )
+        buffer = generator.generate(proyecto_data)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al generar el PDF: {str(exc)}",
+        ) from exc
+
+    safe_name = "".join(
+        c if c.isalnum() or c in (" ", "-", "_") else "_"
+        for c in project_name[:40]
+    ).strip()
+    filename = f"memoria_proyecto_{safe_name}.pdf"
 
     return StreamingResponse(
         buffer,

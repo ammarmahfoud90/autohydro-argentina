@@ -354,3 +354,25 @@ export async function generateCulvertPdf(options: {
   }
   return res.blob();
 }
+
+// ── Proyecto consolidado ──────────────────────────────────────────────────────
+
+export async function generateProyectoPdf(options: {
+  proyectoData: Record<string, unknown>;
+  projectName: string;
+  comitente?: string;
+  profesional?: string;
+  fecha?: string;
+  notas?: string;
+}): Promise<Blob> {
+  const res = await fetch(`${BASE}/api/report/proyecto-pdf`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(options),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(body.detail ?? `HTTP ${res.status}`);
+  }
+  return res.blob();
+}

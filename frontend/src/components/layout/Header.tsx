@@ -68,6 +68,18 @@ const CALC_ITEMS = [
   },
 ];
 
+const PROYECTO_ITEM = {
+  to: '/proyecto',
+  label: 'Modo Proyecto',
+  desc: 'Diseño integral: IDF → cuenca → canal → informe',
+  icon: (
+    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round"
+        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+    </svg>
+  ),
+};
+
 export function Header() {
   const { t, i18n } = useTranslation();
   const { pathname } = useLocation();
@@ -119,7 +131,8 @@ export function Header() {
     pathname.startsWith('/calculadora') ||
     pathname === '/manning' ||
     pathname === '/alcantarilla' ||
-    pathname === '/historial';
+    pathname === '/historial' ||
+    pathname === '/proyecto';
 
   const navLinkBase =
     'px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 relative group';
@@ -231,6 +244,24 @@ export function Header() {
                       </div>
                     </Link>
                   ))}
+                  <div className="my-1 mx-4 border-t border-gray-100 dark:border-slate-700" />
+                  <Link
+                    to={PROYECTO_ITEM.to}
+                    onClick={() => setCalcOpen(false)}
+                    className={`flex items-start gap-3 px-4 py-2.5 hover:bg-violet-50 dark:hover:bg-slate-700 transition-colors ${
+                      pathname === PROYECTO_ITEM.to ? 'bg-violet-50 dark:bg-slate-700' : ''
+                    }`}
+                  >
+                    <div className={`mt-0.5 shrink-0 ${pathname === PROYECTO_ITEM.to ? 'text-violet-600' : 'text-gray-400'}`}>
+                      {PROYECTO_ITEM.icon}
+                    </div>
+                    <div>
+                      <div className={`text-sm font-semibold ${pathname === PROYECTO_ITEM.to ? 'text-violet-700 dark:text-violet-300' : 'text-gray-800 dark:text-slate-200'}`}>
+                        🗂 {PROYECTO_ITEM.label}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">{PROYECTO_ITEM.desc}</div>
+                    </div>
+                  </Link>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -389,6 +420,13 @@ export function Header() {
                   {label}
                 </Link>
               ))}
+              <Link
+                to={PROYECTO_ITEM.to}
+                onClick={() => setMenuOpen(false)}
+                className={`block pl-5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${pathname === PROYECTO_ITEM.to ? 'bg-white/15 text-white' : 'text-violet-300 hover:bg-white/10 hover:text-white'}`}
+              >
+                🗂 {PROYECTO_ITEM.label}
+              </Link>
               <Link to="/sources" onClick={() => setMenuOpen(false)}
                 className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${pathname === '/sources' ? 'bg-white/15 text-white' : 'text-blue-200 hover:bg-white/10 hover:text-white'}`}>
                 {t('nav.sources')}

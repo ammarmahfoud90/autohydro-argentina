@@ -10,6 +10,7 @@ import { Culvert } from './pages/Culvert';
 import { Hyetograph } from './pages/Hyetograph';
 import { NotFound } from './pages/NotFound';
 import { History } from './pages/History';
+import { Proyecto } from './pages/Proyecto';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <main className="flex-1">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/proyecto" element={<Proyecto />} />
             <Route path="/calculator" element={<Calculator />} />
             <Route path="/calculadora/manning" element={<Manning />} />
             <Route path="/manning" element={<Manning />} />
