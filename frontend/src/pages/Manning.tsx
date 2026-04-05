@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { generateManningPdf } from '../services/api';
+import { ManningEfficiencyCurves } from '../components/manning/ManningEfficiencyCurves';
+import { ChannelCrossSectionSVG } from '../components/manning/ChannelCrossSectionSVG';
 
 interface HydroSourceInfo {
   locality: string;
@@ -58,82 +60,6 @@ const MANNING_PRESETS = [
   { label: 'Personalizado', n: -1, group: '' },
 ];
 
-// ── Cross-section SVG diagrams ────────────────────────────────────────────────
-
-function RectDiagram({ width, depth, yFrac }: { width: number; depth: number; yFrac: number }) {
-  const W = 200; const H = 120; const pad = 20;
-  const bw = W - 2 * pad;
-  const bh = H - pad;
-  const wy = bh * Math.min(yFrac, 1);
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full max-w-xs mx-auto">
-      <rect x={pad} y={pad} width={bw} height={bh} fill="none" stroke="#6b7280" strokeWidth="2" />
-      <rect x={pad} y={pad + bh - wy} width={bw} height={wy} fill="#93c5fd" fillOpacity="0.5" />
-      <text x={W / 2} y={H - 4} textAnchor="middle" fontSize="10" fill="#374151">b = {width.toFixed(2)} m</text>
-      <text x={pad + bw + 4} y={pad + bh - wy / 2} fontSize="10" fill="#1d4ed8">y = {depth.toFixed(2)} m</text>
-    </svg>
-  );
-}
-
-function TrapDiagram({ b, y, z, yFrac }: { b: number; y: number; z: number; yFrac: number }) {
-  const W = 220; const H = 130; const pad = 30;
-  const scale = (W - 2 * pad) / (b + 2 * z * y + 20);
-  const bPx = b * scale;
-  const yPx = (H - pad - 10) * Math.min(yFrac, 1);
-  const cx = W / 2;
-  // Bottom corners
-  const bx1 = cx - bPx / 2; const bx2 = cx + bPx / 2; const by_ = H - 20;
-  // Full height top corners
-  const tx1 = bx1 - z * (H - pad - 10) * scale / scale; // simplified
-  const tx2 = bx2 + z * (H - pad - 10) * scale / scale;
-  const ty = by_ - (H - pad - 10);
-  // Water surface at yFrac
-  const wy1 = bx1 - z * yPx; const wy2 = bx2 + z * yPx; const wy_ = by_ - yPx;
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full max-w-xs mx-auto">
-      <polygon points={`${tx1},${ty} ${tx2},${ty} ${bx2},${by_} ${bx1},${by_}`} fill="none" stroke="#6b7280" strokeWidth="2" />
-      <polygon points={`${wy1},${wy_} ${wy2},${wy_} ${bx2},${by_} ${bx1},${by_}`} fill="#93c5fd" fillOpacity="0.5" />
-      <text x={cx} y={H - 4} textAnchor="middle" fontSize="10" fill="#374151">b = {b.toFixed(2)} m, z = {z.toFixed(1)}</text>
-      <text x={W - 10} y={wy_ + yPx / 2} textAnchor="end" fontSize="10" fill="#1d4ed8">y = {y.toFixed(2)} m</text>
-    </svg>
-  );
-}
-
-function CircDiagram({ D, depth }: { D: number; depth: number }) {
-  const W = 160; const H = 160; const r = 60; const cx = W / 2; const cy = H / 2;
-  const yFrac = depth / D;
-  const waterY = cy + r - 2 * r * yFrac;
-  // Clip water fill to circle
-  const clipId = 'circClip';
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full max-w-xs mx-auto">
-      <defs>
-        <clipPath id={clipId}>
-          <circle cx={cx} cy={cy} r={r} />
-        </clipPath>
-      </defs>
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke="#6b7280" strokeWidth="2" />
-      <rect x={cx - r} y={waterY} width={2 * r} height={cy + r - waterY} fill="#93c5fd" fillOpacity="0.5" clipPath={`url(#${clipId})`} />
-      <text x={cx} y={H - 4} textAnchor="middle" fontSize="10" fill="#374151">D = {D.toFixed(2)} m</text>
-      <text x={cx + r + 4} y={waterY + (cy + r - waterY) / 2} fontSize="10" fill="#1d4ed8">y = {depth.toFixed(2)} m</text>
-    </svg>
-  );
-}
-
-function TrianDiagram({ z, depth, yFrac }: { z: number; depth: number; yFrac: number }) {
-  const W = 200; const H = 130; const cx = W / 2; const baseY = H - 20; const tipY = 30;
-  const halfBase = z * depth * ((W - 40) / (z * depth + 5));
-  const wy = baseY - (baseY - tipY) * Math.min(yFrac, 1);
-  const wx = halfBase * Math.min(yFrac, 1);
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full max-w-xs mx-auto">
-      <polygon points={`${cx - halfBase},${baseY} ${cx + halfBase},${baseY} ${cx},${tipY}`} fill="none" stroke="#6b7280" strokeWidth="2" />
-      <polygon points={`${cx - wx},${wy} ${cx + wx},${wy} ${cx},${tipY}`} fill="#93c5fd" fillOpacity="0.5" />
-      <text x={cx} y={H - 4} textAnchor="middle" fontSize="10" fill="#374151">z = {z.toFixed(1)}</text>
-      <text x={cx + wx + 6} y={wy + (baseY - wy) / 2} fontSize="10" fill="#1d4ed8">y = {depth.toFixed(2)} m</text>
-    </svg>
-  );
-}
 
 // ── Regime badge ──────────────────────────────────────────────────────────────
 
@@ -296,8 +222,6 @@ export function Manning() {
   const bwVal = parseFloat(bottomWidth) || 2;
   const ssVal = parseFloat(sideSlope) || 1.5;
   const tssVal = parseFloat(triSideSlope) || 2;
-  const yFrac = channelType === 'circular' ? depthVal / diamVal : 0.7;
-
   const channelTypeOptions: { type: ChannelType; label: string; icon: string }[] = [
     { type: 'rectangular', label: 'Rectangular', icon: '▬' },
     { type: 'trapezoidal', label: 'Trapezoidal', icon: '⏢' },
@@ -344,12 +268,21 @@ export function Manning() {
                 ))}
               </div>
 
-              {/* SVG diagram */}
-              <div className="mt-4 rounded-lg bg-gray-50 border border-gray-100 p-3">
-                {channelType === 'rectangular' && <RectDiagram width={widthVal} depth={depthVal || 1} yFrac={yFrac} />}
-                {channelType === 'trapezoidal' && <TrapDiagram b={bwVal} y={depthVal || 1} z={ssVal} yFrac={yFrac} />}
-                {channelType === 'circular' && <CircDiagram D={diamVal} depth={depthVal || diamVal * 0.7} />}
-                {channelType === 'triangular' && <TrianDiagram z={tssVal} depth={depthVal || 1} yFrac={yFrac} />}
+              {/* Technical cross-section SVG */}
+              <div className="mt-4">
+                <ChannelCrossSectionSVG
+                  channelType={channelType}
+                  depth={depthVal || 1}
+                  width={widthVal}
+                  bottomWidth={bwVal}
+                  sideSlope={ssVal}
+                  diameter={diamVal}
+                  triSideSlope={tssVal}
+                  topWidth={result?.top_width_m}
+                  flow={result?.flow_m3s}
+                  n={manningN}
+                  slope={parseFloat(slope) || 0.001}
+                />
               </div>
             </div>
 
@@ -592,6 +525,19 @@ export function Manning() {
                     </p>
                   </div>
                 )}
+
+                {/* Efficiency curves */}
+                <ManningEfficiencyCurves
+                  channelType={channelType}
+                  n={manningN}
+                  S={parseFloat(slope) || 0.001}
+                  depth={depthVal}
+                  width={widthVal}
+                  bottomWidth={bwVal}
+                  sideSlope={ssVal}
+                  diameter={diamVal}
+                  triSideSlope={tssVal}
+                />
 
                 {/* PDF report button */}
                 <div className="flex justify-end">
