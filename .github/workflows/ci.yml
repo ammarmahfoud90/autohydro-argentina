@@ -14,18 +14,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y \
-            libgdal-dev \
-            gdal-bin \
-            libgeos-dev \
-            libproj-dev \
-            libspatialindex-dev \
-            libcairo2-dev \
-            pkg-config
-
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
@@ -35,12 +23,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements-ci.txt') }}
 
       - name: Install dependencies
         run: |
           cd backend
-          pip install -r requirements.txt
+          pip install -r requirements-ci.txt
 
       - name: Run all tests
         run: |

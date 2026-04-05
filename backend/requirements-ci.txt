@@ -1,0 +1,17 @@
+fastapi>=0.115.6
+uvicorn[standard]>=0.32.1
+pydantic>=2.11.0
+pydantic-settings>=2.7.0
+anthropic>=0.42.0
+reportlab>=4.2.5
+python-docx>=1.1.0
+openpyxl>=3.1.0
+pyshp>=2.3.0
+python-multipart>=0.0.20
+httpx>=0.28.1
+python-dotenv>=1.0.1
+numpy>=1.24
+scipy>=1.11
+# Note: rasterio, pysheds, shapely, staticmap excluded — they require native
+# compilation (GDAL, GEOS) and are only used by the watershed delineation
+# endpoint, which is not covered by the test suite.
