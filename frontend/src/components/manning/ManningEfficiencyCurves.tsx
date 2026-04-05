@@ -7,8 +7,8 @@ import {
   CartesianGrid,
   Tooltip,
   ReferenceLine,
+  ReferenceDot,
   ResponsiveContainer,
-  Dot,
 } from 'recharts';
 
 type ChannelType = 'rectangular' | 'trapezoidal' | 'circular' | 'triangular';
@@ -210,7 +210,6 @@ export function ManningEfficiencyCurves({
             tick={{ fontSize: 10 }}
           />
           <YAxis
-            dataKey={dataKey}
             tickFormatter={(v: number) => v.toFixed(2)}
             label={{ value: yLabel, angle: -90, position: 'insideLeft', offset: 12, fontSize: 11, fill: '#6b7280' }}
             tick={{ fontSize: 10 }}
@@ -259,14 +258,13 @@ export function ManningEfficiencyCurves({
 
           {/* Design point dot */}
           {designPoint && designVal != null && (
-            <Line
-              data={[{ y: depth, [dataKey]: designVal }]}
-              type="monotone"
-              dataKey={dataKey}
-              stroke="none"
-              dot={<Dot cx={0} cy={0} r={6} fill="#ef4444" stroke="white" strokeWidth={2} />}
-              activeDot={false}
-              legendType="none"
+            <ReferenceDot
+              x={depth}
+              y={designVal}
+              r={6}
+              fill="#ef4444"
+              stroke="white"
+              strokeWidth={2}
             />
           )}
         </ComposedChart>
