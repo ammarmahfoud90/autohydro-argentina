@@ -198,6 +198,7 @@ export function ManningEfficiencyCurves({
       </div>
 
       {/* Chart */}
+      <div role="img" aria-label="Curvas de eficiencia hidráulica Manning — caudal y velocidad vs tirante">
       <ResponsiveContainer width="100%" height={220}>
         <ComposedChart data={points} margin={{ top: 8, right: 16, left: 8, bottom: 8 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -269,6 +270,7 @@ export function ManningEfficiencyCurves({
           )}
         </ComposedChart>
       </ResponsiveContainer>
+      </div>
 
       {/* Info row */}
       <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-gray-600 bg-gray-50 rounded-lg p-3">

@@ -101,6 +101,7 @@ export function IDFPreviewChart({ locality }: Props) {
       <p className="text-xs font-semibold text-gray-600 mb-1">
         Curvas IDF — {locality.name}
       </p>
+      <div role="img" aria-label={`Gráfico de curvas IDF — intensidad vs duración para ${locality.name}`}>
       <ResponsiveContainer width="100%" height={200}>
         <LineChart data={chartData} margin={{ top: 4, right: 12, left: 0, bottom: 20 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
@@ -143,6 +144,7 @@ export function IDFPreviewChart({ locality }: Props) {
           ))}
         </LineChart>
       </ResponsiveContainer>
+      </div>
       <p className="text-[10px] text-gray-400 mt-0.5">
         Fuente: {locality.source.document}
       </p>

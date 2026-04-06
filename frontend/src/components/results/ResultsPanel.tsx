@@ -671,6 +671,7 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
               </div>
 
               {/* Bar chart */}
+              <div role="img" aria-label="Gráfico comparativo de caudales pico entre escenarios">
               <ResponsiveContainer width="100%" height={180}>
                 <BarChart data={barData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                   <XAxis dataKey="name" tick={{ fontSize: 10 }} />
@@ -683,6 +684,7 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
+              </div>
             </div>
           </div>
         );
@@ -694,6 +696,7 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
           <h3 className="font-semibold text-gray-700 dark:text-slate-200 mb-1">{t('results.methodComparison')}</h3>
           <p className="text-xs text-gray-400 dark:text-slate-500 mb-4">{t('results.comparisonDisclaimer')}</p>
 
+          <div role="img" aria-label="Gráfico comparativo de caudales pico por método de cálculo">
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
@@ -715,6 +718,7 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
               </Bar>
             </BarChart>
           </ResponsiveContainer>
+          </div>
 
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-xs text-gray-600 dark:text-slate-300">
@@ -803,6 +807,7 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
             Número de Curva. Esto refleja la incertidumbre inherente en la estimación del CN.
           </p>
 
+          <div role="img" aria-label="Análisis de sensibilidad — variación del caudal pico ante cambios en el Número de Curva">
           <ResponsiveContainer width="100%" height={150}>
             <BarChart
               data={sensitivityChartData}
@@ -827,6 +832,7 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
               </Bar>
             </BarChart>
           </ResponsiveContainer>
+          </div>
 
           <div className="mt-4 overflow-x-auto">
             <table className="w-full text-xs text-gray-600">
@@ -923,6 +929,7 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
               </div>
 
               {/* Area chart */}
+              <div role="img" aria-label="Hidrograma SCS — caudal de escorrentía directa vs tiempo">
               <ResponsiveContainer width="100%" height={220}>
                 <AreaChart data={hyData} margin={{ top: 10, right: 20, left: 5, bottom: 5 }}>
                   <defs>
@@ -976,6 +983,7 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
                   />
                 </AreaChart>
               </ResponsiveContainer>
+              </div>
 
               {/* Time-flow table (sampled every ~0.5 Tp) */}
               <details className="mt-4">

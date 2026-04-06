@@ -428,6 +428,7 @@ export function Hyetograph() {
 
             {/* Hyetograph bar chart */}
             <Card title="Hietograma — Intensidad por intervalo">
+              <div role="img" aria-label="Hietograma — intensidad de lluvia por intervalo de tiempo">
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -451,10 +452,12 @@ export function Hyetograph() {
                   <Bar dataKey="intensity" fill="#2563eb" radius={[2, 2, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
+              </div>
             </Card>
 
             {/* Cumulative rainfall line chart */}
             <Card title="Precipitación acumulada">
+              <div role="img" aria-label="Gráfico de precipitación acumulada a lo largo del tiempo">
               <ResponsiveContainer width="100%" height={180}>
                 <LineChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -482,6 +485,7 @@ export function Hyetograph() {
                   />
                 </LineChart>
               </ResponsiveContainer>
+              </div>
             </Card>
 
             {/* Data table */}

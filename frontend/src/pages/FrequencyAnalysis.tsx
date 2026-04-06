@@ -474,6 +474,7 @@ export function FrequencyAnalysis() {
               <p className="text-xs text-gray-500 dark:text-slate-400 mb-4">
                 Puntos negros: datos observados (posiciones de graficación Gringorten) · Eje X en escala logarítmica
               </p>
+              <div role="img" aria-label="Gráfico de ajuste de distribuciones de frecuencia — caudal vs período de retorno">
               <ResponsiveContainer width="100%" height={380}>
                 <ComposedChart margin={{ top: 10, right: 20, bottom: 20, left: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -543,6 +544,7 @@ export function FrequencyAnalysis() {
                   />
                 </ComposedChart>
               </ResponsiveContainer>
+              </div>
             </div>
 
             {/* Actions */}

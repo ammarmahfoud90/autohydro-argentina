@@ -786,6 +786,7 @@ export function Proyecto() {
                     Precipitación total: <strong>{hyetoResult.total_depth_mm.toFixed(1)} mm</strong>
                     {' · '}Pico: <strong>{hyetoResult.peak_intensity_mm_hr.toFixed(1)} mm/hr</strong>
                   </p>
+                  <div role="img" aria-label="Hietograma de diseño — intensidad de lluvia por intervalo">
                   <ResponsiveContainer width="100%" height={120}>
                     <BarChart
                       data={hyetoResult.times_min.map((t, i) => ({ t, i: hyetoResult.intensities_mm_hr[i] }))}
@@ -798,6 +799,7 @@ export function Proyecto() {
                       <Bar dataKey="i" fill="#2563eb" radius={[2, 2, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
+                  </div>
                 </div>
               )}
 
