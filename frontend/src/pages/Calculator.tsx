@@ -29,13 +29,51 @@ function isNetworkError(err: unknown): boolean {
   return err instanceof TypeError && err.message.toLowerCase().includes('fetch');
 }
 
+/** Parse a numeric URL param safely, returning fallback when missing/NaN/Infinity. */
+function parseNum(raw: string | null, fallback: number): number {
+  if (raw == null || raw === '') return fallback;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function parseIntParam(raw: string | null, fallback: number): number {
+  const n = parseNum(raw, fallback);
+  return Math.trunc(n);
+}
+
+/** Valid method values — used as a guard against malformed ?method= */
+const VALID_METHODS = new Set<HydrologyInput['method']>([
+  'rational',
+  'modified_rational',
+  'scs_cn',
+]);
+
+function hydrateFormFromParams(params: URLSearchParams): HydrologyInput | null {
+  const localidad = params.get('localidad');
+  if (!localidad) return null;
+  const methodRaw = params.get('method') as HydrologyInput['method'] | null;
+  const method = methodRaw && VALID_METHODS.has(methodRaw) ? methodRaw : DEFAULT_FORM.method;
+  return {
+    ...DEFAULT_FORM,
+    locality_id: localidad,
+    station_id: params.get('station') ?? null,
+    return_period: parseIntParam(params.get('TR'), DEFAULT_FORM.return_period),
+    duration_min: parseIntParam(params.get('t'), DEFAULT_FORM.duration_min),
+    area_km2: Math.max(0, parseNum(params.get('area'), DEFAULT_FORM.area_km2)),
+    length_km: Math.max(0, parseNum(params.get('length'), DEFAULT_FORM.length_km)),
+    slope: Math.max(0, parseNum(params.get('slope'), DEFAULT_FORM.slope)),
+    method,
+  };
+}
+
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 interface StepIndicatorProps {
   current: number;
+  validSteps?: boolean[];
 }
 
-function StepIndicator({ current }: StepIndicatorProps) {
+function StepIndicator({ current, validSteps = [] }: StepIndicatorProps) {
   const { t } = useTranslation();
   const steps = [
     t('steps.location'),
@@ -49,7 +87,8 @@ function StepIndicator({ current }: StepIndicatorProps) {
         <div className="flex items-center gap-0">
           {steps.map((label, idx) => {
             const num = idx + 1;
-            const done = current > num;
+            const isValid = validSteps[idx] === true;
+            const done = current > num || (isValid && current !== num);
             const active = current === num;
             return (
               <div key={num} className="flex items-center flex-1 min-w-0">
@@ -200,25 +239,8 @@ export function Calculator() {
   const [step, setStep] = useState(1);
   const [basinMode, setBasinMode] = useState<'manual' | 'map'>('manual');
   const [formData, setFormData] = useState<HydrologyInput>(() => {
-    // If arriving from History/Map with caseStudyData, use that
     if (caseStudyData) return caseStudyData;
-    // Otherwise seed from URL params if present
-    const localidad = searchParams.get('localidad');
-    const tr = searchParams.get('TR');
-    const dur = searchParams.get('t');
-    const area = searchParams.get('area');
-    const slope = searchParams.get('slope');
-    const method = searchParams.get('method');
-    if (!localidad) return DEFAULT_FORM;
-    return {
-      ...DEFAULT_FORM,
-      locality_id: localidad,
-      return_period: tr ? Number(tr) : DEFAULT_FORM.return_period,
-      duration_min: dur ? Number(dur) : DEFAULT_FORM.duration_min,
-      area_km2: area ? Number(area) : DEFAULT_FORM.area_km2,
-      slope: slope ? Number(slope) : DEFAULT_FORM.slope,
-      method: (method as HydrologyInput['method']) ?? DEFAULT_FORM.method,
-    };
+    return hydrateFormFromParams(searchParams) ?? DEFAULT_FORM;
   });
   const [selectedLocality, setSelectedLocality] = useState<IDFLocality | null>(null);
   const [results, setResults] = useState<HydrologyResult | null>(null);
@@ -228,19 +250,19 @@ export function Calculator() {
   useEffect(() => {
     if (caseStudyData) return;
     if (!formData.locality_id || formData.locality_id === 'manual') return;
-    setSearchParams(
-      {
-        localidad: formData.locality_id,
-        TR: String(formData.return_period),
-        t: String(formData.duration_min),
-        area: formData.area_km2 > 0 ? String(formData.area_km2) : '',
-        slope: formData.slope > 0 ? String(formData.slope) : '',
-        method: formData.method,
-      },
-      { replace: true }
-    );
+    const next: Record<string, string> = {
+      localidad: formData.locality_id,
+      TR: String(formData.return_period),
+      t: String(formData.duration_min),
+      method: formData.method,
+    };
+    if (formData.area_km2 > 0) next.area = String(formData.area_km2);
+    if (formData.length_km > 0) next.length = String(formData.length_km);
+    if (formData.slope > 0) next.slope = String(formData.slope);
+    if (formData.station_id) next.station = formData.station_id;
+    setSearchParams(next, { replace: true });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.locality_id, formData.return_period, formData.duration_min, formData.area_km2, formData.slope, formData.method]);
+  }, [formData.locality_id, formData.return_period, formData.duration_min, formData.area_km2, formData.length_km, formData.slope, formData.method, formData.station_id]);
 
   // Scroll to top whenever the step changes
   useEffect(() => {
@@ -386,7 +408,10 @@ export function Calculator() {
       </Helmet>
       {mutation.isPending && <CalculatingOverlay />}
 
-      <StepIndicator current={step} />
+      <StepIndicator
+        current={step}
+        validSteps={[step1Valid, step2Valid, step3Valid, !!results]}
+      />
 
       {caseStudyName && (
         <div className="bg-[#0055A4] text-white px-4 py-2.5 flex items-center gap-3">
