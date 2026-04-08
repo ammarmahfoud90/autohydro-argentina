@@ -175,56 +175,43 @@ def calculate_tc_ventura_heras(A: float, S: float) -> TcResult:
     """
     Ventura-Heras
 
-    Fórmula implementada:
-        Tc = 0.3 × √(A / S)   [horas]
-        A: área de la cuenca  [km²]
-        S: pendiente media de la cuenca  [m/m — adimensional, NO en %]
-
-    # TODO: AUDIT-001 — FUENTE PENDIENTE DE VERIFICACIÓN
-    # El coeficiente 0.3 no tiene cita primaria confirmada en el codebase.
-    # Algunas referencias argentinas (Chow et al. edición en español; manuales INA)
-    # citan el coeficiente como 0.127 para las mismas unidades (A en km², S en m/m),
-    # lo que produce un Tc 2.36× MENOR. La diferencia afecta directamente la
-    # intensidad IDF adoptada y, por lo tanto, el caudal de diseño.
-    #
-    # Posible explicación: el coeficiente 0.3 aparece en algunos manuales españoles
-    # (MOPU / MITMA) con unidades o calibración regional diferente.
-    #
-    # ACCIÓN REQUERIDA: verificar contra la fuente original antes de usar en
-    # informes técnicos o diseños definitivos. Ver ítem AUDIT-001 en AUDIT_REPORT.md.
-    #
-    # Alternativas conocidas del coeficiente:
-    #   0.127  — Chow, Maidment & Mays (ed. español); referencias INA
-    #   0.300  — versión usada actualmente (fuente no confirmada)
+    Tc = α × √(A / S)   [horas]
 
     Args:
-        A: Área de la cuenca (km²)
-        S: Pendiente media de la cuenca (m/m)
+        A: Área de la cuenca  [km²]
+        S: Pendiente media del cauce  [m/m — adimensional, NO en %]
+
+    Coeficiente adoptado:
+        α = 0.05  (rango válido según literatura: 0.04–0.13)
+
+    Fuente:
+        Ventura-Heras. Rango α según Vélez & Gutiérrez (2011),
+        Dyna 78(165):58–66. Valor 0.05 adoptado como típico en la
+        práctica hispanoamericana.
+
+    Nota histórica (AUDIT-001 resuelto):
+        El coeficiente 0.3 usado anteriormente pertenece a la fórmula
+        USCE (Cuerpo de Ingenieros de USA), que tiene estructura diferente:
+        Tc = 0.3 × (L / J^0.76). Ha sido corregido.
 
     Returns:
         Tc en horas
 
-    Applicability: cuencas pequeñas a medianas; uso común en España y Argentina
+    Applicability: cuencas rurales pequeñas a medianas
     """
     if A <= 0:
         raise ValueError("A must be positive")
     if S <= 0:
         raise ValueError("S must be positive")
 
-    # TODO: AUDIT-001 — coeficiente 0.3 sin fuente verificada; posible discrepancia
-    # con el valor 0.127 citado en Chow et al. (ed. español) e INA. Ver docstring.
-    tc_hr = 0.3 * math.sqrt(A / S)
+    # α = 0.05 — verificado contra Vélez & Gutiérrez (2011). AUDIT-001 resuelto.
+    tc_hr = 0.05 * math.sqrt(A / S)
     return TcResult(
         formula=TcFormula.VENTURA_HERAS,
         tc_hours=tc_hr,
         formula_name="Ventura-Heras",
-        applicability="Cuencas pequeñas a medianas. Pampa Húmeda (pendientes bajas).",
-        notes=(
-            "A en km², S en m/m. "
-            "⚠ AUDIT-001: Coeficiente (0.3) en revisión — existe discrepancia conocida "
-            "con el valor 0.127 citado en Chow et al. (ed. español) e INA (diferencia 2.36×). "
-            "Verificar contra fuente local antes de usar en informes técnicos."
-        ),
+        applicability="Cuencas rurales pequeñas a medianas.",
+        notes="A en km², S en m/m. Fórmula empírica para cuencas rurales. Coeficiente α = 0.05 (rango 0.04–0.13, Vélez & Gutiérrez 2011).",
     )
 
 

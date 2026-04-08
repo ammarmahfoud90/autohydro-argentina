@@ -88,16 +88,14 @@ describe('Giandotti formula: Tc = (4√A + 1.5L)/(0.8√Hm) [hr]', () => {
   });
 });
 
-// TODO: AUDIT-001 — estos tests fijan el comportamiento ACTUAL con coeficiente 0.3.
-// Chow et al. (ed. español) e INA citan 0.127 para las mismas unidades (A km², S m/m).
-// Si se confirma que el coeficiente correcto es 0.127, actualizar el valor esperado
-// (8.660 → 3.664) junto con el servicio backend y la constante formula arriba.
-describe('Ventura-Heras formula: Tc = 0.3·√(A/S) [hr]', () => {
+// AUDIT-001 resuelto: α corregido de 0.3 (USCE) a 0.05 (Ventura-Heras).
+// Referencia: Vélez & Gutiérrez (2011), Dyna 78(165):58–66.
+// 0.05 × √(5/0.006) = 0.05 × 28.8675 ≈ 1.443 hr
+describe('Ventura-Heras formula: Tc = 0.05·√(A/S) [hr]', () => {
   it('matches hand-calculated value for A=5, S=0.006', () => {
-    // 0.3 * √(5/0.006) = 0.3 * 28.8675 ≈ 8.660 hr
-    // NOTE AUDIT-001: if coefficient changes to 0.127 → expected ≈ 3.664 hr
+    // 0.05 * √(5/0.006) = 0.05 * 28.8675 = 1.4434 hr
     const r = get(calculateAllTc(STD_INPUTS, ['ventura_heras']), 'ventura_heras');
-    expect(r!.tcHours).toBeCloseTo(8.660, 2);
+    expect(r!.tcHours).toBeCloseTo(1.443, 2);
   });
 });
 

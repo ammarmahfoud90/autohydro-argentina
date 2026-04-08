@@ -148,12 +148,11 @@ class TestTcFormulas:
         assert abs(result.tc_hours - expected_hr) < 0.001
 
     def test_ventura_heras_manual(self):
-        # TODO: AUDIT-001 — este test fija el comportamiento ACTUAL con coeficiente 0.3.
-        # Si se confirma que el coeficiente correcto es 0.127 (Chow et al. ed. español;
-        # INA), este expected_hr deberá actualizarse junto con el servicio.
-        # Ver docstring de calculate_tc_ventura_heras y AUDIT_REPORT.md.
+        # AUDIT-001 resuelto: coeficiente corregido de 0.3 (USCE) a 0.05 (Ventura-Heras).
+        # Referencia: Vélez & Gutiérrez (2011), Dyna 78(165):58–66.
+        # A=10.0 km², S=0.005 m/m → 0.05 × √(10.0/0.005) = 0.05 × 44.7214 = 2.2361 hr
         A, S = 10.0, 0.005
-        expected_hr = 0.3 * math.sqrt(A / S)
+        expected_hr = 0.05 * math.sqrt(A / S)  # = 2.2361 hr
         result = calculate_tc_ventura_heras(A, S)
         assert abs(result.tc_hours - expected_hr) < 0.001
 

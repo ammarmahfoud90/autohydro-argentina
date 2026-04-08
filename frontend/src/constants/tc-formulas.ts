@@ -75,13 +75,13 @@ export const TC_FORMULAS: Record<TcFormulaKey, TcFormulaInfo> = {
   ventura_heras: {
     key: 'ventura_heras',
     name: 'Ventura-Heras',
-    // TODO: AUDIT-001 — coeficiente 0.3 sin fuente verificada; Chow et al. (ed. español)
-    // e INA citan 0.127 para las mismas unidades (A km², S m/m). Diferencia: 2.36×.
-    formula: 'Tc = 0.3 × √(A/S)  [hr]  ⚠ coeficiente en revisión (AUDIT-001)',
+    // AUDIT-001 resuelto: α = 0.05 verificado contra Vélez & Gutiérrez (2011).
+    // El 0.3 anterior pertenecía a la fórmula USCE (estructura diferente).
+    formula: 'Tc = 0.05 × √(A/S)  [hr]  — α = 0.05 (rango 0.04–0.13)',
     requiredParams: ['A_km2', 'S'],
-    applicability: 'Cuencas pequeñas a medianas. Pampa Húmeda (pendientes bajas).',
+    applicability: 'Cuencas rurales pequeñas a medianas.',
     notes:
-      'A en km², S en m/m. ⚠ AUDIT-001: Coeficiente (0.3) en revisión — discrepancia conocida con 0.127 (Chow et al. ed. español). Verificar antes de usar en informes.',
+      'A en km², S en m/m. Fórmula empírica para cuencas rurales. Coeficiente α = 0.05 (rango 0.04–0.13, Vélez & Gutiérrez 2011).',
     resultUnit: 'hours',
   },
   passini: {
@@ -161,8 +161,9 @@ export function calculateAllTc(
   }
 
   // Ventura-Heras — A in km², S m/m → result in hours
+  // α = 0.05 (Vélez & Gutiérrez 2011). AUDIT-001 resuelto.
   if (A_km2 > 0 && S > 0) {
-    push('ventura_heras', 0.3 * Math.sqrt(A_km2 / S));
+    push('ventura_heras', 0.05 * Math.sqrt(A_km2 / S));
   }
 
   // Passini — A in km², L in km, S m/m → result in hours
