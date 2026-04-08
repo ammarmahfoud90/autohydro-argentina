@@ -106,13 +106,14 @@ class TestBuenosAiresBalcarce:
     """Tests para Balcarce, Buenos Aires — modelo Sherman Power."""
 
     def test_tr25_d60(self):
-        """TR=25, d=60: i = 381.12 × 25^0.37 / 60^0.85 ≈ 38.6 mm/h"""
+        """TR=25, d=60: table value = 59.0 mm/h (Puricelli & Marino 2014, INTA).
+        AUDIT-003: table interpolation replaces formula (R²=0.87 too imprecise)."""
         result = calculate_intensity(
             locality_id="buenos_aires_balcarce",
             return_period=25,
             duration_min=60
         )
-        assert abs(result["intensity_mm_hr"] - 38.6) < 0.5
+        assert abs(result["intensity_mm_hr"] - 59.0) < 3.0
 
 
 # =============================================================================

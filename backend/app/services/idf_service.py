@@ -568,14 +568,35 @@ def _calculate_intensity_sherman_power(
             f"{valid_tr_max} yr for locality '{locality_id}'."
         )
 
-    intensity = tau * (return_period ** epsilon) / (duration_min ** eta)
+    # When the locality JSON includes an "idf_table", use log-linear bilinear
+    # interpolation on the published values.  The formula parameters (tau, epsilon,
+    # eta) were fitted with R²=0.87 and systematically underestimate the table at
+    # all TR/duration combinations (e.g. formula gives 38.6 vs table 59.0 mm/hr
+    # at TR=25, d=60 min for Balcarce).  The table is authoritative.
+    idf_table = loc.get("idf_table")
+    if idf_table is not None:
+        trs = idf_table["return_periods"]
+        durations = idf_table["durations_min"]
+        intensities_dict = idf_table["intensities"]
+        # Convert dict-of-arrays to the 2-D array expected by _dit_3p_table_interpolate
+        values_2d = [intensities_dict[str(int(tr))] for tr in trs]
+        table_for_interp = {
+            "return_periods": trs,
+            "durations_min": durations,
+            "values_mm_h": values_2d,
+        }
+        intensity = _dit_3p_table_interpolate(table_for_interp, return_period, duration_min)
+        formula_used = False
+    else:
+        intensity = tau * (return_period ** epsilon) / (duration_min ** eta)
+        formula_used = True
 
     return {
         "intensity_mm_hr": round(intensity, 3),
         "return_period": return_period,
         "duration_min": duration_min,
         "locality_id": locality_id,
-        "formula_used": True,
+        "formula_used": formula_used,
         "source": loc["source"]["document"],
     }
 
