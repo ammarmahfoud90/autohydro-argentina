@@ -2,22 +2,13 @@ import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import {
-  BarChart,
-  Bar,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ReferenceLine,
-  ResponsiveContainer,
-  Cell,
-} from 'recharts';
-import type { HydrologyResult, HydrologyInput, CNSensitivityPoint } from '../../types';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import type { HydrologyResult, HydrologyInput } from '../../types';
 import { useCalculationHistory } from '../../hooks/useCalculationHistory';
 import { interpretResults, generateReport, generateDocxReport, generateExcelReport, calculateHydrology, exportShapefile, getLocality } from '../../services/api';
+import { TcComparisonTable } from './TcComparisonTable';
+import { CNSensitivityPanel } from './CNSensitivityPanel';
+import { HydrographChart } from './HydrographChart';
 
 const RISK_STYLES: Record<string, string> = {
   muy_bajo: 'bg-green-100 text-green-800 border-green-300',
@@ -165,13 +156,6 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
     retry: false,
     staleTime: Infinity,
   });
-
-  // CN sensitivity chart data
-  const sensitivityChartData = (results.cn_sensitivity ?? []).map((s: CNSensitivityPoint) => ({
-    label: `${s.label} (${s.cn.toFixed(0)})`,
-    flow: s.peak_flow_m3s,
-    isBase: s.label === 'CN',
-  }));
 
   function generateMarkdown(r: HydrologyResult): string {
     const methodLabel = r.method === 'rational' ? 'Racional' : r.method === 'modified_rational' ? 'Racional Modificado' : 'SCS-CN';
@@ -768,267 +752,10 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
         </div>
       )}
 
-      {/* ── Tc comparison table ──────────────────────────────────────────── */}
-      {results.tc_results.length > 0 && (
-        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
-          <h3 className="font-semibold text-gray-700 dark:text-slate-200 mb-3">{t('results.tcComparison')}</h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs text-gray-600 dark:text-slate-300">
-              <thead>
-                <tr className="border-b border-gray-200 dark:border-slate-600">
-                  <th className="text-left py-2 font-medium text-gray-700 dark:text-slate-200">Fórmula</th>
-                  <th className="text-right py-2 font-medium text-gray-700 dark:text-slate-200">Tc (hr)</th>
-                  <th className="text-right py-2 font-medium text-gray-700 dark:text-slate-200">Tc (min)</th>
-                  <th className="text-left py-2 font-medium text-gray-700 dark:text-slate-200 pl-3">
-                    Aplicabilidad
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {results.tc_results.map((tc) => (
-                  <tr key={tc.formula} className="border-b border-gray-50 dark:border-slate-700">
-                    <td className="py-2 pr-2 font-medium">{tc.formulaName}</td>
-                    <td className="text-right py-2">{tc.tcHours.toFixed(3)}</td>
-                    <td className="text-right py-2">{tc.tcMinutes.toFixed(1)}</td>
-                    <td className="pl-3 py-2 text-gray-400 dark:text-slate-500">{tc.applicability}</td>
-                  </tr>
-                ))}
-                <tr className="bg-blue-50 dark:bg-blue-900/20 font-semibold text-blue-700 dark:text-blue-300">
-                  <td className="py-2 pr-2">{t('results.tcAdopted')} (promedio)</td>
-                  <td className="text-right py-2">{results.tc_adopted_hours.toFixed(3)}</td>
-                  <td className="text-right py-2">{results.tc_adopted_minutes.toFixed(1)}</td>
-                  <td className="pl-3 py-2" />
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      <TcComparisonTable results={results} />
 
-      {/* ── CN Sensitivity Analysis ──────────────────────────────────────────── */}
-      {results.method === 'scs_cn' && results.cn_sensitivity && results.cn_sensitivity.length > 0 && (
-        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
-          <h3 className="font-semibold text-gray-700 dark:text-slate-200 mb-1">Análisis de Sensibilidad — CN</h3>
-          <p className="text-xs text-gray-500 dark:text-slate-400 mb-4">
-            Este análisis muestra cómo varía el caudal pico ante cambios de ±5 unidades en el
-            Número de Curva. Esto refleja la incertidumbre inherente en la estimación del CN.
-          </p>
-
-          <div role="img" aria-label="Análisis de sensibilidad — variación del caudal pico ante cambios en el Número de Curva">
-          <ResponsiveContainer width="100%" height={150}>
-            <BarChart
-              data={sensitivityChartData}
-              margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-            >
-              <XAxis dataKey="label" tick={{ fontSize: 11 }} />
-              <YAxis
-                tickFormatter={(v: number) => v.toFixed(2)}
-                tick={{ fontSize: 11 }}
-                label={{
-                  value: 'm³/s',
-                  angle: -90,
-                  position: 'insideLeft',
-                  style: { fontSize: 10 },
-                }}
-              />
-              <Tooltip formatter={(v) => [`${Number(v).toFixed(3)} m³/s`, 'Caudal pico']} />
-              <Bar dataKey="flow" radius={[4, 4, 0, 0]}>
-                {sensitivityChartData.map((entry, i) => (
-                  <Cell key={i} fill={entry.isBase ? '#2563eb' : '#93c5fd'} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-          </div>
-
-          <div className="mt-4 overflow-x-auto">
-            <table className="w-full text-xs text-gray-600">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-1.5 font-medium text-gray-700">CN</th>
-                  <th className="text-right py-1.5 font-medium text-gray-700">Q (m³/s)</th>
-                  <th className="text-right py-1.5 font-medium text-gray-700">Variación</th>
-                </tr>
-              </thead>
-              <tbody>
-                {results.cn_sensitivity.map((s) => (
-                  <tr
-                    key={s.label}
-                    className={`border-b border-gray-50 ${
-                      s.label === 'CN' ? 'bg-blue-50 font-semibold text-blue-800' : ''
-                    }`}
-                  >
-                    <td className="py-1.5 pr-2">
-                      {s.label} ({s.cn.toFixed(0)})
-                    </td>
-                    <td className="text-right py-1.5">{s.peak_flow_m3s.toFixed(3)}</td>
-                    <td
-                      className={`text-right py-1.5 font-medium ${
-                        s.label === 'CN'
-                          ? 'text-gray-400'
-                          : s.variation_pct < 0
-                          ? 'text-blue-600'
-                          : 'text-orange-600'
-                      }`}
-                    >
-                      {s.label === 'CN'
-                        ? 'Base'
-                        : `${s.variation_pct > 0 ? '+' : ''}${s.variation_pct.toFixed(1)}%`}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* ── SCS Unit Hydrograph ──────────────────────────────────────────── */}
-      {results.method === 'scs_cn' &&
-        results.hydrograph_times &&
-        results.hydrograph_flows &&
-        results.hydrograph_times.length > 0 && (() => {
-          const Tp = results.time_to_peak_hr ?? 0;
-          const hyData = results.hydrograph_times!.map((t, i) => ({
-            t: parseFloat(t.toFixed(3)),
-            q: parseFloat(results.hydrograph_flows![i].toFixed(4)),
-          }));
-          const peakIdx = results.hydrograph_flows!.indexOf(
-            Math.max(...results.hydrograph_flows!)
-          );
-          const peakT = results.hydrograph_times![peakIdx];
-          const peakQ = results.hydrograph_flows![peakIdx];
-
-          return (
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
-              <h3 className="font-semibold text-gray-700 dark:text-slate-200 mb-1">Hidrograma de Escorrentía</h3>
-              <p className="text-xs text-gray-500 dark:text-slate-400 mb-4">
-                El hidrograma muestra la variación temporal del caudal durante el evento de
-                tormenta. El volumen total de escorrentía es el área bajo la curva.
-                Basado en el Hidrograma Unitario Adimensional SCS (USDA-SCS, 1986).
-              </p>
-
-              {/* Summary cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-                {[
-                  { label: 'Caudal pico (Qp)', value: `${peakQ.toFixed(3)} m³/s` },
-                  { label: 'Tiempo al pico (Tp)', value: `${Tp.toFixed(2)} hr` },
-                  {
-                    label: 'Tiempo base (Tb)',
-                    value: `${(results.base_time_hr ?? 0).toFixed(2)} hr`,
-                  },
-                  {
-                    label: 'Volumen de escorrentía',
-                    value:
-                      (results.runoff_volume_m3 ?? 0) >= 1000
-                        ? `${((results.runoff_volume_m3 ?? 0) / 1000).toFixed(1)} × 10³ m³`
-                        : `${(results.runoff_volume_m3 ?? 0).toFixed(0)} m³`,
-                  },
-                ].map(({ label, value }) => (
-                  <div
-                    key={label}
-                    className="rounded-lg p-3 text-center bg-blue-50 border border-blue-100"
-                  >
-                    <div className="text-xs text-blue-500 mb-1">{label}</div>
-                    <div className="font-bold text-sm text-blue-800">{value}</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Area chart */}
-              <div role="img" aria-label="Hidrograma SCS — caudal de escorrentía directa vs tiempo">
-              <ResponsiveContainer width="100%" height={220}>
-                <AreaChart data={hyData} margin={{ top: 10, right: 20, left: 5, bottom: 5 }}>
-                  <defs>
-                    <linearGradient id="hyGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.02} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis
-                    dataKey="t"
-                    type="number"
-                    domain={[0, 'dataMax']}
-                    tickFormatter={(v: number) => v.toFixed(1)}
-                    tick={{ fontSize: 11 }}
-                    label={{ value: 'Tiempo (hr)', position: 'insideBottom', offset: -2, style: { fontSize: 11 } }}
-                  />
-                  <YAxis
-                    tickFormatter={(v: number) => v.toFixed(2)}
-                    tick={{ fontSize: 11 }}
-                    label={{
-                      value: 'Q (m³/s)',
-                      angle: -90,
-                      position: 'insideLeft',
-                      style: { fontSize: 10 },
-                    }}
-                  />
-                  <Tooltip
-                    formatter={(v) => [`${Number(v).toFixed(4)} m³/s`, 'Caudal']}
-                    labelFormatter={(l) => `t = ${Number(l).toFixed(3)} hr`}
-                  />
-                  <ReferenceLine
-                    x={peakT}
-                    stroke="#2563eb"
-                    strokeDasharray="4 2"
-                    label={{
-                      value: `Tp = ${Tp.toFixed(2)} hr`,
-                      position: 'insideTopRight',
-                      fontSize: 10,
-                      fill: '#2563eb',
-                    }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="q"
-                    stroke="#2563eb"
-                    strokeWidth={2}
-                    fill="url(#hyGrad)"
-                    dot={false}
-                    activeDot={{ r: 4, fill: '#1d4ed8' }}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-              </div>
-
-              {/* Time-flow table (sampled every ~0.5 Tp) */}
-              <details className="mt-4">
-                <summary className="text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700">
-                  Ver tabla de valores (t vs Q)
-                </summary>
-                <div className="mt-2 overflow-x-auto">
-                  <table className="w-full text-xs text-gray-600">
-                    <thead>
-                      <tr className="border-b border-gray-200">
-                        <th className="text-right py-1.5 font-medium text-gray-700 pr-4">t (hr)</th>
-                        <th className="text-right py-1.5 font-medium text-gray-700 pr-4">t/Tp</th>
-                        <th className="text-right py-1.5 font-medium text-gray-700">Q (m³/s)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {hyData.map(({ t, q }, i) => (
-                        <tr
-                          key={i}
-                          className={`border-b border-gray-50 ${
-                            i === peakIdx ? 'bg-blue-50 font-semibold text-blue-800' : ''
-                          }`}
-                        >
-                          <td className="text-right py-1 pr-4">{t.toFixed(3)}</td>
-                          <td className="text-right py-1 pr-4">
-                            {Tp > 0 ? (t / Tp).toFixed(2) : '—'}
-                          </td>
-                          <td className="text-right py-1">{q.toFixed(4)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </details>
-            </div>
-          );
-        })()}
-
+      <CNSensitivityPanel results={results} />
+      <HydrographChart results={results} />
       {/* ── Recommendations ──────────────────────────────────────────────── */}
       {results.risk_recommendations && (
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
