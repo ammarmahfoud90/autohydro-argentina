@@ -842,7 +842,8 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
               type="button"
               onClick={handleDownloadReport}
               disabled={isDownloading}
-              className="px-5 py-2 rounded-lg border border-blue-500 text-blue-600 text-sm font-semibold hover:bg-blue-50 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+              aria-label="Descargar Memoria de Cálculo en PDF"
+              className="px-6 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-bold shadow-sm hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 ring-1 ring-blue-700"
             >
               {isDownloading ? (
                 <>
@@ -878,7 +879,7 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
                       d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
                     />
                   </svg>
-                  {t('results.generateReport')}
+                  Descargar Memoria PDF
                 </>
               )}
             </button>
