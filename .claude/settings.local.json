@@ -22,7 +22,26 @@
       "Bash(python -m pytest tests/ -v)",
       "Bash(git commit:*)",
       "Bash(python -m pytest tests/test_idf_fase_a.py -v)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "WebFetch(domain:upload.wikimedia.org)",
+      "WebFetch(domain:commons.wikimedia.org)",
+      "WebFetch(domain:en.m.wikipedia.org)",
+      "Bash(python3:*)",
+      "Bash(git add:*)",
+      "Bash(grep -l \"idf_model\" C:/Users/ammar/OneDrive/Desktop/autohydro-argentina/backend/app/data/idf/*.json)",
+      "Bash(find /c/Users/ammar/OneDrive/Desktop/autohydro-argentina/frontend/src -name Header* -o -name Navbar* -o -name Nav* -o -name Layout*)",
+      "Bash(find /c/Users/ammar/OneDrive/Desktop/autohydro-argentina/frontend/src -name CitySelector* -o -name ResultsPanel*)",
+      "Bash(git push:*)",
+      "Bash(find /c/Users/ammar/OneDrive/Desktop/autohydro-argentina/frontend/src -name Manning* -o -name Culvert* -o -name Alcantarilla*)",
+      "Bash(curl -L --max-time 30 -o /c/Users/ammar/OneDrive/Desktop/autohydro-argentina/frontend/public/argentina_map.svg \"https://upload.wikimedia.org/wikipedia/commons/1/1a/Argentina_blank_map.svg\")",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(git checkout:*)",
+      "Bash(curl -L --max-time 30 -o /tmp/test_arg.svg \"https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Argentina_blank_map.svg/800px-Argentina_blank_map.svg.png\")",
+      "Read(//tmp/**)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(grep -rn \"chicago\\\\|Chicago\" backend/app/ frontend/src/ --include=*.py --include=*.ts --include=*.tsx)",
+      "Bash(node -e \"const p = require\\(''''./node_modules/driver.js/package.json''''\\); console.log\\(''''version:'''', p.version\\); console.log\\(''''main:'''', p.main\\); console.log\\(''''exports:'''', JSON.stringify\\(p.exports, null, 2\\)\\);\")",
+      "Bash(node:*)"
     ]
   }
 }

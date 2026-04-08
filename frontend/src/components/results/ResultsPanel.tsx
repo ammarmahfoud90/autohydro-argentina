@@ -444,7 +444,14 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
               </>
             )}
             {' '}— T={results.return_period}{' '}
-            {t('common.years')}, t={results.duration_min} {t('common.minutes')}
+            {t('common.years')}, t={Math.round(results.effective_duration_min ?? results.duration_min)} {t('common.minutes')}
+            {results.duration_override ? (
+              <span className="ml-1 text-amber-600 dark:text-amber-300">⚠️ (modo avanzado — Tc adoptado = {Math.round(results.tc_adopted_minutes)} min)</span>
+            ) : (
+              (results.method === 'rational' || results.method === 'modified_rational') && (
+                <span className="ml-1 text-gray-500">= Tc adoptado</span>
+              )
+            )}
           </p>
           <p>
             {t('common.source')}: {results.is_manual_idf ? (results.manual_idf_source || 'IDF manual') : results.idf_source}

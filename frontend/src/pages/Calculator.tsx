@@ -250,6 +250,43 @@ export function Calculator() {
   const update = (updates: Partial<HydrologyInput>) =>
     setFormData((prev) => ({ ...prev, ...updates }));
 
+  // ── Rational method: auto-sync duration = Tc adoptado ──────────────────
+  // Classical Rational defines i at d = Tc. When method is rational /
+  // modified_rational and the user has NOT toggled the "advanced" override,
+  // we auto-populate duration_min with the adopted Tc so the form and the
+  // backend stay in lockstep.
+  const isRationalMethod =
+    formData.method === 'rational' || formData.method === 'modified_rational';
+  const rationalLocksDuration = isRationalMethod && !formData.override_duration;
+
+  // Compute adopted Tc in minutes from current inputs (when possible)
+  const adoptedTcMin: number | null = (() => {
+    if (!formData.tc_adopted_formula) return null;
+    if (!(formData.area_km2 > 0 && formData.length_km > 0 && formData.slope > 0)) return null;
+    const results = calculateAllTc(
+      {
+        L_m: formData.length_km * 1000,
+        L_km: formData.length_km,
+        S: formData.slope,
+        A_km2: formData.area_km2,
+        H_m: formData.elevation_diff_m ?? undefined,
+        Hm_m: formData.avg_elevation_m ?? undefined,
+      },
+      formData.tc_formulas,
+    );
+    const adopted = results.find((r) => r.formula === formData.tc_adopted_formula);
+    return adopted ? adopted.tcMinutes : null;
+  })();
+
+  useEffect(() => {
+    if (!rationalLocksDuration) return;
+    if (adoptedTcMin == null) return;
+    const rounded = Math.max(1, Math.round(adoptedTcMin));
+    if (rounded !== formData.duration_min) {
+      setFormData((prev) => ({ ...prev, duration_min: rounded }));
+    }
+  }, [rationalLocksDuration, adoptedTcMin, formData.duration_min]);
+
   const mutation = useMutation({
     mutationFn: calculateHydrology,
     onSuccess: (data) => {
@@ -478,8 +515,13 @@ export function Calculator() {
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
                   {t('calculator.stormDuration')}
+                  {rationalLocksDuration && (
+                    <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  )}
                 </label>
                 <div className="flex items-center gap-2">
                   <input
@@ -492,13 +534,31 @@ export function Calculator() {
                     min={durationMin}
                     max={durationMax}
                     step={1}
-                    className="w-full rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    readOnly={rationalLocksDuration}
+                    aria-readonly={rationalLocksDuration}
+                    title={rationalLocksDuration ? 'En Método Racional la duración = Tc adoptado' : undefined}
+                    className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none ${
+                      rationalLocksDuration
+                        ? 'border-gray-200 dark:border-slate-700 bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 cursor-not-allowed'
+                        : 'border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500'
+                    }`}
                   />
                   <span className="text-sm text-gray-500 whitespace-nowrap">{t('common.minutes')}</span>
                 </div>
-                <p className="text-xs text-gray-400 mt-1">
-                  Rango válido: {durationMin} – {durationMax} min
-                </p>
+                {rationalLocksDuration ? (
+                  <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
+                    = Tc adoptado{adoptedTcMin != null ? ` (${Math.round(adoptedTcMin)} min)` : ''} — Método Racional
+                    {!formData.tc_adopted_formula && (
+                      <span className="text-gray-400">
+                        {' '}· adoptá una fórmula de Tc en el paso 3 para fijar el valor
+                      </span>
+                    )}
+                  </p>
+                ) : (
+                  <p className="text-xs text-gray-400 mt-1">
+                    Rango válido: {durationMin} – {durationMax} min
+                  </p>
+                )}
                 {durationMin >= 60 && (
                   <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 mt-1">
                     Este modelo no tiene datos para duraciones menores a {durationMin} min.
@@ -585,6 +645,35 @@ export function Calculator() {
           <div className="space-y-4">
             <Card title={t('calculator.methodTitle')}>
               <MethodSelector formData={formData} onChange={update} />
+
+              {isRationalMethod && (
+                <div className="mt-4 space-y-3">
+                  <label className="flex items-start gap-2 text-sm text-gray-700 dark:text-slate-200 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={!!formData.override_duration}
+                      onChange={(e) => update({ override_duration: e.target.checked })}
+                      className="mt-0.5"
+                    />
+                    <span>
+                      Usar duración diferente al Tc <span className="text-gray-500">(modo avanzado)</span>
+                    </span>
+                  </label>
+                  {formData.override_duration && (
+                    <div className="rounded-lg border-2 border-amber-400 bg-amber-50 dark:bg-amber-900/20 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
+                      <div className="flex items-start gap-2">
+                        <span aria-hidden>⚠️</span>
+                        <p>
+                          Estás usando una duración de tormenta diferente al Tc adoptado
+                          {adoptedTcMin != null ? ` (${Math.round(adoptedTcMin)} min)` : ''}.
+                          El resultado <strong>no corresponde al Método Racional clásico</strong> y
+                          no debe presentarse como tal en una memoria técnica.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </Card>
 
             {formData.method === 'scs_cn' && (
@@ -627,8 +716,9 @@ export function Calculator() {
                 onAdoptedChange={(f: TcFormulaKey) => update({ tc_adopted_formula: f })}
               />
 
-              {/* Fix 3 — Duration vs Tc warning */}
+              {/* Fix 3 — Duration vs Tc warning (only in advanced override mode) */}
               {(() => {
+                if (!(isRationalMethod && formData.override_duration)) return null;
                 if (!(formData.area_km2 > 0 && formData.length_km > 0 && formData.slope > 0)) return null;
                 if (!formData.tc_adopted_formula) return null;
                 const tcResults = calculateAllTc({

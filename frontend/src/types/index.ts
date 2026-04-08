@@ -68,6 +68,9 @@ export interface HydrologyInput {
   manual_idf_table?: ManualIDFTable | null;
   manual_idf_formula?: ManualIDFFormula | null;
   station_id?: string | null;
+  // Rational method: when false (default) the backend overrides duration_min
+  // with tc_adopted for the IDF lookup. Setting true is the "advanced" path.
+  override_duration?: boolean;
 }
 
 // ── Response types ────────────────────────────────────────────────────────────
@@ -133,6 +136,10 @@ export interface HydrologyResult {
   idf_verified?: boolean;
   is_manual_idf?: boolean;
   manual_idf_source?: string;
+  // Effective duration actually used for the IDF lookup (= tc_adopted_min for
+  // classical rational; = user-provided duration_min in override mode).
+  effective_duration_min?: number;
+  duration_override?: boolean;
 }
 
 export interface CNSensitivityPoint {
@@ -172,4 +179,5 @@ export const DEFAULT_FORM: HydrologyInput = {
   manual_idf_table: null,
   manual_idf_formula: null,
   station_id: null,
+  override_duration: false,
 };

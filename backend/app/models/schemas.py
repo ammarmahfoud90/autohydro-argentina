@@ -155,6 +155,19 @@ class CalculationRequest(BaseModel):
     station_name: Optional[str] = Field(None, description="Station name for neuquen_ssrh model")
     station_id: Optional[str] = Field(None, description="Station ID for dit_tucuman model")
 
+    # Rational method: by classical definition, the storm duration for the IDF
+    # lookup must equal the adopted Tc. Default behaviour is to override the
+    # user-provided duration_min with tc_adopted_min. Setting override_duration
+    # to True tells the engine to respect the user-provided duration (advanced
+    # sensitivity-analysis mode) and tags the response accordingly.
+    override_duration: bool = Field(
+        False,
+        description=(
+            "If True, use duration_min as provided even when it differs from "
+            "tc_adopted. Only meaningful for rational/modified_rational methods."
+        ),
+    )
+
     # Manual IDF data (used when locality_id == "manual")
     manual_idf_table: Optional[ManualIDFTable] = None
     manual_idf_formula: Optional[ManualIDFFormula] = None
@@ -283,6 +296,14 @@ class CalculationResponse(BaseModel):
     # Peak flow
     peak_flow_m3s: float
     specific_flow_m3s_km2: float
+
+    # Rational-method duration semantics
+    # effective_duration_min is the duration actually used for the IDF lookup
+    # and precipitation-depth calculation. For rational/modified_rational in
+    # classical mode it equals tc_adopted_minutes. In override mode it equals
+    # the user-provided duration_min.
+    effective_duration_min: Optional[float] = None
+    duration_override: bool = False
 
     # All method comparison
     method_comparison: list[MethodResult]

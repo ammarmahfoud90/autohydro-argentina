@@ -41,6 +41,7 @@ export async function calculateHydrology(
     manual_idf_table: input.manual_idf_table ?? undefined,
     manual_idf_formula: input.manual_idf_formula ?? undefined,
     station_id: input.station_id ?? undefined,
+    override_duration: input.override_duration ?? false,
   };
   return request<HydrologyResult>('/api/calculate', {
     method: 'POST',

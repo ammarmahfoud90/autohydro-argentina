@@ -8,8 +8,11 @@ Implements:
   - Risk classification with Argentine infrastructure thresholds
 """
 
+import logging
 import math
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 from app.services.idf_service import calculate_intensity as idf_calculate_intensity, get_locality
 from app.services import manual_idf_service
@@ -368,35 +371,8 @@ def run_calculation(payload: dict) -> dict:
     else:
         locality = get_locality(req.locality_id)
 
-    # ── 2. IDF intensity ─────────────────────────────────────────────────
-    if is_manual:
-        if req.manual_idf_table is not None:
-            idf_result = manual_idf_service.calculate_intensity_from_table(
-                req.manual_idf_table,
-                return_period=float(req.return_period),
-                duration_min=float(req.duration_min),
-            )
-            manual_source = req.manual_idf_table.source
-        else:
-            idf_result = manual_idf_service.calculate_intensity_from_formula(
-                req.manual_idf_formula,  # type: ignore[arg-type]
-                return_period=float(req.return_period),
-                duration_min=float(req.duration_min),
-            )
-            manual_source = req.manual_idf_formula.source  # type: ignore[union-attr]
-    else:
-        idf_result = idf_calculate_intensity(
-            req.locality_id,
-            return_period=float(req.return_period),
-            duration_min=float(req.duration_min),
-            station_name=getattr(req, "station_name", None),
-            station_id=getattr(req, "station_id", None),
-        )
-        manual_source = None
-
-    intensity = idf_result["intensity_mm_hr"]
-
-    # ── 3. Tc calculation ─────────────────────────────────────────────────
+    # ── 2. Tc calculation (must happen BEFORE the IDF lookup so that the
+    # Rational Method can use the adopted Tc as the storm duration) ───────
     L_m = req.length_km * 1000.0
     tc_raw = calculate_all_tc(
         L_m=L_m,
@@ -430,6 +406,59 @@ def run_calculation(payload: dict) -> dict:
 
     tc_results = [TcFormulaResult(**r) for r in tc_raw]
 
+    # ── 3. Resolve effective duration for the IDF lookup ─────────────────
+    # Classical Rational Method: i is evaluated at d = Tc_adopted.
+    # For SCS-CN and explicit overrides, respect the user-provided duration.
+    is_rational = req.method in ("rational", "modified_rational")
+    duration_override = False
+    effective_duration_min = float(req.duration_min)
+
+    if is_rational and not req.override_duration:
+        effective_duration_min = tc_adopted_min
+        if abs(float(req.duration_min) - tc_adopted_min) > 0.5:
+            logger.warning(
+                "Rational method: overriding user duration_min=%.1f with tc_adopted=%.1f "
+                "(override_duration flag is False).",
+                req.duration_min,
+                tc_adopted_min,
+            )
+    elif is_rational and req.override_duration:
+        duration_override = True
+        logger.info(
+            "Rational method: override_duration=True — using duration_min=%.1f "
+            "(tc_adopted=%.1f). Result is NOT a classical Rational Method result.",
+            req.duration_min,
+            tc_adopted_min,
+        )
+
+    # ── 4. IDF intensity (using effective_duration_min) ──────────────────
+    if is_manual:
+        if req.manual_idf_table is not None:
+            idf_result = manual_idf_service.calculate_intensity_from_table(
+                req.manual_idf_table,
+                return_period=float(req.return_period),
+                duration_min=effective_duration_min,
+            )
+            manual_source = req.manual_idf_table.source
+        else:
+            idf_result = manual_idf_service.calculate_intensity_from_formula(
+                req.manual_idf_formula,  # type: ignore[arg-type]
+                return_period=float(req.return_period),
+                duration_min=effective_duration_min,
+            )
+            manual_source = req.manual_idf_formula.source  # type: ignore[union-attr]
+    else:
+        idf_result = idf_calculate_intensity(
+            req.locality_id,
+            return_period=float(req.return_period),
+            duration_min=effective_duration_min,
+            station_name=getattr(req, "station_name", None),
+            station_id=getattr(req, "station_id", None),
+        )
+        manual_source = None
+
+    intensity = idf_result["intensity_mm_hr"]
+
     # ── 4. CN (if SCS-CN) ────────────────────────────────────────────────
     cn_value: Optional[float] = None
     if req.method == "scs_cn":
@@ -449,9 +478,9 @@ def run_calculation(payload: dict) -> dict:
             )
 
     # ── 5. Precipitation depth ───────────────────────────────────────────
-    # Use adopted Tc as duration for SCS; use requested duration for Rational
-    precip_duration_min = req.duration_min
-    P_mm = intensity_to_precipitation(intensity, precip_duration_min)
+    # Uses the same effective_duration_min that drove the IDF lookup so that
+    # P = i × d remains internally consistent.
+    P_mm = intensity_to_precipitation(intensity, effective_duration_min)
 
     # ── 6. Primary calculation ───────────────────────────────────────────
     Q_primary: float
@@ -577,6 +606,8 @@ def run_calculation(payload: dict) -> dict:
         risk_level=risk_level,
         risk_recommendations=risk_recs,
         infrastructure_type=req.infrastructure_type,
+        effective_duration_min=round(effective_duration_min, 2),
+        duration_override=duration_override,
         **extra,
     )
 
