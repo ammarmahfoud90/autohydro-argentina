@@ -65,6 +65,9 @@ export function Footer() {
             <p className="text-white/30 text-xs">
               {t('footer.rights')}
             </p>
+            <p className="text-white/30 text-xs mt-1">
+              v1.0.0 · Actualizado Abril 2026 · Licencia MIT
+            </p>
           </div>
 
           {/* Column 2: Links */}
@@ -101,7 +104,7 @@ export function Footer() {
                 className="flex items-center gap-1.5 text-xs text-white/50 hover:text-white transition-colors duration-200"
               >
                 <GitHubIcon />
-                GitHub
+                Código fuente en GitHub
               </a>
               <span className="text-white/15">|</span>
               <a
@@ -126,6 +129,18 @@ export function Footer() {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Legal disclaimer */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-6">
+        <p className="text-[11px] leading-relaxed text-white/40 border-t border-white/10 pt-4">
+          <strong className="text-white/60">Aviso legal:</strong> AutoHydro Argentina es una
+          herramienta de apoyo al diseño hidrológico e hidráulico. Los resultados deben ser
+          verificados y validados por un profesional matriculado antes de su uso en proyectos
+          reales. El criterio profesional prevalece sobre cualquier resultado automatizado. Los
+          autores no asumen responsabilidad por el uso que se haga de los cálculos generados.
+          Software distribuido bajo Licencia MIT, sin garantías de ningún tipo.
+        </p>
       </div>
 
       {/* Argentine flag strip + Malvinas banner */}
