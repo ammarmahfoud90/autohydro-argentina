@@ -41,7 +41,8 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(grep -rn \"chicago\\\\|Chicago\" backend/app/ frontend/src/ --include=*.py --include=*.ts --include=*.tsx)",
       "Bash(node -e \"const p = require\\(''''./node_modules/driver.js/package.json''''\\); console.log\\(''''version:'''', p.version\\); console.log\\(''''main:'''', p.main\\); console.log\\(''''exports:'''', JSON.stringify\\(p.exports, null, 2\\)\\);\")",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(npx vitest:*)"
     ]
   }
 }

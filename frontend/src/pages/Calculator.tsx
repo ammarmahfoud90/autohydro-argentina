@@ -159,24 +159,9 @@ function NavButtons({
   validationHint?: string;
 }) {
   const { t } = useTranslation();
-  const [triedNext, setTriedNext] = useState(false);
-
-  function handleNext() {
-    if (nextDisabled) {
-      setTriedNext(true);
-      return;
-    }
-    setTriedNext(false);
-    onNext?.();
-  }
 
   return (
     <div className="mt-6 pt-4 border-t border-gray-100 dark:border-slate-700">
-      {triedNext && nextDisabled && validationHint && (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2 mb-3">
-          {validationHint}
-        </p>
-      )}
       <div className="flex justify-between">
         <button
           type="button"
@@ -188,11 +173,12 @@ function NavButtons({
         </button>
         <button
           type="button"
-          onClick={handleNext}
-          disabled={loading}
+          onClick={() => !nextDisabled && !loading && onNext?.()}
+          disabled={nextDisabled || loading}
+          aria-disabled={nextDisabled || loading}
           className={`px-6 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 ${
             nextDisabled && !loading
-              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              ? 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-60'
               : 'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50'
           }`}
         >
@@ -205,6 +191,11 @@ function NavButtons({
           {nextLabel ?? t('common.continue')}
         </button>
       </div>
+      {nextDisabled && !loading && validationHint && (
+        <p className="text-sm text-amber-600 dark:text-amber-400 mt-2 text-right">
+          {validationHint}
+        </p>
+      )}
     </div>
   );
 }

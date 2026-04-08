@@ -192,6 +192,14 @@ export function Culvert() {
     slope !== '' && parseFloat(slope) > 0 &&
     hwMax !== '' && parseFloat(hwMax) > 0;
 
+  const culvertMissingMsg: string | null = (() => {
+    if (!(parseFloat(flow) > 0)) return 'Ingresá el caudal de diseño (> 0 m³/s).';
+    if (!(parseFloat(length) > 0)) return 'Ingresá la longitud del conducto (> 0 m).';
+    if (!(parseFloat(slope) > 0)) return 'Ingresá la pendiente longitudinal (> 0).';
+    if (!(parseFloat(hwMax) > 0)) return 'Ingresá el tirante máximo admisible (> 0 m).';
+    return null;
+  })();
+
   async function handleDownloadPdf() {
     if (!result) return;
     setPdfLoading(true);
@@ -509,6 +517,9 @@ export function Culvert() {
                 </span>
               ) : 'Dimensionar alcantarilla'}
             </button>
+            {culvertMissingMsg && !loading && (
+              <p className="text-sm text-amber-600 mt-2 text-center">{culvertMissingMsg}</p>
+            )}
           </div>
         </Card>
 

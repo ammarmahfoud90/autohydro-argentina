@@ -125,6 +125,31 @@ export function Manning() {
   const [error, setError] = useState<string | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
 
+  // ── Validation: compute missing-fields message for the Calcular button ───
+  const slopeNum = parseFloat(slope);
+  const hasValidSlope = Number.isFinite(slopeNum) && slopeNum > 0;
+  const hasValidN = Number.isFinite(manningN) && manningN > 0;
+  const validationMessage: string | null = (() => {
+    if (!hasValidN) return 'Ingresá un coeficiente n de Manning válido (> 0).';
+    if (!hasValidSlope) return 'Ingresá una pendiente longitudinal válida (> 0).';
+    if (channelType === 'rectangular') {
+      if (!(parseFloat(width) > 0)) return 'Ingresá el ancho del canal (> 0).';
+      if (!(parseFloat(depth) > 0)) return 'Ingresá el tirante (> 0).';
+    } else if (channelType === 'trapezoidal') {
+      if (!(parseFloat(bottomWidth) > 0)) return 'Ingresá el ancho de base (> 0).';
+      if (!(parseFloat(depth) > 0)) return 'Ingresá el tirante (> 0).';
+      if (!(parseFloat(sideSlope) > 0)) return 'Ingresá el talud lateral (z > 0).';
+    } else if (channelType === 'circular') {
+      if (!(parseFloat(diameter) > 0)) return 'Ingresá el diámetro (> 0).';
+      if (!(parseFloat(depth) > 0)) return 'Ingresá el tirante (> 0).';
+    } else if (channelType === 'triangular') {
+      if (!(parseFloat(triSideSlope) > 0)) return 'Ingresá el talud lateral (z > 0).';
+      if (!(parseFloat(depth) > 0)) return 'Ingresá el tirante (> 0).';
+    }
+    return null;
+  })();
+  const calcDisabled = validationMessage !== null;
+
   function selectPreset(label: string) {
     setNPreset(label);
     const preset = MANNING_PRESETS.find((p) => p.label === label);
@@ -418,8 +443,13 @@ export function Manning() {
             <button
               type="button"
               onClick={handleCalculate}
-              disabled={loading}
-              className="w-full py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 shadow-sm"
+              disabled={loading || calcDisabled}
+              aria-disabled={loading || calcDisabled}
+              className={`w-full py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 shadow-sm ${
+                calcDisabled && !loading
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50'
+              }`}
             >
               {loading ? (
                 <>
@@ -439,6 +469,9 @@ export function Manning() {
                 </>
               )}
             </button>
+            {calcDisabled && !loading && (
+              <p className="text-sm text-amber-600 mt-2 text-center">{validationMessage}</p>
+            )}
 
             {error && (
               <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">

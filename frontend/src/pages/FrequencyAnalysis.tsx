@@ -333,10 +333,26 @@ export function FrequencyAnalysis() {
             <p className="mt-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">{apiError}</p>
           )}
 
+          {(() => {
+            const freqMsg = parseError
+              ? parseError
+              : parsedFlows.length === 0
+                ? 'Pegá o ingresá al menos 5 caudales anuales máximos.'
+                : parsedFlows.length < 5
+                  ? `Se requieren al menos 5 valores (tenés ${parsedFlows.length}).`
+                  : null;
+            const freqDisabled = loading || freqMsg !== null;
+            return (
+              <>
           <button
             onClick={handleCalculate}
-            disabled={loading || parsedFlows.length < 5 || !!parseError}
-            className="mt-5 w-full sm:w-auto px-8 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+            disabled={freqDisabled}
+            aria-disabled={freqDisabled}
+            className={`mt-5 w-full sm:w-auto px-8 py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${
+              freqMsg && !loading
+                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                : 'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50'
+            }`}
           >
             {loading ? (
               <>
@@ -350,6 +366,12 @@ export function FrequencyAnalysis() {
               'Calcular distribuciones'
             )}
           </button>
+          {freqMsg && !loading && (
+            <p className="text-sm text-amber-600 dark:text-amber-400 mt-2">{freqMsg}</p>
+          )}
+              </>
+            );
+          })()}
         </motion.div>
 
         {/* ── Results ───────────────────────────────────────────────────── */}

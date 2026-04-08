@@ -137,6 +137,14 @@ export function Hyetograph() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const hyetoMissingMsg: string | null = (() => {
+    if (!localityId) return 'Seleccioná una localidad.';
+    if (!(returnPeriod > 0)) return 'Seleccioná un período de retorno.';
+    if (!(duration > 0)) return 'Ingresá una duración > 0.';
+    if (!(timeStep > 0)) return 'Ingresá un paso de tiempo > 0.';
+    return null;
+  })();
+
   async function handleGenerate() {
     setLoading(true);
     setError(null);
@@ -379,8 +387,14 @@ export function Hyetograph() {
                 <button
                   type="button"
                   onClick={handleGenerate}
-                  disabled={loading}
-                  className="px-6 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-2"
+                  disabled={loading || hyetoMissingMsg !== null}
+                  aria-disabled={loading || hyetoMissingMsg !== null}
+                  title={hyetoMissingMsg ?? undefined}
+                  className={`px-6 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 ${
+                    hyetoMissingMsg && !loading
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50'
+                  }`}
                 >
                   {loading ? (
                     <>
@@ -393,6 +407,9 @@ export function Hyetograph() {
                   ) : 'Generar Hietograma →'}
                 </button>
               </div>
+              {hyetoMissingMsg && !loading && (
+                <p className="text-sm text-amber-600 mt-2 text-right">{hyetoMissingMsg}</p>
+              )}
             </div>
           </Card>
         )}
