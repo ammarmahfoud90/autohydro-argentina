@@ -26,6 +26,25 @@ from reportlab.platypus import (
 )
 from reportlab.pdfgen import canvas as rl_canvas
 from app.services.map_image_service import generate_basin_map_image
+from app.services.idf_service import calculate_intensity
+
+
+def _fmt_num(value: Any, decimals: int = 3) -> str:
+    """Format a number trimming trailing zeros (e.g. 5.000 → 5, 1.250 → 1.25).
+
+    Returns '—' for None/missing values. Keeps the dot as decimal separator
+    to stay consistent with the rest of the report; the cover note clarifies
+    that the dot represents the Argentine decimal separator (coma)."""
+    if value is None or value == "—" or value == "":
+        return "—"
+    try:
+        v = float(value)
+    except (TypeError, ValueError):
+        return str(value)
+    if v == int(v) and abs(v) < 1e15:
+        return str(int(v))
+    s = f"{v:.{decimals}f}".rstrip("0").rstrip(".")
+    return s or "0"
 
 # Brand colours
 _NAVY = colors.HexColor("#1a365d")
@@ -368,9 +387,9 @@ class MemoriaCalculoGenerator:
 
         morph_data = [
             ["Parámetro", "Valor", "Unidad"],
-            ["Área de la cuenca (A)", f"{data['area_km2']:.3f}", "km²"],
-            ["Longitud del cauce principal (L)", f"{data.get('length_km', '—')}", "km"],
-            ["Pendiente media del cauce (S)", f"{data.get('slope', '—')}", "m/m"],
+            ["Área de la cuenca (A)", _fmt_num(data.get("area_km2")), "km²"],
+            ["Longitud del cauce principal (L)", _fmt_num(data.get("length_km")), "km"],
+            ["Pendiente media del cauce (S)", _fmt_num(data.get("slope"), 4), "m/m"],
         ]
         if data.get("elevation_diff_m"):
             morph_data.append(["Desnivel total (H)", f"{data['elevation_diff_m']:.1f}", "m"])
@@ -480,6 +499,57 @@ class MemoriaCalculoGenerator:
                 S["body"],
             )
         )
+
+        # ── IDF intensity grid (durations × return periods) ──
+        locality_id = data.get("locality_id")
+        if locality_id and locality_id != "manual":
+            durations = [5, 10, 15, 30, 60, 120, 180, 360, 720, 1440]
+            tr_list = [2, 5, 10, 25, 50, 100]
+            grid: list[list[str]] = [
+                ["t (min)"] + [f"T = {tr} años" for tr in tr_list]
+            ]
+            any_value = False
+            for d in durations:
+                row = [str(d)]
+                for tr in tr_list:
+                    try:
+                        res = calculate_intensity(locality_id, float(tr), float(d))
+                        row.append(f"{res['intensity_mm_hr']:.1f}")
+                        any_value = True
+                    except Exception:
+                        row.append("—")
+                grid.append(row)
+
+            if any_value:
+                story.append(Spacer(1, 0.5 * cm))
+                story.append(Paragraph(
+                    "<b>Tabla IDF — Intensidades (mm/hr) por duración y período de retorno</b>",
+                    S["body_left"],
+                ))
+                story.append(Spacer(1, 0.2 * cm))
+                col_w = [2.0 * cm] + [2.1 * cm] * len(tr_list)
+                idf_tbl = Table(grid, colWidths=col_w, repeatRows=1)
+                idf_tbl.setStyle(TableStyle([
+                    ("BACKGROUND", (0, 0), (-1, 0), _NAVY),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 8),
+                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                    ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, _LIGHT_GRAY]),
+                    ("GRID", (0, 0), (-1, -1), 0.3, _GRAY),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("TOPPADDING", (0, 0), (-1, -1), 4),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ]))
+                story.append(idf_tbl)
+                story.append(Spacer(1, 0.2 * cm))
+                story.append(Paragraph(
+                    "Valores calculados con la formulación oficial vigente para la "
+                    "localidad. Las celdas marcadas con '—' corresponden a duraciones "
+                    "o períodos de retorno fuera del rango de validez.",
+                    S["body"],
+                ))
+
         return story
 
     # ── Section 4: Tc ─────────────────────────────────────────────────────
@@ -537,6 +607,33 @@ class MemoriaCalculoGenerator:
             )
         )
         story.append(tbl)
+
+        # Note about formulas that could not be evaluated due to missing inputs
+        has_length = data.get("length_km") not in (None, "", "—")
+        has_slope = data.get("slope") not in (None, "", "—")
+        if not has_length or not has_slope:
+            missing = []
+            skipped = []
+            if not has_length:
+                missing.append("longitud del cauce principal (L)")
+                skipped.extend(["Kirpich", "Témez", "California Culverts Practice", "Bransby–Williams"])
+            if not has_slope:
+                missing.append("pendiente media del cauce (S)")
+                if "Kirpich" not in skipped:
+                    skipped.extend(["Kirpich", "Témez", "California Culverts Practice"])
+            unique_skipped = sorted(set(skipped))
+            note = (
+                "<b>Nota:</b> No se proporcionó "
+                + " ni ".join(missing)
+                + ". Las siguientes fórmulas requieren estos parámetros y no pudieron "
+                "calcularse: " + ", ".join(unique_skipped) + ". "
+                "El Tc adoptado se obtiene a partir de las fórmulas disponibles "
+                "(p. ej. SCS Lag, Giandotti, Pasini), las cuales utilizan únicamente "
+                "el área de la cuenca o requieren menos parámetros morfométricos."
+            )
+            story.append(Spacer(1, 0.3 * cm))
+            story.append(Paragraph(note, S["body"]))
+
         return story
 
     # ── Section 5: Metodología ─────────────────────────────────────────────
@@ -594,7 +691,7 @@ class MemoriaCalculoGenerator:
 
         param_rows.append(["Intensidad de diseño (i)", f"{data['intensity_mm_hr']:.2f}", "mm/hr"])
         param_rows.append(["Tiempo de concentración adoptado (Tc)", f"{data['tc_adopted_hours']:.3f}", "hr"])
-        param_rows.append(["Área de la cuenca (A)", f"{data['area_km2']:.3f}", "km²"])
+        param_rows.append(["Área de la cuenca (A)", _fmt_num(data.get("area_km2")), "km²"])
 
         story.append(self._make_table(param_rows))
 
@@ -805,15 +902,36 @@ class MemoriaCalculoGenerator:
             story.append(Spacer(1, 0.5 * cm))
             story.append(Paragraph(ai_sections["analisis_resultados"], S["body"]))
 
-        # AI interpretation
         if ai_interpretation:
-            story.append(Paragraph("Interpretación técnica asistida por IA:", S["h2"]))
-            # Split AI text into paragraphs
-            for para in ai_interpretation.split("\n"):
-                para = para.strip()
-                if para:
-                    story.append(Paragraph(para, S["body"]))
+            story.append(Spacer(1, 0.3 * cm))
+            story.append(Paragraph(
+                "El contenido interpretativo generado por inteligencia artificial "
+                "se presenta de forma diferenciada en el <b>Anexo B</b> al final de "
+                "este documento.",
+                S["body"],
+            ))
 
+        return story
+
+    # ── Annex B: AI interpretation (clearly labeled) ───────────────────────
+
+    def _build_annex_ai(self, ai_interpretation: str) -> list:
+        S = self.styles
+        story = [Paragraph("ANEXO B — INTERPRETACIÓN ASISTIDA POR IA", S["h1"])]
+        story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=8))
+        story.append(Paragraph(
+            "<b>Aviso:</b> El siguiente texto fue generado automáticamente por un "
+            "modelo de lenguaje a partir de los resultados del cálculo. Tiene "
+            "carácter <b>orientativo</b> y <b>no sustituye</b> el análisis del "
+            "profesional responsable. Debe ser revisado y validado antes de su uso "
+            "en el diseño definitivo.",
+            S["disclaimer"],
+        ))
+        story.append(Spacer(1, 0.4 * cm))
+        for para in ai_interpretation.split("\n"):
+            para = para.strip()
+            if para:
+                story.append(Paragraph(para, S["body"]))
         return story
 
     # ── Section 8: Conclusiones ────────────────────────────────────────────
@@ -954,9 +1072,9 @@ class MemoriaCalculoGenerator:
             ("Provincia", data.get("province", "—")),
             ("Período de retorno (T)", f"{data.get('return_period', '—')} años"),
             ("Duración de tormenta (t)", f"{data.get('duration_min', '—')} min"),
-            ("Área de la cuenca (A)", f"{data.get('area_km2', '—')} km²"),
-            ("Longitud del cauce (L)", f"{data.get('length_km', '—')} km"),
-            ("Pendiente media (S)", f"{data.get('slope', '—')} m/m"),
+            ("Área de la cuenca (A)", f"{_fmt_num(data.get('area_km2'))} km²"),
+            ("Longitud del cauce (L)", f"{_fmt_num(data.get('length_km'))} km"),
+            ("Pendiente media (S)", f"{_fmt_num(data.get('slope'), 4)} m/m"),
             ("Intensidad IDF (i)", f"{data.get('intensity_mm_hr', '—')} mm/hr"),
             ("Fuente IDF", data.get("idf_source", "—")),
             ("Tc adoptado", f"{data.get('tc_adopted_hours', '—')} hr  /  {data.get('tc_adopted_minutes', '—')} min"),
@@ -1094,6 +1212,10 @@ class MemoriaCalculoGenerator:
         story.extend(self._build_section_conclusiones(calculation_data, ai_sections))
         story.append(PageBreak())
         story.extend(self._build_annex(calculation_data))
+
+        if ai_interpretation:
+            story.append(PageBreak())
+            story.extend(self._build_annex_ai(ai_interpretation))
 
         doc.build(
             story,
