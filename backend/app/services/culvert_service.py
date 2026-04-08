@@ -273,12 +273,14 @@ def _check_circular(
     control_label = "Control de entrada" if control == "inlet" else "Control de salida"
 
     hwd_ratio = hw / D
-    ok = hw <= hw_max
+    insufficient = hwd_ratio > 4.0
+    ok = hw <= hw_max and not insufficient
 
     return {
         "type": "circular",
         "diameter_m": D,
         "label": f"Ø {D:.2f} m",
+        "culvert_insufficient": insufficient,
         "hw_m": round(hw, 3),
         "hw_ic_m": round(hw_ic, 3),
         "hw_oc_m": round(hw_oc, 3),
@@ -316,10 +318,12 @@ def _check_box(
 
     D_ref = H
     hwd_ratio = hw / D_ref
-    ok = hw <= hw_max
+    insufficient = hwd_ratio > 4.0
+    ok = hw <= hw_max and not insufficient
 
     return {
         "type": "box",
+        "culvert_insufficient": insufficient,
         "width_m": W,
         "height_m": H,
         "label": f"{W:.1f}×{H:.1f} m",
@@ -415,7 +419,18 @@ def calculate_culvert(params: dict[str, Any]) -> dict[str, Any]:
             f"Velocidad de salida {recommended['outlet_velocity_ms']:.2f} m/s baja — "
             "verificar riesgo de sedimentación y obstrucción."
         )
-    if recommended["hwd_ratio"] > 1.5:
+    if recommended.get("culvert_insufficient"):
+        warnings.append(
+            f"Alcantarilla insuficiente — HW/D = {recommended['hwd_ratio']:.2f} "
+            "excede el límite físico de 4.0. La sección no puede evacuar este caudal; "
+            "se requiere una alcantarilla más grande, múltiples conductos o un puente."
+        )
+    elif recommended["hwd_ratio"] > 2.5:
+        warnings.append(
+            f"HW/D = {recommended['hwd_ratio']:.2f} — cercano al límite recomendado. "
+            "Verificar diseño y considerar una sección mayor."
+        )
+    elif recommended["hwd_ratio"] > 1.5:
         warnings.append(
             f"Relación HW/D = {recommended['hwd_ratio']:.2f} — tirante aguas arriba "
             "excede 1.5× el diámetro/altura. Revisar diseño."

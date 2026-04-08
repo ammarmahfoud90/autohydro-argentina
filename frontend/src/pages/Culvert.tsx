@@ -49,6 +49,7 @@ interface SizeResult {
   control_label: string;
   ok: boolean;
   area_m2: number;
+  culvert_insufficient?: boolean;
 }
 
 // ── SVG Diagrams ──────────────────────────────────────────────────────────────
@@ -554,8 +555,30 @@ export function Culvert() {
                     <span className="ml-2 text-sm font-normal text-gray-500">(tamaño recomendado)</span>
                   </h3>
 
+                  {rec.culvert_insufficient && (
+                    <div className="mb-3 rounded-lg border-2 border-red-400 bg-red-50 px-4 py-3 text-sm text-red-800">
+                      <p className="font-semibold">⚠️ Alcantarilla insuficiente</p>
+                      <p className="mt-1 text-xs">
+                        HW/D = {rec.hwd_ratio.toFixed(2)} excede el límite físico de 4.0. La sección
+                        no puede evacuar este caudal. Se requiere una alcantarilla más grande,
+                        múltiples conductos o un puente. El valor de HW mostrado es extrapolación
+                        polinómica y no es físicamente confiable.
+                      </p>
+                    </div>
+                  )}
+                  {!rec.culvert_insufficient && rec.hwd_ratio > 2.5 && (
+                    <div className="mb-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-xs text-amber-800">
+                      HW/D = {rec.hwd_ratio.toFixed(2)} — cercano al límite recomendado. Considerá una sección mayor.
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <MetricCard label="Tirante aguas arriba (HW)" value={`${rec.hw_m.toFixed(2)}`} unit="m" highlight />
+                    <MetricCard
+                      label="Tirante aguas arriba (HW)"
+                      value={rec.culvert_insufficient ? '—' : `${rec.hw_m.toFixed(2)}`}
+                      unit={rec.culvert_insufficient ? '' : 'm'}
+                      highlight
+                    />
                     <MetricCard label="Relación HW/D" value={rec.hwd_ratio.toFixed(2)} />
                     <MetricCard label="Vel. de salida" value={`${rec.outlet_velocity_ms.toFixed(2)}`} unit="m/s" />
                     <MetricCard label="Área de conducto" value={`${rec.area_m2.toFixed(3)}`} unit="m²" />
