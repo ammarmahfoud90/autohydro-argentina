@@ -23,6 +23,7 @@
     "series_note": "23 años de registro pluviográfico efectivo de los 51 años del período total."
   },
   "limitations": {
+    "max_reliable_return_period": 25,
     "geographic_scope": "Salta capital y zona inmediata. No aplica al interior provincial (Orán, Tartagal, San Ramón de la Nueva Orán).",
     "series_note": "Solo 23 años de registro pluviográfico efectivo. Resultados confiables hasta TR=25 años.",
     "second_source_note": "Existe también el estudio Bermudez 2015 (UNSa) para Salta y alrededores — publicado en Academia.edu. Pendiente de verificación en repositorio oficial UNSa antes de implementar como fuente alternativa."

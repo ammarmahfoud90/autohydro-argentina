@@ -543,6 +543,11 @@ export function Calculator() {
                   Seleccioná un TR ≤ {validTrMax} para diseños definitivos.
                 </div>
               )}
+              {selectedLocality && validTrMin > 2 && (
+                <p className="col-span-2 text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded px-2 py-1">
+                  Los datos de este modelo comienzan en TR = {validTrMin} años. No hay información para TR = 2 años.
+                </p>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
                   {t('calculator.stormDuration')}
@@ -588,6 +593,11 @@ export function Calculator() {
                 {durationMin >= 60 && (
                   <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 mt-1">
                     Este modelo no tiene datos para duraciones menores a {durationMin} min.
+                  </p>
+                )}
+                {selectedLocality?.idf_model === 'dit_3p' && formData.duration_min < 60 && (
+                  <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 mt-1">
+                    El modelo DIT 3P fue calibrado para duraciones ≥ 60 min. Para duraciones sub-horarias los resultados son extrapolaciones — usar con precaución.
                   </p>
                 )}
               </div>
@@ -670,7 +680,7 @@ export function Calculator() {
         {step === 3 && (
           <div className="space-y-4">
             <Card title={t('calculator.methodTitle')}>
-              <MethodSelector formData={formData} onChange={update} />
+              <MethodSelector formData={formData} onChange={update} province={selectedLocality?.province ?? null} />
 
               {isRationalMethod && (
                 <div className="mt-4 space-y-3">

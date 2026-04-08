@@ -18,7 +18,7 @@
     "distribution_adopted": "Gumbel"
   },
   "limitations": {
-    "max_reliable_return_period": 25,
+    "max_reliable_return_period": 10,
     "spatial_coverage": "Localidad de El Colorado y municipios con similar régimen pluviométrico.",
     "convective_note": "Procesos convectivos con cobertura en superficie reducida.",
     "series_note": "ADVERTENCIA: Serie de solo 7 años. Resultados orientativos — pueden sufrir variaciones importantes con mayor longitud de registro."

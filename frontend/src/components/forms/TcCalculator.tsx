@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import {
   TC_FORMULA_LIST,
   calculateAllTc,
+  getTcApplicabilityWarning,
 } from '../../constants/tc-formulas';
 import type { TcFormulaKey } from '../../types';
 
@@ -138,6 +139,7 @@ export function TcCalculator({ selectedFormulas, adoptedFormula, basinData, onCh
             <tbody className="divide-y divide-gray-100">
               {tcResults.map((r, i) => {
                 const isAdopted = r.formula === adoptedFormula;
+                const applicabilityWarning = getTcApplicabilityWarning(r.formula as TcFormulaKey, area_km2);
                 return (
                   <tr
                     key={r.formula}
@@ -156,7 +158,21 @@ export function TcCalculator({ selectedFormulas, adoptedFormula, basinData, onCh
                         )}
                         <span className={isAdopted ? 'text-white' : 'text-gray-700'}>{r.formulaName}</span>
                         {isAdopted && <span className="text-xs bg-white/20 text-white px-1.5 py-0.5 rounded">ADOPTADO</span>}
+                        {applicabilityWarning && (
+                          <span
+                            title={applicabilityWarning}
+                            className={`shrink-0 text-sm leading-none ${isAdopted ? 'text-yellow-200' : 'text-amber-500'}`}
+                            aria-label={`Advertencia: ${applicabilityWarning}`}
+                          >
+                            ⚠
+                          </span>
+                        )}
                       </div>
+                      {applicabilityWarning && (
+                        <p className={`text-[10px] mt-0.5 ${isAdopted ? 'text-yellow-200' : 'text-amber-600'}`}>
+                          {applicabilityWarning}
+                        </p>
+                      )}
                     </td>
                     <td className={`px-3 py-2 text-right font-mono ${isAdopted ? 'text-white' : 'text-blue-700'}`}>
                       {r.tcHours.toFixed(3)}

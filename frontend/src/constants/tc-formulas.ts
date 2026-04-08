@@ -11,6 +11,13 @@ export type TcFormulaKey =
   | 'ventura_heras'
   | 'passini';
 
+export interface TcApplicabilityRange {
+  /** Maximum recommended basin area (km²). Warn if A_km2 exceeds this. */
+  maxArea_km2?: number;
+  /** Minimum recommended basin area (km²). Warn if A_km2 is below this. */
+  minArea_km2?: number;
+}
+
 export interface TcFormulaInfo {
   key: TcFormulaKey;
   /** Author and year — used as display name */
@@ -22,6 +29,8 @@ export interface TcFormulaInfo {
   notes: string;
   /** Unit of the result before conversion */
   resultUnit: 'minutes' | 'hours';
+  /** Numeric applicability bounds for programmatic warning generation */
+  range?: TcApplicabilityRange;
 }
 
 export const TC_FORMULAS: Record<TcFormulaKey, TcFormulaInfo> = {
@@ -33,6 +42,7 @@ export const TC_FORMULAS: Record<TcFormulaKey, TcFormulaInfo> = {
     applicability: 'Cuencas rurales pequeñas (< 0.5 km²), pendientes 3–10%',
     notes: 'L en metros. Desarrollada para cuencas agrícolas de Tennessee.',
     resultUnit: 'minutes',
+    range: { maxArea_km2: 0.5 },
   },
   california: {
     key: 'california',
@@ -60,6 +70,7 @@ export const TC_FORMULAS: Record<TcFormulaKey, TcFormulaInfo> = {
     applicability: 'Cuencas grandes (> 10 km²), terreno montañoso',
     notes: 'A en km², L en km, Hm altura media sobre punto de cierre en metros.',
     resultUnit: 'hours',
+    range: { minArea_km2: 10 },
   },
   ventura_heras: {
     key: 'ventura_heras',
@@ -165,4 +176,23 @@ export function calculateAllTc(
 export function averageTc(results: TcCalcResult[]): number {
   if (results.length === 0) return 0;
   return results.reduce((sum, r) => sum + r.tcHours, 0) / results.length;
+}
+
+/**
+ * Return a warning string if basin area is outside the formula's recommended range,
+ * or null if no warning applies.
+ */
+export function getTcApplicabilityWarning(
+  formulaKey: TcFormulaKey,
+  A_km2: number,
+): string | null {
+  const range = TC_FORMULAS[formulaKey].range;
+  if (!range) return null;
+  if (range.maxArea_km2 != null && A_km2 > range.maxArea_km2) {
+    return `Cuenca (${A_km2.toFixed(2)} km²) supera el límite recomendado de ${range.maxArea_km2} km²`;
+  }
+  if (range.minArea_km2 != null && A_km2 < range.minArea_km2) {
+    return `Cuenca (${A_km2.toFixed(2)} km²) es menor que el mínimo recomendado de ${range.minArea_km2} km²`;
+  }
+  return null;
 }

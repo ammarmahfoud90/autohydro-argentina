@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 from app.services.idf_service import calculate_intensity as idf_calculate_intensity, get_locality
 from app.services import manual_idf_service
-from app.data.cn_argentina import calculate_composite_cn
+from app.data.cn_argentina import calculate_composite_cn, are_cn_categories_verified
 from app.services.tc_service import calculate_all_tc
 from app.models.schemas import (
     CalculationRequest,
@@ -26,6 +26,20 @@ from app.models.schemas import (
     RiskRecommendations,
     TcFormulaResult,
 )
+
+
+# ── Verified localities ───────────────────────────────────────────────────────
+# IDF data cross-checked against the original source document.
+# Only add an ID here after manually verifying against the primary reference.
+VERIFIED_LOCALITIES: frozenset[str] = frozenset({
+    "amgr",                   # APA Chaco Res. 1334/21
+    "pr_saenz_pena",          # APA Chaco Res. 1334/21
+    "neuquen_zona_aluvional", # SSRH Neuquén official
+    "buenos_aires_azul",      # verified against source
+    "cordoba_altas_cumbres",  # DIT 3P — verified against source
+    "cordoba_la_suela",       # DIT 3P — verified against source
+    "cordoba_pampa_olaen",    # DIT 3P — verified against source
+})
 
 
 # ── Risk classification ───────────────────────────────────────────────────────
@@ -464,21 +478,25 @@ def run_calculation(payload: dict) -> dict:
 
     # ── 4. CN (if SCS-CN) ────────────────────────────────────────────────
     cn_value: Optional[float] = None
+    cn_verified: Optional[bool] = None
     if req.method == "scs_cn":
         if req.cn_override is not None:
             cn_value = req.cn_override
+            cn_verified = None  # unknown when user overrides CN directly
         else:
+            cats = [
+                {
+                    "land_use": cat.land_use,
+                    "area_percent": cat.area_percent,
+                    "condition": cat.condition,
+                }
+                for cat in req.land_use_categories  # type: ignore[union-attr]
+            ]
             cn_value = calculate_composite_cn(
-                categories=[
-                    {
-                        "land_use": cat.land_use,
-                        "area_percent": cat.area_percent,
-                        "condition": cat.condition,
-                    }
-                    for cat in req.land_use_categories  # type: ignore[union-attr]
-                ],
+                categories=cats,
                 soil_group=req.soil_group,  # type: ignore[arg-type]
             )
+            cn_verified = are_cn_categories_verified(cats)
 
     # ── 5. Precipitation depth ───────────────────────────────────────────
     # Uses the same effective_duration_min that drove the IDF lookup so that
@@ -599,7 +617,8 @@ def run_calculation(payload: dict) -> dict:
         location_description=req.location_description,
         intensity_mm_hr=round(intensity, 3),
         idf_source=manual_source if is_manual else locality["source"]["document"],
-        idf_verified=False if is_manual else True,
+        idf_verified=(not is_manual) and (req.locality_id in VERIFIED_LOCALITIES),
+        cn_verified=cn_verified,
         is_manual_idf=is_manual,
         manual_idf_source=manual_source,
         tc_results=tc_results,

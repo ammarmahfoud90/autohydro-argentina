@@ -279,12 +279,9 @@ def _calculate_intensity_mendoza(loc: dict, return_period: float, duration_min: 
     else:
         lower_tr = max(t for t in available_trs if t <= return_period)
         upper_tr = min(t for t in available_trs if t >= return_period)
-        omega = _linear_interp(
-            return_period,
-            lower_tr, upper_tr,
-            omega_by_tr[str(lower_tr)],
-            omega_by_tr[str(upper_tr)],
-        )
+        # Log-linear interpolation: omega varies linearly with log(T)
+        log_frac = math.log(return_period / lower_tr) / math.log(upper_tr / lower_tr)
+        omega = omega_by_tr[str(lower_tr)] + (omega_by_tr[str(upper_tr)] - omega_by_tr[str(lower_tr)]) * log_frac
 
     intensity = omega / (D + 0.268) ** 0.883
 

@@ -447,6 +447,11 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
               {results.ia_mm != null ? ` | Ia = ${results.ia_mm.toFixed(1)} mm` : ''}
             </p>
           )}
+          {results.cn_verified === false && (
+            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 mt-1">
+              Algunos valores CN son estimaciones adaptadas para Argentina, sin equivalente directo en USDA-SCS NEH-4. Verificar con bibliografía local.
+            </p>
+          )}
           {results.runoff_coeff != null && <p>C = {results.runoff_coeff.toFixed(2)}</p>}
           {results.areal_reduction_k != null && (
             <p>K (reducción areal) = {results.areal_reduction_k.toFixed(3)}</p>

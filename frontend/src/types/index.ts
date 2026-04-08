@@ -134,6 +134,7 @@ export interface HydrologyResult {
   time_to_peak_hr?: number;
   base_time_hr?: number;
   idf_verified?: boolean;
+  cn_verified?: boolean;
   is_manual_idf?: boolean;
   manual_idf_source?: string;
   // Effective duration actually used for the IDF lookup (= tc_adopted_min for

@@ -5,8 +5,14 @@ Values based on USDA-SCS methodology adapted to Argentine conditions.
 Soil groups follow the USDA classification (A, B, C, D).
 
 Sources:
-- USDA-SCS (1972). National Engineering Handbook, Section 4.
-- Adaptations for Argentine land use from INA and regional practice.
+- USDA-SCS (1972/1986). National Engineering Handbook, Section 4 (NEH-4). Table 2-2.
+- Gaspari et al. (2013). Ordenamiento Territorial de Cuencas, EDULP.
+- INA (various). Adaptaciones para usos del suelo argentinos.
+- Argentine engineering practice (regional adaptation; see cn_source_verified flag).
+
+cn_source_verified=True  → value traceable to USDA-SCS NEH-4 Table 2-2 directly.
+cn_source_verified=False → Argentine-specific adaptation or no direct SCS equivalent;
+                           treat as engineering estimate and note accordingly.
 """
 
 from typing import TypedDict
@@ -22,28 +28,41 @@ class SoilGroupDescription(TypedDict):
 # CN values indexed by: land_use_key -> soil_group -> condition/N/A -> CN value
 CN_ARGENTINA: dict = {
     # === ZONAS URBANAS ===
+    # Source: USDA-SCS NEH-4 (1986) Table 2-2a — Urban areas
     "zona_comercial_industrial": {
         "description": "Zonas comerciales e industriales",
+        "cn_source_verified": True,
+        "source": "USDA-SCS NEH-4 Table 2-2a — Commercial/industrial areas",
         "A": {"N/A": 89}, "B": {"N/A": 92}, "C": {"N/A": 94}, "D": {"N/A": 95},
     },
     "residencial_alta_densidad": {
         "description": "Residencial alta densidad (lote < 500 m²)",
+        "cn_source_verified": True,
+        "source": "USDA-SCS NEH-4 Table 2-2a — Residential, 1/8 ac lots",
         "A": {"N/A": 77}, "B": {"N/A": 85}, "C": {"N/A": 90}, "D": {"N/A": 92},
     },
     "residencial_media_densidad": {
         "description": "Residencial media densidad (lote 500-1000 m²)",
+        "cn_source_verified": True,
+        "source": "USDA-SCS NEH-4 Table 2-2a — Residential, 1/4 ac lots",
         "A": {"N/A": 61}, "B": {"N/A": 75}, "C": {"N/A": 83}, "D": {"N/A": 87},
     },
     "residencial_baja_densidad": {
         "description": "Residencial baja densidad (lote > 1000 m²)",
+        "cn_source_verified": True,
+        "source": "USDA-SCS NEH-4 Table 2-2a — Residential, 1/2 ac lots",
         "A": {"N/A": 54}, "B": {"N/A": 70}, "C": {"N/A": 80}, "D": {"N/A": 85},
     },
     "urbanizacion_informal": {
         "description": "Urbanización informal / asentamientos",
+        "cn_source_verified": False,
+        "source": "Estimación ingeniería argentina — sin equivalente directo en SCS NEH-4",
         "A": {"N/A": 72}, "B": {"N/A": 82}, "C": {"N/A": 88}, "D": {"N/A": 91},
     },
     "espacios_verdes_urbanos": {
         "description": "Plazas, parques urbanos",
+        "cn_source_verified": True,
+        "source": "USDA-SCS NEH-4 Table 2-2a — Open spaces, parks",
         "condition_based": True,
         "A": {"poor": 68, "fair": 49, "good": 39},
         "B": {"poor": 79, "fair": 69, "good": 61},
@@ -52,16 +71,22 @@ CN_ARGENTINA: dict = {
     },
     "calles_pavimentadas": {
         "description": "Calles y veredas pavimentadas",
+        "cn_source_verified": True,
+        "source": "USDA-SCS NEH-4 Table 2-2a — Paved parking lots, roofs",
         "A": {"N/A": 98}, "B": {"N/A": 98}, "C": {"N/A": 98}, "D": {"N/A": 98},
     },
     "calles_ripio": {
         "description": "Calles de ripio o tierra compactada",
+        "cn_source_verified": True,
+        "source": "USDA-SCS NEH-4 Table 2-2a — Gravel/dirt roads",
         "A": {"N/A": 76}, "B": {"N/A": 85}, "C": {"N/A": 89}, "D": {"N/A": 91},
     },
 
     # === AGRICULTURA - REGIÓN PAMPEANA ===
     "soja_siembra_directa": {
         "description": "Soja en siembra directa (práctica predominante)",
+        "cn_source_verified": False,
+        "source": "Adaptado de SCS NEH-4 row crops (conserv. tillage) — valores ajustados para siembra directa argentina (Gaspari et al. 2013)",
         "condition_based": True,
         "A": {"poor": 72, "fair": 67, "good": 62},
         "B": {"poor": 81, "fair": 78, "good": 74},
@@ -70,6 +95,8 @@ CN_ARGENTINA: dict = {
     },
     "soja_labranza_convencional": {
         "description": "Soja con labranza convencional",
+        "cn_source_verified": False,
+        "source": "Adaptado de USDA-SCS NEH-4 Table 2-2b — Row crops, straight rows",
         "condition_based": True,
         "A": {"poor": 77, "fair": 72, "good": 67},
         "B": {"poor": 85, "fair": 81, "good": 78},
@@ -78,6 +105,8 @@ CN_ARGENTINA: dict = {
     },
     "maiz_siembra_directa": {
         "description": "Maíz en siembra directa",
+        "cn_source_verified": False,
+        "source": "Adaptado de SCS NEH-4 row crops (conserv. tillage) — ajustado para maíz SD argentina",
         "condition_based": True,
         "A": {"poor": 70, "fair": 65, "good": 60},
         "B": {"poor": 79, "fair": 75, "good": 71},
@@ -86,6 +115,8 @@ CN_ARGENTINA: dict = {
     },
     "trigo": {
         "description": "Trigo / Cereales de invierno",
+        "cn_source_verified": True,
+        "source": "USDA-SCS NEH-4 Table 2-2b — Small grain, straight rows",
         "condition_based": True,
         "A": {"poor": 65, "fair": 60, "good": 55},
         "B": {"poor": 76, "fair": 72, "good": 68},
@@ -94,6 +125,8 @@ CN_ARGENTINA: dict = {
     },
     "girasol": {
         "description": "Girasol",
+        "cn_source_verified": False,
+        "source": "Adaptado de USDA-SCS NEH-4 row crops — sin tabla específica para girasol en SCS original",
         "condition_based": True,
         "A": {"poor": 74, "fair": 69, "good": 64},
         "B": {"poor": 82, "fair": 78, "good": 74},
@@ -104,6 +137,8 @@ CN_ARGENTINA: dict = {
     # === PASTURAS Y GANADERÍA ===
     "pastizal_natural": {
         "description": "Pastizal natural pampeano",
+        "cn_source_verified": True,
+        "source": "USDA-SCS NEH-4 Table 2-2c — Pasture/grassland/range",
         "condition_based": True,
         "A": {"poor": 68, "fair": 49, "good": 39},
         "B": {"poor": 79, "fair": 69, "good": 61},
@@ -112,10 +147,14 @@ CN_ARGENTINA: dict = {
     },
     "pastizal_degradado": {
         "description": "Pastizal degradado / sobrepastoreo",
+        "cn_source_verified": False,
+        "source": "Adaptado de SCS NEH-4 pasture poor condition — valores para sobrepastoreo severo según práctica argentina",
         "A": {"N/A": 75}, "B": {"N/A": 83}, "C": {"N/A": 89}, "D": {"N/A": 92},
     },
     "pastura_implantada": {
         "description": "Pastura implantada (alfalfa, festuca, etc.)",
+        "cn_source_verified": False,
+        "source": "Adaptado de USDA-SCS NEH-4 meadow/legume-grass rotations — ajustado para pasturas implantadas argentina",
         "condition_based": True,
         "A": {"poor": 66, "fair": 55, "good": 45},
         "B": {"poor": 77, "fair": 70, "good": 63},
@@ -124,12 +163,16 @@ CN_ARGENTINA: dict = {
     },
     "feedlot": {
         "description": "Feedlot / Corrales de engorde",
+        "cn_source_verified": False,
+        "source": "Estimación ingeniería argentina — sin equivalente directo en SCS NEH-4",
         "A": {"N/A": 88}, "B": {"N/A": 92}, "C": {"N/A": 94}, "D": {"N/A": 95},
     },
 
     # === MONTES Y FORESTACIÓN ===
     "monte_nativo_denso": {
         "description": "Monte nativo denso (Chaco, Yungas)",
+        "cn_source_verified": True,
+        "source": "USDA-SCS NEH-4 Table 2-2d — Woods, good cover (litter/brush cover soil)",
         "condition_based": True,
         "A": {"poor": 45, "fair": 36, "good": 30},
         "B": {"poor": 66, "fair": 60, "good": 55},
@@ -138,6 +181,8 @@ CN_ARGENTINA: dict = {
     },
     "monte_nativo_ralo": {
         "description": "Monte nativo ralo / arbustal",
+        "cn_source_verified": True,
+        "source": "USDA-SCS NEH-4 Table 2-2d — Woods/shrubland, fair-poor cover",
         "condition_based": True,
         "A": {"poor": 57, "fair": 48, "good": 41},
         "B": {"poor": 73, "fair": 67, "good": 62},
@@ -146,6 +191,8 @@ CN_ARGENTINA: dict = {
     },
     "forestacion_pinos": {
         "description": "Forestación de pinos (NEA, Patagonia)",
+        "cn_source_verified": False,
+        "source": "Adaptado de USDA-SCS NEH-4 woods — ajustado para pinares con cobertura de acículas (práctica argentina)",
         "condition_based": True,
         "A": {"poor": 45, "fair": 36, "good": 30},
         "B": {"poor": 66, "fair": 60, "good": 55},
@@ -154,6 +201,8 @@ CN_ARGENTINA: dict = {
     },
     "forestacion_eucaliptus": {
         "description": "Forestación de eucaliptus",
+        "cn_source_verified": False,
+        "source": "Estimación ingeniería argentina — sin tabla específica en SCS NEH-4 para eucaliptos",
         "condition_based": True,
         "A": {"poor": 48, "fair": 40, "good": 34},
         "B": {"poor": 68, "fair": 62, "good": 57},
@@ -162,34 +211,48 @@ CN_ARGENTINA: dict = {
     },
     "desmonte_reciente": {
         "description": "Desmonte reciente / suelo expuesto",
+        "cn_source_verified": False,
+        "source": "Adaptado de SCS NEH-4 fallow/bare soil — ajustado para desmonte reciente argentina",
         "A": {"N/A": 77}, "B": {"N/A": 86}, "C": {"N/A": 91}, "D": {"N/A": 94},
     },
 
     # === ZONAS ESPECIALES ===
     "humedal_bañado": {
         "description": "Humedales / Bañados",
+        "cn_source_verified": False,
+        "source": "Estimación ingeniería argentina — sin equivalente directo en SCS NEH-4 para humedales pampeanos",
         "A": {"N/A": 85}, "B": {"N/A": 90}, "C": {"N/A": 93}, "D": {"N/A": 95},
     },
     "salinas_salitrales": {
         "description": "Salinas y salitrales",
+        "cn_source_verified": False,
+        "source": "Estimación ingeniería argentina — sin equivalente en SCS NEH-4",
         "A": {"N/A": 92}, "B": {"N/A": 94}, "C": {"N/A": 96}, "D": {"N/A": 97},
     },
     "medanos_dunas": {
         "description": "Médanos / Dunas (sin vegetación)",
+        "cn_source_verified": False,
+        "source": "Adaptado de SCS NEH-4 fallow (bare soil) — ajustado para médanos patagónicos y pampas",
         "A": {"N/A": 63}, "B": {"N/A": 77}, "C": {"N/A": 85}, "D": {"N/A": 88},
     },
     "roca_expuesta": {
         "description": "Roca expuesta / afloramientos",
+        "cn_source_verified": True,
+        "source": "USDA-SCS NEH-4 Table 2-2a — Impervious areas",
         "A": {"N/A": 96}, "B": {"N/A": 96}, "C": {"N/A": 96}, "D": {"N/A": 96},
     },
 
     # === INFRAESTRUCTURA ===
     "parque_solar": {
         "description": "Parque solar fotovoltaico",
+        "cn_source_verified": False,
+        "source": "Estimación ingeniería argentina — sin equivalente en SCS NEH-4; basado en cobertura de suelo típica bajo paneles",
         "A": {"N/A": 70}, "B": {"N/A": 80}, "C": {"N/A": 86}, "D": {"N/A": 89},
     },
     "parque_eolico": {
         "description": "Parque eólico (área de servidumbre)",
+        "cn_source_verified": False,
+        "source": "Estimación ingeniería argentina — usar CN del uso del suelo subyacente cuando sea posible",
         "condition_based": True,
         "notes": "Usar CN del uso del suelo subyacente",
         "A": {"poor": 68, "fair": 49, "good": 39},
@@ -199,6 +262,8 @@ CN_ARGENTINA: dict = {
     },
     "cantera_mineria": {
         "description": "Cantera / Minería a cielo abierto",
+        "cn_source_verified": False,
+        "source": "Adaptado de SCS NEH-4 impervious/industrial — ajustado para canteras argentinas",
         "A": {"N/A": 91}, "B": {"N/A": 93}, "C": {"N/A": 95}, "D": {"N/A": 96},
     },
 }
@@ -261,6 +326,20 @@ def get_cn_value(land_use_key: str, soil_group: str, condition: str = "fair") ->
         return cn
     else:
         return soil_data["N/A"]
+
+
+def are_cn_categories_verified(categories: list[dict]) -> bool:
+    """
+    Return True only if every land use category in the list has a verified CN source.
+
+    A verified entry has cn_source_verified=True in CN_ARGENTINA, meaning the CN
+    value is directly traceable to USDA-SCS NEH-4 Table 2-2 without Argentine adaptation.
+    """
+    for cat in categories:
+        entry = CN_ARGENTINA.get(cat["land_use"])
+        if entry is None or not entry.get("cn_source_verified", False):
+            return False
+    return True
 
 
 def calculate_composite_cn(
