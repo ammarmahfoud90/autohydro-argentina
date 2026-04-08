@@ -175,7 +175,27 @@ def calculate_tc_ventura_heras(A: float, S: float) -> TcResult:
     """
     Ventura-Heras
 
-    Tc = 0.3 × √(A / S)
+    Fórmula implementada:
+        Tc = 0.3 × √(A / S)   [horas]
+        A: área de la cuenca  [km²]
+        S: pendiente media de la cuenca  [m/m — adimensional, NO en %]
+
+    # TODO: AUDIT-001 — FUENTE PENDIENTE DE VERIFICACIÓN
+    # El coeficiente 0.3 no tiene cita primaria confirmada en el codebase.
+    # Algunas referencias argentinas (Chow et al. edición en español; manuales INA)
+    # citan el coeficiente como 0.127 para las mismas unidades (A en km², S en m/m),
+    # lo que produce un Tc 2.36× MENOR. La diferencia afecta directamente la
+    # intensidad IDF adoptada y, por lo tanto, el caudal de diseño.
+    #
+    # Posible explicación: el coeficiente 0.3 aparece en algunos manuales españoles
+    # (MOPU / MITMA) con unidades o calibración regional diferente.
+    #
+    # ACCIÓN REQUERIDA: verificar contra la fuente original antes de usar en
+    # informes técnicos o diseños definitivos. Ver ítem AUDIT-001 en AUDIT_REPORT.md.
+    #
+    # Alternativas conocidas del coeficiente:
+    #   0.127  — Chow, Maidment & Mays (ed. español); referencias INA
+    #   0.300  — versión usada actualmente (fuente no confirmada)
 
     Args:
         A: Área de la cuenca (km²)
@@ -191,13 +211,20 @@ def calculate_tc_ventura_heras(A: float, S: float) -> TcResult:
     if S <= 0:
         raise ValueError("S must be positive")
 
+    # TODO: AUDIT-001 — coeficiente 0.3 sin fuente verificada; posible discrepancia
+    # con el valor 0.127 citado en Chow et al. (ed. español) e INA. Ver docstring.
     tc_hr = 0.3 * math.sqrt(A / S)
     return TcResult(
         formula=TcFormula.VENTURA_HERAS,
         tc_hours=tc_hr,
         formula_name="Ventura-Heras",
         applicability="Cuencas pequeñas a medianas. Pampa Húmeda (pendientes bajas).",
-        notes="A en km². Útil cuando solo se dispone de área y pendiente media.",
+        notes=(
+            "A en km², S en m/m. "
+            "⚠ AUDIT-001: Coeficiente (0.3) en revisión — existe discrepancia conocida "
+            "con el valor 0.127 citado en Chow et al. (ed. español) e INA (diferencia 2.36×). "
+            "Verificar contra fuente local antes de usar en informes técnicos."
+        ),
     )
 
 

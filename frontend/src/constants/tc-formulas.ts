@@ -75,10 +75,13 @@ export const TC_FORMULAS: Record<TcFormulaKey, TcFormulaInfo> = {
   ventura_heras: {
     key: 'ventura_heras',
     name: 'Ventura-Heras',
-    formula: 'Tc = 0.3 × √(A/S)  [hr]',
+    // TODO: AUDIT-001 — coeficiente 0.3 sin fuente verificada; Chow et al. (ed. español)
+    // e INA citan 0.127 para las mismas unidades (A km², S m/m). Diferencia: 2.36×.
+    formula: 'Tc = 0.3 × √(A/S)  [hr]  ⚠ coeficiente en revisión (AUDIT-001)',
     requiredParams: ['A_km2', 'S'],
     applicability: 'Cuencas pequeñas a medianas. Pampa Húmeda (pendientes bajas).',
-    notes: 'A en km². Útil cuando solo se dispone de área y pendiente media.',
+    notes:
+      'A en km², S en m/m. ⚠ AUDIT-001: Coeficiente (0.3) en revisión — discrepancia conocida con 0.127 (Chow et al. ed. español). Verificar antes de usar en informes.',
     resultUnit: 'hours',
   },
   passini: {
