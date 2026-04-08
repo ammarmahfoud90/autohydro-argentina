@@ -329,10 +329,10 @@ class TestIDFModelos:
         assert abs(i - 52.282) < 0.01, f"AMGR TR=10 d=120: {i:.3f} mm/hr, esperado 52.282"
 
     def test_cordoba_obs_tr25_d60(self):
-        """Córdoba Observatorio TR=25, d=60 min → 60.856 mm/hr."""
+        """Córdoba Observatorio TR=25, d=60 min → 80.4 mm/hr (official INA-CIRSA table)."""
         from app.services.idf_service import calculate_intensity
         i = calculate_intensity("cordoba_observatorio", return_period=25, duration_min=60)["intensity_mm_hr"]
-        assert abs(i - 60.856) < 0.01, f"Córdoba TR=25 d=60: {i:.3f} mm/hr, esperado 60.856"
+        assert abs(i - 80.4) < 0.5, f"Córdoba TR=25 d=60: {i:.3f} mm/hr, esperado 80.4"
 
     def test_el_colorado_tr10_d60(self):
         """El Colorado (Formosa) TR=10, d=60 min → 71.560 mm/hr."""

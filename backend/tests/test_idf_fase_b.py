@@ -37,18 +37,17 @@ class TestCordobaObservatorio:
 
     def test_tr10_d60(self):
         """
-        TR=10, d=60 min:
-        phi_T = 2.584458 * (ln(10))^(3/8) - 2.252573 = 1.2279
-        delta_d = (ln(60))^(5/3) = 10.951
-        ln(i) = 0.381 * 1.2279 - 0.154 * 10.951 + 5.054 = 3.928
-        i = exp(3.928) ≈ 50.8 mm/h
+        TR=10, d=60 min → 67.9 mm/h (official INA-CIRSA table value).
+        Previously tested against the DIT 3P formula (~50.8 mm/h) which
+        underestimates the official table by ~25%. Fixed to use log-linear
+        bilinear interpolation on the verified intensity_table.
         """
         result = calculate_intensity(
             locality_id="cordoba_observatorio",
             return_period=10,
             duration_min=60
         )
-        assert abs(result["intensity_mm_hr"] - 50.8) < 0.5
+        assert abs(result["intensity_mm_hr"] - 67.9) < 0.5
 
 
 # =============================================================================
