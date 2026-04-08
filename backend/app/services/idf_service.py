@@ -583,6 +583,63 @@ def _calculate_intensity_sherman_power(
 import math
 
 
+def _dit_3p_table_interpolate(table: dict, return_period: float, duration_min: float) -> float:
+    """
+    Log-linear bilinear interpolation on a DIT 3P intensity table.
+
+    Both TR and duration axes are interpolated in log space so that the result
+    matches the log-normal structure of the underlying frequency model.
+
+    Args:
+        table: dict with keys "return_periods", "durations_min", "values_mm_h"
+        return_period: Target return period (years); clamped to table range
+        duration_min:  Target duration (minutes); clamped to table range
+
+    Returns:
+        Intensity in mm/h
+    """
+    trs = table["return_periods"]
+    durations = table["durations_min"]
+    values = table["values_mm_h"]
+
+    log_trs = [math.log(t) for t in trs]
+    log_durations = [math.log(d) for d in durations]
+    log_tr = max(log_trs[0], min(log_trs[-1], math.log(return_period)))
+    log_d = max(log_durations[0], min(log_durations[-1], math.log(duration_min)))
+
+    # Bounding row indices (TR axis)
+    i2 = next((i for i, t in enumerate(log_trs) if t >= log_tr), len(trs) - 1)
+    i1 = max(0, i2 - 1)
+    if i2 == i1:
+        i2 = min(len(trs) - 1, i1 + 1)
+
+    # Bounding column indices (duration axis)
+    j2 = next((j for j, d in enumerate(log_durations) if d >= log_d), len(durations) - 1)
+    j1 = max(0, j2 - 1)
+    if j2 == j1:
+        j2 = min(len(durations) - 1, j1 + 1)
+
+    tr_frac = (
+        (log_tr - log_trs[i1]) / (log_trs[i2] - log_trs[i1])
+        if i1 != i2 else 0.0
+    )
+    d_frac = (
+        (log_d - log_durations[j1]) / (log_durations[j2] - log_durations[j1])
+        if j1 != j2 else 0.0
+    )
+
+    v11 = math.log(values[i1][j1])
+    v12 = math.log(values[i1][j2])
+    v21 = math.log(values[i2][j1])
+    v22 = math.log(values[i2][j2])
+
+    ln_i = (v11 * (1 - tr_frac) * (1 - d_frac)
+            + v12 * (1 - tr_frac) * d_frac
+            + v21 * tr_frac * (1 - d_frac)
+            + v22 * tr_frac * d_frac)
+    return math.exp(ln_i)
+
+
 def _calculate_intensity_dit_3p(
     loc: dict,
     return_period: float,
@@ -591,16 +648,20 @@ def _calculate_intensity_dit_3p(
     """
     DIT 3P model (Córdoba + Salta — INA-CIRSA).
 
-    Formula: ln(i) = A · φ_T − B · δ_d + C
+    When the locality JSON contains an "intensity_table" key (official tabulated
+    values from the INA-CIRSA data sheet), intensities are computed by log-linear
+    bilinear interpolation on that table.  This corrects a ~25% systematic under-
+    estimation produced by the φ_T polynomial at all TR/duration combinations for
+    Córdoba Observatorio.
 
-    where:
-      φ_T = 2.584458 · (ln T)^(3/8) − 2.252573  [T in years]
-      δ_d = (ln d)^(5/3)  [d in minutes]
-
-    Result: i = exp(A · φ_T − B · δ_d + C) in mm/h
+    Without "intensity_table" the original formula is used as a fallback:
+      ln(i) = A · φ_T − B · δ_d + C
+      φ_T = 2.584458 · (ln T)^(3/8) − 2.252573
+      δ_d = (ln d)^(5/3)
 
     Args:
-        loc: Locality dict with "formula" containing A, B, C
+        loc: Locality dict with "formula" containing A, B, C and (optionally)
+             "intensity_table" with the official tabulated values.
         return_period: Return period in years
         duration_min: Storm duration in minutes
 
@@ -610,10 +671,6 @@ def _calculate_intensity_dit_3p(
     locality_id = loc["id"]
     formula = loc["formula"]
     limitations = loc.get("limitations", {})
-
-    A = formula["A"]
-    B = formula["B"]
-    C = formula["C"]
 
     max_tr = (
         formula.get("valid_tr_max")
@@ -626,24 +683,29 @@ def _calculate_intensity_dit_3p(
             f"{max_tr} yr for locality '{locality_id}'."
         )
 
-    # Calculate φ_T (phi_T)
-    ln_T = math.log(return_period)
-    phi_T = 2.584458 * (ln_T ** (3/8)) - 2.252573
+    intensity_table = loc.get("intensity_table")
 
-    # Calculate δ_d (delta_d)
-    ln_d = math.log(duration_min)
-    delta_d = ln_d ** (5/3)
+    if intensity_table is not None:
+        # Path A: log-linear bilinear interpolation on the official table
+        intensity = _dit_3p_table_interpolate(intensity_table, return_period, duration_min)
+        formula_used = False
+    else:
+        # Path B: original DIT 3P formula (fallback for localities without table)
+        A = formula["A"]
+        B = formula["B"]
+        C = formula["C"]
 
-    # Calculate ln(i) and then i
-    ln_i = A * phi_T - B * delta_d + C
-    intensity = math.exp(ln_i)
+        phi_T = 2.584458 * (math.log(return_period) ** (3 / 8)) - 2.252573
+        delta_d = math.log(duration_min) ** (5 / 3)
+        intensity = math.exp(A * phi_T - B * delta_d + C)
+        formula_used = True
 
     return {
         "intensity_mm_hr": round(intensity, 3),
         "return_period": return_period,
         "duration_min": duration_min,
         "locality_id": locality_id,
-        "formula_used": True,
+        "formula_used": formula_used,
         "source": loc["source"]["document"],
     }
 

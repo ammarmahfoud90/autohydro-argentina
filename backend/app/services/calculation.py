@@ -36,6 +36,7 @@ VERIFIED_LOCALITIES: frozenset[str] = frozenset({
     "pr_saenz_pena",          # APA Chaco Res. 1334/21
     "neuquen_zona_aluvional", # SSRH Neuquén official
     "buenos_aires_azul",      # verified against source
+    "cordoba_observatorio",   # DIT 3P — table interpolation verified against INA-CIRSA (±0%)
     "cordoba_altas_cumbres",  # DIT 3P — verified against source
     "cordoba_la_suela",       # DIT 3P — verified against source
     "cordoba_pampa_olaen",    # DIT 3P — verified against source
