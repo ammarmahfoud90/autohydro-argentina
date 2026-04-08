@@ -1018,10 +1018,10 @@ class MemoriaCalculoGenerator:
                 # Special handling
                 if data1.get("cn") is not None:
                     v1 = f"{data1['cn']:.1f}"
-                    v2 = f"{data2.get('cn', '—')}" if data2.get("cn") is None else f"{data2['cn']:.1f}"
+                    v2 = f"{data2['cn']:.1f}" if data2.get("cn") is not None else "—"
                 elif data1.get("runoff_coeff") is not None:
                     v1 = f"C = {data1['runoff_coeff']:.3f}"
-                    v2 = f"C = {data2.get('runoff_coeff', '—')}" if data2.get("runoff_coeff") is None else f"C = {data2['runoff_coeff']:.3f}"
+                    v2 = f"C = {data2['runoff_coeff']:.3f}" if data2.get("runoff_coeff") is not None else "—"
                 else:
                     continue
                 rows.append([label, v1, v2, _pct_diff(

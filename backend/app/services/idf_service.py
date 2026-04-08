@@ -60,6 +60,7 @@ The model for each locality is stored in the JSON field "idf_model".
 """
 
 import json
+import math
 from pathlib import Path
 from typing import Optional
 
@@ -323,6 +324,10 @@ def _calculate_intensity_neuquen(
         )
 
     available_trs = loc["p24h_by_station_mm"]["return_periods_years"]
+    if not available_trs:
+        raise ValueError(
+            f"Locality '{locality_id}' has no return periods defined in p24h_by_station_mm."
+        )
     tr_min, tr_max = available_trs[0], available_trs[-1]
 
     if return_period < tr_min or return_period > tr_max:
@@ -760,6 +765,11 @@ def _calculate_intensity_simple_scaling_table(
     trs: list[int] = table["return_periods"]
     intensities: dict = table["intensities"]
 
+    if not durations:
+        raise ValueError(f"Locality '{locality_id}' has no durations defined in idf_table.")
+    if not trs:
+        raise ValueError(f"Locality '{locality_id}' has no return periods defined in idf_table.")
+
     d_min, d_max = durations[0], durations[-1]
     if duration_min < d_min:
         raise ValueError(
@@ -805,8 +815,7 @@ def _calculate_intensity_simple_scaling_table(
         upper_tr = min(t for t in trs if t >= return_period)
         i_lower = _interp_at_tr(lower_tr)
         i_upper = _interp_at_tr(upper_tr)
-        import math as _math
-        log_frac = _math.log(return_period / lower_tr) / _math.log(upper_tr / lower_tr)
+        log_frac = math.log(return_period / lower_tr) / math.log(upper_tr / lower_tr)
         intensity = i_lower * (i_upper / i_lower) ** log_frac
 
     return {
@@ -928,6 +937,11 @@ def get_table_intensity(
     durations: list[int] = table["durations_min"]
     trs: list[int] = table["return_periods_years"]
     intensities: list[list[float]] = table["intensities_mm_hr"]
+
+    if not trs:
+        raise ValueError(f"Locality '{locality_id}' has no return periods in idf_table.")
+    if not durations:
+        raise ValueError(f"Locality '{locality_id}' has no durations in idf_table.")
 
     if return_period not in trs:
         raise ValueError(
