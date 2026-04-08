@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { getLocalities } from '../../services/api';
 import type { IDFLocality } from '../../types/idf';
@@ -18,35 +19,36 @@ interface Props {
 }
 
 export function CitySelector({ value, onChange }: Props) {
-  const [localities, setLocalities] = useState<IDFLocality[]>([]);
-  const [status, setStatus] = useState<'loading' | 'slowStart' | 'ready' | 'error'>('loading');
+  const {
+    data: localities = [],
+    isError,
+    isFetching,
+    refetch,
+  } = useQuery({
+    queryKey: ['localities'],
+    queryFn: getLocalities,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Show "server waking up" message after 3 seconds of loading
+  const [showSlowStart, setShowSlowStart] = useState(false);
   const slowTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  function loadLocalities() {
-    setStatus('loading');
-    setLocalities([]);
-
-    // After 3 seconds of waiting, switch to "server waking up" message
-    slowTimer.current = setTimeout(() => {
-      setStatus('slowStart');
-    }, 3000);
-
-    getLocalities()
-      .then((locs) => {
-        clearTimeout(slowTimer.current ?? undefined);
-        setLocalities(locs);
-        setStatus('ready');
-      })
-      .catch(() => {
-        clearTimeout(slowTimer.current ?? undefined);
-        setStatus('error');
-      });
-  }
-
   useEffect(() => {
-    loadLocalities();
+    if (isFetching) {
+      setShowSlowStart(false);
+      slowTimer.current = setTimeout(() => setShowSlowStart(true), 3000);
+    } else {
+      clearTimeout(slowTimer.current ?? undefined);
+    }
     return () => { clearTimeout(slowTimer.current ?? undefined); };
-  }, []);
+  }, [isFetching]);
+
+  const status = isError && !isFetching
+    ? 'error'
+    : isFetching
+      ? (showSlowStart ? 'slowStart' : 'loading')
+      : 'ready';
 
   const isManual = value === 'manual';
   const isPmd = value.startsWith('pmd:');
@@ -143,7 +145,7 @@ export function CitySelector({ value, onChange }: Props) {
             </div>
             <button
               type="button"
-              onClick={loadLocalities}
+              onClick={() => refetch()}
               className="shrink-0 text-xs font-semibold text-red-700 bg-red-100 hover:bg-red-200 border border-red-300 px-3 py-1.5 rounded-lg transition-colors"
             >
               Reintentar

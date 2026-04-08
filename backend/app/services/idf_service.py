@@ -137,7 +137,11 @@ def get_localities() -> list[dict]:
 
         # Compute valid TR and duration ranges from formula or table
         formula = loc.get("formula", {})
-        valid_tr_max = formula.get("valid_tr_max", return_periods[-1] if return_periods else 100)
+        valid_tr_max = (
+            formula.get("valid_tr_max")
+            or loc.get("limitations", {}).get("max_reliable_return_period")
+            or (return_periods[-1] if return_periods else 100)
+        )
         valid_tr_min = formula.get("valid_tr_min", return_periods[0] if return_periods else 2)
         if idf_model == "simple_scaling_table":
             table_durs = loc.get("idf_table", {}).get("durations_min", [])
@@ -608,10 +612,22 @@ def _calculate_intensity_dit_3p(
     """
     locality_id = loc["id"]
     formula = loc["formula"]
+    limitations = loc.get("limitations", {})
 
     A = formula["A"]
     B = formula["B"]
     C = formula["C"]
+
+    max_tr = (
+        formula.get("valid_tr_max")
+        or limitations.get("max_reliable_return_period")
+        or 100
+    )
+    if return_period > max_tr:
+        raise ValueError(
+            f"Return period {return_period} yr exceeds the maximum valid TR "
+            f"{max_tr} yr for locality '{locality_id}'."
+        )
 
     # Calculate φ_T (phi_T)
     ln_T = math.log(return_period)

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -278,7 +278,7 @@ export function Calculator() {
   const rationalLocksDuration = isRationalMethod && !formData.override_duration;
 
   // Compute adopted Tc in minutes from current inputs (when possible)
-  const adoptedTcMin: number | null = (() => {
+  const adoptedTcMin: number | null = useMemo(() => {
     if (!formData.tc_adopted_formula) return null;
     if (!(formData.area_km2 > 0 && formData.length_km > 0 && formData.slope > 0)) return null;
     const results = calculateAllTc(
@@ -294,7 +294,15 @@ export function Calculator() {
     );
     const adopted = results.find((r) => r.formula === formData.tc_adopted_formula);
     return adopted ? adopted.tcMinutes : null;
-  })();
+  }, [
+    formData.tc_adopted_formula,
+    formData.area_km2,
+    formData.length_km,
+    formData.slope,
+    formData.elevation_diff_m,
+    formData.avg_elevation_m,
+    formData.tc_formulas,
+  ]);
 
   useEffect(() => {
     if (!rationalLocksDuration) return;
@@ -555,11 +563,11 @@ export function Calculator() {
                     min={durationMin}
                     max={durationMax}
                     step={1}
-                    readOnly={rationalLocksDuration}
-                    aria-readonly={rationalLocksDuration}
-                    title={rationalLocksDuration ? 'En Método Racional la duración = Tc adoptado' : undefined}
+                    readOnly={rationalLocksDuration && adoptedTcMin != null}
+                    aria-readonly={rationalLocksDuration && adoptedTcMin != null}
+                    title={rationalLocksDuration && adoptedTcMin != null ? 'En Método Racional la duración = Tc adoptado' : undefined}
                     className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none ${
-                      rationalLocksDuration
+                      rationalLocksDuration && adoptedTcMin != null
                         ? 'border-gray-200 dark:border-slate-700 bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 cursor-not-allowed'
                         : 'border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500'
                     }`}
@@ -568,12 +576,9 @@ export function Calculator() {
                 </div>
                 {rationalLocksDuration ? (
                   <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
-                    = Tc adoptado{adoptedTcMin != null ? ` (${Math.round(adoptedTcMin)} min)` : ''} — Método Racional
-                    {!formData.tc_adopted_formula && (
-                      <span className="text-gray-400">
-                        {' '}· adoptá una fórmula de Tc en el paso 3 para fijar el valor
-                      </span>
-                    )}
+                    {adoptedTcMin != null
+                      ? `= Tc adoptado (${Math.round(adoptedTcMin)} min) — Método Racional`
+                      : 'Duración = Tc adoptado — completá los datos de cuenca en Pasos 2–3'}
                   </p>
                 ) : (
                   <p className="text-xs text-gray-400 mt-1">

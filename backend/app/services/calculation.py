@@ -189,6 +189,7 @@ def scs_cn_method(
     A_km2: float,
     tc_hours: float,
     use_pampa_lambda: bool = False,
+    duration_min: float = 60.0,
 ) -> dict[str, float]:
     """
     SCS-CN peak discharge using triangular unit hydrograph.
@@ -199,6 +200,7 @@ def scs_cn_method(
         A_km2: Basin area (km²)
         tc_hours: Time of concentration (hours)
         use_pampa_lambda: If True, use λ=0.05 (Pampa Húmeda); else λ=0.20 (standard)
+        duration_min: Storm duration in minutes (used to compute Tp = D/2 + 0.6·Tc)
 
     Returns:
         dict with keys: Q_mm (runoff depth), S_mm, Ia_mm, Qp_m3s, Tp_hr
@@ -217,8 +219,8 @@ def scs_cn_method(
     else:
         Q_mm = 0.0
 
-    # Time to peak (hr) — SCS triangular hydrograph
-    Tp = 0.6 * tc_hours
+    # Time to peak (hr) — SCS triangular hydrograph: Tp = D/2 + 0.6·Tc
+    Tp = (duration_min / 60.0) / 2.0 + 0.6 * tc_hours
 
     # Peak discharge (m³/s) — SCS formula
     # Qp = 0.208 × A (km²) × Q (mm) / Tp (hr)
@@ -302,6 +304,7 @@ def compute_cn_sensitivity(
     A_km2: float,
     tc_hours: float,
     use_pampa_lambda: bool,
+    duration_min: float = 60.0,
 ) -> list[CNSensitivityPoint]:
     """
     Compute peak flow for CN-5, CN, and CN+5.
@@ -316,7 +319,7 @@ def compute_cn_sensitivity(
 
     for delta, label in deltas:
         cn = round(max(30.0, min(98.0, cn_base + delta)), 1)
-        scs = scs_cn_method(cn, P_mm, A_km2, tc_hours, use_pampa_lambda)
+        scs = scs_cn_method(cn, P_mm, A_km2, tc_hours, use_pampa_lambda, duration_min)
         q = round(scs["Qp_m3s"], 4)
         if label == "CN":
             base_q = q
@@ -510,6 +513,7 @@ def run_calculation(payload: dict) -> dict:
             A_km2=req.area_km2,
             tc_hours=tc_adopted_hr,
             use_pampa_lambda=req.use_pampa_lambda,
+            duration_min=effective_duration_min,
         )
         Q_primary = scs["Qp_m3s"]
         extra["cn"] = cn_value
@@ -522,6 +526,7 @@ def run_calculation(payload: dict) -> dict:
             A_km2=req.area_km2,
             tc_hours=tc_adopted_hr,
             use_pampa_lambda=req.use_pampa_lambda,
+            duration_min=effective_duration_min,
         )
         # Unit hydrograph (only when there is actual runoff)
         if scs["Qp_m3s"] > 0 and scs["Tp_hr"] > 0:
@@ -563,7 +568,7 @@ def run_calculation(payload: dict) -> dict:
         )
 
     if cn_value is not None:
-        scs_comp = scs_cn_method(cn_value, P_mm, req.area_km2, tc_adopted_hr, req.use_pampa_lambda)
+        scs_comp = scs_cn_method(cn_value, P_mm, req.area_km2, tc_adopted_hr, req.use_pampa_lambda, effective_duration_min)
         method_comparison.append(
             MethodResult(
                 method="scs_cn",

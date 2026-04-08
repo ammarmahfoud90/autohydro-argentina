@@ -111,10 +111,10 @@ class TestSCSCNMethod:
         assert result["Qp_m3s"] == 0.0
 
     def test_peak_discharge_formula(self):
-        """Qp = 0.208 * A * Q_mm / Tp;  Tp = 0.6 * tc."""
-        CN, P, A, tc = 85.0, 120.0, 3.0, 0.5
-        result = scs_cn_method(CN=CN, P_mm=P, A_km2=A, tc_hours=tc)
-        Tp_expected = 0.6 * tc
+        """Qp = 0.208 * A * Q_mm / Tp;  Tp = D/2 + 0.6*tc (SCS triangular UH)."""
+        CN, P, A, tc, D = 85.0, 120.0, 3.0, 0.5, 60.0
+        result = scs_cn_method(CN=CN, P_mm=P, A_km2=A, tc_hours=tc, duration_min=D)
+        Tp_expected = (D / 60.0) / 2.0 + 0.6 * tc
         Qp_expected = 0.208 * A * result["Q_mm"] / Tp_expected
         assert abs(result["Qp_m3s"] - Qp_expected) < 0.001
 
