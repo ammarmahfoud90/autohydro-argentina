@@ -84,14 +84,19 @@ function StepIndicator({ current, validSteps = [] }: StepIndicatorProps) {
   return (
     <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-16 z-10">
       <div className="max-w-4xl mx-auto px-4 py-3">
-        <div className="flex items-center gap-0">
+        <div className="flex items-center gap-0" role="list" aria-label="Progreso del cálculo">
           {steps.map((label, idx) => {
             const num = idx + 1;
             const isValid = validSteps[idx] === true;
             const done = current > num || (isValid && current !== num);
             const active = current === num;
             return (
-              <div key={num} className="flex items-center flex-1 min-w-0">
+              <div
+                key={num}
+                role="listitem"
+                aria-current={active ? 'step' : undefined}
+                className="flex items-center flex-1 min-w-0"
+              >
                 <div className="flex items-center gap-2 min-w-0">
                   <div
                     className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
@@ -103,7 +108,7 @@ function StepIndicator({ current, validSteps = [] }: StepIndicatorProps) {
                     }`}
                   >
                     {done ? (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg aria-hidden="true" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                       </svg>
                     ) : (
