@@ -23,7 +23,9 @@
     "geographic_scope": "Ciudad de Paraná y zona de influencia, Entre Ríos.",
     "cross_reference": "Esta misma ecuación (K=601, m=0.23, c=6, n=0.69) es citada por Marcus et al. (2019) como referencia comparativa para Santa Fe, confirmando consistencia entre fuentes.",
     "tr_note": "TR=20 incluido en tabla de uso práctico del documento fuente.",
-    "normative_status": "La Dirección de Hidráulica de Entre Ríos avaló formalmente este trabajo."
+    "normative_status": "La Dirección de Hidráulica de Entre Ríos avaló formalmente este trabajo.",
+    "max_reliable_return_period": 50,
+    "tr_warning_text": "TR seleccionado se encuentra en el límite de confiabilidad estadística de la fuente. Fuente oficial (Zamanillo E.A. et al., Tormentas de diseño para la provincia de Entre Ríos, Dirección de Hidráulica ER + UTN, 2008, ISBN 978-950-42-0109-0): los autores incluyen TR=50 en las tablas de uso práctico. Para diseños críticos se recomienda verificar con registros actualizados."
   },
   "idf_model": "sherman_4p",
   "formula": {

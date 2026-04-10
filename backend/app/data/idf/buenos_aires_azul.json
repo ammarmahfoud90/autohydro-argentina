@@ -23,7 +23,9 @@
     "geographic_scope": "Partido de Azul y entorno cercano, centro de la provincia de Buenos Aires. No aplica al GBA, La Plata, Mar del Plata ni zona costera.",
     "series_note": "Series subdiarias de solo 8 años (con faltante en 2009). Los autores advierten mayor incertidumbre para TR=25 y 50. Series diarias del SMN tienen 50 años.",
     "tr_limitation": "No cubre TR=2. Para obras que requieren TR=2 esta fuente no es aplicable.",
-    "adjustment": "Ajuste estadístico: GEV tres parámetros (EasyFitXL)."
+    "adjustment": "Ajuste estadístico: GEV tres parámetros (EasyFitXL).",
+    "max_reliable_return_period": 25,
+    "tr_warning_text": "TR seleccionado excede el límite de confiabilidad indicado por los autores. Fuente oficial (Collazos, G. & Cazenave, G., IHLLA-CONICET, XXV Congreso Nacional del Agua, 2015, digital.cic.gba.gob.ar): 'los valores de duraciones diarios o superiores presentan una robustez que no pueden ofrecer las duraciones subdiarias... esto es especialmente importante de tener en cuenta si se trabaja con recurrencias de 25 y 50 años, donde la extrapolación resulta más osada.' Serie sub-diaria de 8 años. Para TR=50 la extrapolación supera 6× la longitud de la serie sub-diaria."
   },
   "idf_model": "talbot_cef",
   "formula": {

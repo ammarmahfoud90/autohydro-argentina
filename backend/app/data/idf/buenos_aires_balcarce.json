@@ -23,7 +23,9 @@
   "limitations": {
     "geographic_scope": "Sudeste bonaerense (Llanura Chacopampeana sur). No extrapolar al GBA, La Plata, Pampa Húmeda nordeste ni zona centro-oeste provincial.",
     "duration_note": "Duración mínima verificada: 30 min. No usar para duraciones de 10–20 min.",
-    "model_note": "El artículo prueba dos modelos (Ecuación 12 y Koutsoyiannis et al. 1998) y concluye que son estadísticamente indistinguibles para este período de datos. Se implementa el modelo tradicional (Ecuación 12) por simplicidad."
+    "model_note": "El artículo prueba dos modelos (Ecuación 12 y Koutsoyiannis et al. 1998) y concluye que son estadísticamente indistinguibles para este período de datos. Se implementa el modelo tradicional (Ecuación 12) por simplicidad.",
+    "max_reliable_return_period": 50,
+    "tr_warning_text": "TR seleccionado excede el límite confiable para esta fuente. Fuente oficial (Puricelli, M., INTA EEA Balcarce, 2014, DOI: 10.59069/ng407f17): serie compuesta de 23 años (1972-1979 + 1991-2006) con interrupción de 12 años. TR=100 supera en más de 4× la longitud efectiva del registro. Se recomienda usar TR ≤ 50 para esta localidad."
   },
   "idf_model": "sherman_power",
   "formula": {

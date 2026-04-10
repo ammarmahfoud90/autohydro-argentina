@@ -21,7 +21,8 @@
     "max_reliable_return_period": 10,
     "spatial_coverage": "Localidad de El Colorado y municipios con similar régimen pluviométrico.",
     "convective_note": "Procesos convectivos con cobertura en superficie reducida.",
-    "series_note": "ADVERTENCIA: Serie de solo 7 años. Resultados orientativos — pueden sufrir variaciones importantes con mayor longitud de registro."
+    "series_note": "ADVERTENCIA: Serie de solo 7 años. Resultados orientativos — pueden sufrir variaciones importantes con mayor longitud de registro.",
+    "tr_warning_text": "TR seleccionado excede el límite confiable documentado en la fuente. Fuente oficial (Resolución APA N°1334/21, Anexo II, APA Chaco, 2021): 'La extensión de las series utilizadas, 9 años, indica que los resultados deben tomarse como indicativos, orientativos, ya que por su corta duración los mismos pueden sufrir variaciones importantes con el aumento de la longitud de registro. En general no debieran tomarse longitudes tan cortas para análisis estadístico.' Para TR > 10, la extrapolación supera ampliamente el respaldo estadístico de la serie."
   },
   "municipalities": [
     "El Colorado", "General San Martín", "Presidencia Roca", "Colonias Unidas"

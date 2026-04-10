@@ -23,7 +23,9 @@
   },
   "limitations": {
     "geographic_scope": "Valle de Punilla norte, Córdoba. Zona serrana a 1256 msnm.",
-    "series_note": "27 años de registro — la más corta de las 4 estaciones cordobesas de esta expansión. Resultados confiables hasta TR=25 años."
+    "series_note": "27 años de registro — la más corta de las 4 estaciones cordobesas de esta expansión. Resultados confiables hasta TR=25 años.",
+    "max_reliable_return_period": 25,
+    "tr_warning_text": "TR seleccionado excede el límite confiable documentado en la fuente. Fuente oficial (Rico et al., INA-SCIRSA + SMN + FCEFyN UNC, 2025, ficha técnica INA-CIRSA, ina.gov.ar/cirsa): serie de 27 años (1992-2025). La ficha establece que los resultados son confiables hasta TR=25 años. Para TR=50 la extrapolación supera 2× la longitud de la serie."
   },
   "idf_model": "dit_3p",
   "formula": {

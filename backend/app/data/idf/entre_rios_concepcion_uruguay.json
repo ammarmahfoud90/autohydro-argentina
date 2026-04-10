@@ -22,7 +22,9 @@
   "limitations": {
     "geographic_scope": "Ciudad de Concepción del Uruguay y zona de influencia, Entre Ríos.",
     "tr_note": "TR=20 incluido en tabla de uso práctico del documento fuente.",
-    "normative_status": "La Dirección de Hidráulica de Entre Ríos avaló formalmente este trabajo."
+    "normative_status": "La Dirección de Hidráulica de Entre Ríos avaló formalmente este trabajo.",
+    "max_reliable_return_period": 25,
+    "tr_warning_text": "TR=50 excede el límite confiable para esta estación (25 años de serie). Fuente oficial (Zamanillo et al. 2008): TR=50 está incluido en las tablas del libro pero para una serie de 25 años supera el doble de la longitud del registro. Los resultados deben interpretarse con precaución."
   },
   "idf_model": "sherman_4p",
   "formula": {

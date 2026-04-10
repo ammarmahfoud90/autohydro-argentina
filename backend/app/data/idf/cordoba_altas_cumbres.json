@@ -24,7 +24,9 @@
   "limitations": {
     "geographic_scope": "Zona de Altas Cumbres, Córdoba. Estación a 2172 msnm — la más alta de la red INA-CIRSA incluida en esta expansión.",
     "altitude_note": "Intensidades notablemente menores por efecto altitudinal. No usar para proyectos en el piedemonte o llanura cordobesa.",
-    "series_note": "28 años de registro."
+    "series_note": "28 años de registro.",
+    "max_reliable_return_period": 50,
+    "tr_warning_text": "TR seleccionado se encuentra en el límite de confiabilidad estadística. Fuente oficial (Rico et al., INA-SCIRSA + SMN + FCEFyN UNC, 2024, ficha técnica INA-CIRSA, ina.gov.ar/cirsa): serie de 28 años (1994-2024). TR=50 se encuentra dentro del rango 2× de la serie. Para TR > 50 no existe respaldo estadístico en esta estación."
   },
   "idf_model": "dit_3p",
   "formula": {

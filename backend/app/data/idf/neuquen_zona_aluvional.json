@@ -25,7 +25,10 @@
     "normative_scope": "Normativa desarrollada para proyectos de instalaciones hidrocarburíferas (ductos, gasoductos, locaciones). Aplicable a ingeniería hidráulica general en la zona.",
     "spatial_coverage": "Zona árida de Neuquén centro-norte (área de influencia de la formación Vaca Muerta). La estación de referencia se selecciona según la ubicación de la cuenca dentro de los polígonos de Thiessen definidos por la SsRH.",
     "geographic_note": "Cada cuenca debe asignarse a una estación de referencia según los polígonos de Thiessen de la SsRH Neuquén.",
-    "ratio_note": "P_1h / P_24h = 0.59 es constante para toda la zona aluvional de Neuquén."
+    "ratio_note": "P_1h / P_24h = 0.59 es constante para toda la zona aluvional de Neuquén.",
+    "series_note": "Las longitudes de serie de cada estación P24h no están documentadas individualmente en el instructivo SsRH 2018. El max_reliable_return_period refleja el criterio general del instructivo.",
+    "max_reliable_return_period": 100,
+    "tr_warning_text": "TR seleccionado se encuentra en el límite superior documentado en la fuente. Fuente oficial (Instructivo ERH, SsRH Neuquén, 2018): las longitudes individuales de serie de cada estación P24h no están publicadas explícitamente. Para diseños críticos se recomienda verificar con la Subsecretaría de Recursos Hídricos de Neuquén."
   },
   "idf_model": "neuquen_ssrh",
   "idf_formula": {

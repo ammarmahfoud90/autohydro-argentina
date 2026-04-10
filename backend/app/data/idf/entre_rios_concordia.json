@@ -22,7 +22,9 @@
   "limitations": {
     "geographic_scope": "Ciudad de Concordia y zona de influencia, Entre Ríos.",
     "tr_note": "TR=20 incluido en tabla de uso práctico del documento fuente.",
-    "normative_status": "La Dirección de Hidráulica de Entre Ríos y la Dirección Provincial de Vialidad avalaron formalmente este trabajo en el Taller de Presentación de noviembre 2008."
+    "normative_status": "La Dirección de Hidráulica de Entre Ríos y la Dirección Provincial de Vialidad avalaron formalmente este trabajo en el Taller de Presentación de noviembre 2008.",
+    "max_reliable_return_period": 50,
+    "tr_warning_text": "TR seleccionado se encuentra en el límite de confiabilidad estadística de la fuente. Fuente oficial (Zamanillo E.A. et al., Tormentas de diseño para la provincia de Entre Ríos, Dirección de Hidráulica ER + UTN, 2008, ISBN 978-950-42-0109-0): los autores incluyen TR=50 en las tablas de uso práctico. Para diseños críticos se recomienda verificar con registros actualizados."
   },
   "idf_model": "sherman_4p",
   "formula": {

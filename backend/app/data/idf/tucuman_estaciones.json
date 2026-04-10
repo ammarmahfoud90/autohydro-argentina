@@ -63,6 +63,8 @@
     "geographic_scope": "Provincia de Tucumán. Red de estaciones EEAOC + DRH + SMN. Período calibración: 2001–2015.",
     "series_note": "15 años de datos pluviográficos. Resultados confiables hasta TR=25 años según el volumen de datos.",
     "station_selection_note": "El usuario debe seleccionar la estación geográficamente más próxima a su cuenca de estudio dentro de la red provincial.",
-    "source_note": "Tabla 5.6, página 89 de la tesis. El documento indica que la tabla incluye ~60 estaciones; se implementan las 28 documentadas con parámetros explícitos."
+    "source_note": "Tabla 5.6, página 89 de la tesis. El documento indica que la tabla incluye ~60 estaciones; se implementan las 28 documentadas con parámetros explícitos.",
+    "max_reliable_return_period": 25,
+    "tr_warning_text": "TR seleccionado excede el límite confiable documentado en la fuente. Fuente oficial (Bazzano, F., Tesis Doctoral, UNT-FACET, 2019): la tesis establece resultados confiables hasta TR=25 años para la red provincial (serie agregada 2001-2015, 15 años). Para TR > 25, la extrapolación supera 2× la longitud de la serie base. Los valores de TR=50, 100 y 200 presentes en la tabla phi_T son parámetros del modelo DIT publicados por la fuente pero no implican confiabilidad estadística para esos períodos."
   }
 }

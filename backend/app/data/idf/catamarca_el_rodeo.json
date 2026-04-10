@@ -10,7 +10,10 @@
     "institution": "INA-CRA — Instituto Nacional del Agua, Centro Regional Andino",
     "date": "2012",
     "series_period": "1970–2006",
-    "series_length_years": 37
+    "series_length_years": 37,
+    "authors": "Maza, J.A.; López, P.; Burgos, V.H.",
+    "url": "https://www.ina.gov.ar/archivos/publicaciones/CRA-delimitacion_areas_riesgo_hidrico-RODEO-CATAMARCA.pdf",
+    "url_type": "official_ina_institutional"
   },
   "idf_model": "simple_scaling_table",
   "idf_table": {
@@ -31,6 +34,9 @@
     "geographic_scope": "El Rodeo, Departamento Ambato, Catamarca. No extrapolar a otras localidades de la provincia.",
     "duration_note": "DURACIÓN MÍNIMA: 60 minutos. No hay datos sub-horarios. El calculador rechaza solicitudes para d < 60 min.",
     "scaling_note": "Los datos IDF se derivan de precipitaciones diarias máximas anuales mediante Simple Scaling (Yu et al. 2004). La incertidumbre es mayor que en estudios con pluviógrafo propio.",
-    "tr_note": "TR=200 incluido en la tabla original del informe INA-CRA."
+    "tr_note": "TR=200 incluido en la tabla original del informe INA-CRA.",
+    "tr_reliability_note": "El documento aplica Simple Scaling sobre una serie de 37 años (1970-2006). TR=200 aparece en el contexto de modelación hidráulica del área inundable. Para TR > 100, la extrapolación estadística supera 3× la longitud de la serie y conlleva incertidumbre alta.",
+    "max_reliable_return_period": 100,
+    "tr_warning_text": "TR seleccionado excede el límite confiable documentado. Fuente oficial (IT N°145-CRA, INA-Gobierno de Catamarca, 2012, Maza et al.): datos basados en Simple Scaling sobre serie de 37 años. Para TR > 100, la extrapolación supera 3× la longitud de la serie. Los resultados deben interpretarse con precaución y contrastarse con estudios locales."
   }
 }

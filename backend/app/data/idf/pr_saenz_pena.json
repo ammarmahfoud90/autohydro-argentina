@@ -21,7 +21,8 @@
     "max_reliable_return_period": 25,
     "spatial_coverage": "P.R. Sáenz Peña y municipios entre isohietas 900-1000 mm anuales.",
     "convective_note": "Procesos convectivos con cobertura en superficie reducida.",
-    "series_note": "Serie de 31 años. Confiable hasta TR=25 años. TR=50 años: contrastar regionalmente. Datos hasta 2008 — recomendado incorporar eventos recientes."
+    "series_note": "Serie de 31 años. Confiable hasta TR=25 años. TR=50 años: contrastar regionalmente. Datos hasta 2008 — recomendado incorporar eventos recientes.",
+    "tr_warning_text": "TR seleccionado excede el límite confiable documentado en la fuente. Fuente oficial (Resolución APA N°1334/21, Anexo III, APA Chaco, 2021): 'La extensión de las series utilizadas — 31 años — permite afirmar que los resultados serán confiables hasta un tiempo de recurrencia de 25 años. La relación obtenida para TR=50 deberá contrastarse regionalmente con otros registros al exceder significativamente la muestra original.'"
   },
   "municipalities": [
     "Presidencia Roque Sáenz Peña", "Pampa del Indio", "Tres Isletas",
