@@ -274,8 +274,29 @@ class MemoriaCalculoGenerator:
 
         story.append(Spacer(1, 0.5 * cm))
         story.append(
-            HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=30)
+            HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=20)
         )
+
+        # ── AVISO disclaimer — prominent, page 1, before any calculation content ──
+        _aviso_text = (
+            "<b>AVISO:</b> Esta memoria de cálculo ha sido generada con AutoHydro Argentina. "
+            "Los resultados son estimaciones para etapas preliminares. "
+            "Para diseños definitivos, verifique con estudios hidrológicos "
+            "locales actualizados y la normativa vigente aplicable."
+        )
+        _aviso_tbl = Table(
+            [[Paragraph(_aviso_text, S["body"])]],
+            colWidths=[16 * cm],
+        )
+        _aviso_tbl.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#fef3c7")),
+            ("BOX", (0, 0), (-1, -1), 1, _ORANGE),
+            ("LEFTPADDING", (0, 0), (-1, -1), 10),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+            ("TOPPADDING", (0, 0), (-1, -1), 8),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+        ]))
+        story.append(_aviso_tbl)
 
         story.append(Spacer(1, 1 * cm))
         story.append(
@@ -292,7 +313,7 @@ class MemoriaCalculoGenerator:
         rows = []
         if self.client:
             rows.append(["Comitente:", self.client])
-        rows.append(["Profesional Responsable:", self.engineer_name])
+        rows.append(["Desarrollado por:", "Ing. Ammar Mahfoud | AutoHydro Argentina v1.0"])
         rows.append(["Fecha de emisión:", datetime.now().strftime("%d/%m/%Y")])
         rows.append(["Herramienta:", "AutoHydro Argentina v1.0"])
 
@@ -317,15 +338,6 @@ class MemoriaCalculoGenerator:
         story.append(
             HRFlowable(width="100%", thickness=3, color=_NAVY, spaceAfter=20)
         )
-
-        # Disclaimer box
-        disclaimer = (
-            "AVISO: Esta memoria de cálculo ha sido generada con AutoHydro Argentina. "
-            "Los coeficientes IDF utilizados son de carácter indicativo basados en la regionalización "
-            "de Caamaño Nelli et al. (1999) e INA. Para diseños definitivos, verifique con los "
-            "estudios hidrológicos locales más recientes y la normativa vigente aplicable."
-        )
-        story.append(Paragraph(disclaimer, S["disclaimer"]))
 
         return story
 
@@ -466,7 +478,7 @@ class MemoriaCalculoGenerator:
         idf_data = [
             ["Parámetro", "Valor"],
             ["Estación de referencia", data["city"]],
-            ["Fuente / Bibliografía", idf_source],
+            ["Fuente / Bibliografía", Paragraph(idf_source, S["body"])],
             ["Período de retorno (T)", f"{data['return_period']} años"],
             ["Duración de tormenta (t)", f"{data['duration_min']} minutos"],
             ["Intensidad de diseño (i)", f"{data['intensity_mm_hr']:.2f} mm/hr"],
@@ -1076,7 +1088,7 @@ class MemoriaCalculoGenerator:
             ("Longitud del cauce (L)", f"{_fmt_num(data.get('length_km'))} km"),
             ("Pendiente media (S)", f"{_fmt_num(data.get('slope'), 4)} m/m"),
             ("Intensidad IDF (i)", f"{data.get('intensity_mm_hr', '—')} mm/hr"),
-            ("Fuente IDF", data.get("idf_source", "—")),
+            ("Fuente IDF", Paragraph(data.get("idf_source", "—"), S["body"])),
             ("Tc adoptado", f"{data.get('tc_adopted_hours', '—')} hr  /  {data.get('tc_adopted_minutes', '—')} min"),
             ("Método", _METHOD_NAMES.get(data.get("method", ""), "—")),
         ]
@@ -1101,7 +1113,7 @@ class MemoriaCalculoGenerator:
             ("Fecha de cálculo", datetime.now().strftime("%d/%m/%Y %H:%M")),
         ])
 
-        all_rows.extend([[k, str(v)] for k, v in flat_fields])
+        all_rows.extend([[k, v] for k, v in flat_fields])
         story.append(self._make_table(all_rows))
         return story
 

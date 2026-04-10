@@ -290,9 +290,28 @@ class MemoriaCalculoDocxGenerator:
 
         # Thin blue separator rule
         rule_mid = doc.add_paragraph()
-        rule_mid.paragraph_format.space_after = Pt(20)
+        rule_mid.paragraph_format.space_after = Pt(12)
         self._add_paragraph_border(rule_mid, "bottom", _LIGHT_BLUE_HEX, sz=4)
 
+        # ── AVISO disclaimer — prominent, page 1, before any calculation content ──
+        aviso_tbl = doc.add_table(rows=1, cols=1)
+        aviso_cell = aviso_tbl.rows[0].cells[0]
+        aviso_cell.width = Cm(16)
+        _set_cell_bg(aviso_cell, "fef3c7")
+        aviso_para = aviso_cell.paragraphs[0]
+        aviso_para.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        aviso_para.paragraph_format.space_before = Pt(6)
+        aviso_para.paragraph_format.space_after = Pt(6)
+        r_aviso_lbl = aviso_para.add_run("AVISO: ")
+        r_aviso_lbl.font.bold = True
+        r_aviso_lbl.font.size = Pt(9)
+        r_aviso_val = aviso_para.add_run(
+            "Esta memoria de c\u00e1lculo ha sido generada con AutoHydro Argentina. "
+            "Los resultados son estimaciones para etapas preliminares. "
+            "Para dise\u00f1os definitivos, verifique con estudios hidrol\u00f3gicos "
+            "locales actualizados y la normativa vigente aplicable."
+        )
+        r_aviso_val.font.size = Pt(9)
         doc.add_paragraph()
 
         # Project & location
@@ -321,7 +340,7 @@ class MemoriaCalculoDocxGenerator:
         info_rows = []
         if self.client:
             info_rows.append(("Comitente:", self.client))
-        info_rows.append(("Profesional Responsable:", self.engineer_name))
+        info_rows.append(("Desarrollado por:", "Ing. Ammar Mahfoud | AutoHydro Argentina v1.0"))
         info_rows.append(("Fecha de emisi\u00f3n:", datetime.now().strftime("%d/%m/%Y")))
         info_rows.append(("Herramienta:", "AutoHydro Argentina v1.0"))
 
@@ -349,21 +368,6 @@ class MemoriaCalculoDocxGenerator:
         rule_bot = doc.add_paragraph()
         rule_bot.paragraph_format.space_after = Pt(14)
         self._add_paragraph_border(rule_bot, "bottom", _NAVY_HEX, sz=18)
-
-        # Disclaimer
-        disclaimer = (
-            "AVISO: Esta memoria de c\u00e1lculo ha sido generada con AutoHydro Argentina. "
-            "Los coeficientes IDF utilizados son de car\u00e1cter indicativo basados en la "
-            "regionalizaci\u00f3n de Caama\u00f1o Nelli et al. (1999) e INA. Para dise\u00f1os "
-            "definitivos, verifique con los estudios hidrol\u00f3gicos locales m\u00e1s "
-            "recientes y la normativa vigente aplicable."
-        )
-        para_disc = doc.add_paragraph(disclaimer)
-        para_disc.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-        for run in para_disc.runs:
-            run.font.size = Pt(8)
-            run.font.italic = True
-            run.font.color.rgb = _GRAY
 
         doc.add_page_break()
 

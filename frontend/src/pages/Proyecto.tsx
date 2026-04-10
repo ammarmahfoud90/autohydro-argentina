@@ -1119,7 +1119,7 @@ export function Proyecto() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">Profesional responsable</label>
+                    <label className="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">Desarrollado por</label>
                     <input
                       type="text"
                       value={profesional}
