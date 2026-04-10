@@ -571,14 +571,32 @@ class MemoriaCalculoGenerator:
         story = [Paragraph("5. TIEMPO DE CONCENTRACIÓN (Tc)", S["h1"])]
         story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=8))
 
-        intro = (
-            f"Se calculó el tiempo de concentración mediante {len(data.get('tc_results', []))} "
-            f"fórmula(s). El valor adoptado corresponde al promedio de los resultados obtenidos."
+        tc_results = data.get("tc_results", [])
+        n = len(tc_results)
+        adopted_name = data.get("tc_adopted_formula_name") or (
+            tc_results[0]["formulaName"] if tc_results else "desconocida"
         )
+        is_user_selected = data.get("tc_adopted_is_user_selected", False)
+
+        if n == 1:
+            intro = (
+                f"Se calculó el tiempo de concentración mediante la fórmula {adopted_name}. "
+                f"El valor adoptado corresponde al resultado de dicha fórmula."
+            )
+        elif is_user_selected:
+            intro = (
+                f"Se calcularon {n} fórmulas de tiempo de concentración. "
+                f"El valor adoptado corresponde a la fórmula seleccionada: {adopted_name}."
+            )
+        else:
+            intro = (
+                f"Se calcularon {n} fórmulas de tiempo de concentración. "
+                f"El valor adoptado corresponde a la primera fórmula disponible: {adopted_name}."
+            )
         story.append(Paragraph(intro, S["body"]))
 
         tc_table_data = [["Fórmula", "Tc (hr)", "Tc (min)", "Aplicabilidad"]]
-        for r in data.get("tc_results", []):
+        for r in tc_results:
             tc_table_data.append([
                 r["formulaName"],
                 f"{r['tcHours']:.3f}",
@@ -588,7 +606,7 @@ class MemoriaCalculoGenerator:
 
         # Adopted row
         tc_table_data.append([
-            "TC ADOPTADO (promedio)",
+            f"TC ADOPTADO ({adopted_name})",
             f"{data['tc_adopted_hours']:.3f}",
             f"{data['tc_adopted_minutes']:.1f}",
             "Valor de diseño",
@@ -677,6 +695,18 @@ class MemoriaCalculoGenerator:
             story.append(Paragraph("Qp = 0.208 × A × Q / Tp  |  Tp = 0.6 × Tc", S["body_left"]))
             lam = "0.05 (Pampa Húmeda)" if data.get("use_pampa_lambda") else "0.20 (estándar)"
             story.append(Paragraph(f"Abstracción inicial: λ = {lam}", S["body"]))
+            if data.get("use_pampa_lambda"):
+                amc_note = (
+                    "Condición de humedad antecedente: Pampa Húmeda "
+                    "(λ=0.05, criterio regional INA)."
+                )
+            else:
+                amc_note = (
+                    "Condición de humedad antecedente asumida: AMC-II "
+                    "(condición media, λ=0.20 estándar). "
+                    "Para cuencas con suelo saturado considerar AMC-III."
+                )
+            story.append(Paragraph(amc_note, S["body"]))
 
         return story
 

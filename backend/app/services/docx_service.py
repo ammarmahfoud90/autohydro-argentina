@@ -516,15 +516,32 @@ class MemoriaCalculoDocxGenerator:
     def _build_section_tc(self, doc: Document, data: dict) -> None:
         self._h1(doc, "5. TIEMPO DE CONCENTRACIÓN (Tc)")
 
-        n = len(data.get("tc_results", []))
-        self._body(
-            doc,
-            f"Se calcul\u00f3 el tiempo de concentraci\u00f3n mediante {n} f\u00f3rmula(s). "
-            "El valor adoptado corresponde al promedio de los resultados obtenidos.",
+        tc_results = data.get("tc_results", [])
+        n = len(tc_results)
+        adopted_name = data.get("tc_adopted_formula_name") or (
+            tc_results[0]["formulaName"] if tc_results else "desconocida"
         )
+        is_user_selected = data.get("tc_adopted_is_user_selected", False)
+
+        if n == 1:
+            intro = (
+                f"Se calcul\u00f3 el tiempo de concentraci\u00f3n mediante la f\u00f3rmula {adopted_name}. "
+                f"El valor adoptado corresponde al resultado de dicha f\u00f3rmula."
+            )
+        elif is_user_selected:
+            intro = (
+                f"Se calcularon {n} f\u00f3rmulas de tiempo de concentraci\u00f3n. "
+                f"El valor adoptado corresponde a la f\u00f3rmula seleccionada: {adopted_name}."
+            )
+        else:
+            intro = (
+                f"Se calcularon {n} f\u00f3rmulas de tiempo de concentraci\u00f3n. "
+                f"El valor adoptado corresponde a la primera f\u00f3rmula disponible: {adopted_name}."
+            )
+        self._body(doc, intro)
 
         tc_data = [["F\u00f3rmula", "Tc (hr)", "Tc (min)", "Aplicabilidad"]]
-        for r in data.get("tc_results", []):
+        for r in tc_results:
             appl = r["applicability"]
             if len(appl) > 55:
                 appl = appl[:55] + "\u2026"
@@ -535,7 +552,7 @@ class MemoriaCalculoDocxGenerator:
                 appl,
             ])
         tc_data.append([
-            "TC ADOPTADO (promedio)",
+            f"TC ADOPTADO ({adopted_name})",
             f"{data['tc_adopted_hours']:.3f}",
             f"{data['tc_adopted_minutes']:.1f}",
             "Valor de dise\u00f1o",
@@ -590,6 +607,18 @@ class MemoriaCalculoDocxGenerator:
                 else "0.20 (est\u00e1ndar)"
             )
             self._body(doc, f"Abstracci\u00f3n inicial: \u03bb = {lam}")
+            if data.get("use_pampa_lambda"):
+                amc_note = (
+                    "Condici\u00f3n de humedad antecedente: Pampa H\u00fameda "
+                    "(\u03bb=0.05, criterio regional INA)."
+                )
+            else:
+                amc_note = (
+                    "Condici\u00f3n de humedad antecedente asumida: AMC-II "
+                    "(condici\u00f3n media, \u03bb=0.20 est\u00e1ndar). "
+                    "Para cuencas con suelo saturado considerar AMC-III."
+                )
+            self._body(doc, amc_note)
 
     # ── Section 6: Cálculos ───────────────────────────────────────────────────
 

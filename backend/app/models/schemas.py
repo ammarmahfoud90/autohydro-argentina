@@ -285,6 +285,8 @@ class CalculationResponse(BaseModel):
     tc_results: list[TcFormulaResult]
     tc_adopted_hours: float
     tc_adopted_minutes: float
+    tc_adopted_formula_name: Optional[str] = None
+    tc_adopted_is_user_selected: bool = False
 
     # Method-specific parameters
     runoff_coeff: Optional[float] = None
@@ -315,6 +317,12 @@ class CalculationResponse(BaseModel):
 
     # Infrastructure
     infrastructure_type: str
+
+    # SCS-CN Pampa lambda flag (echoed for report generation)
+    use_pampa_lambda: bool = False
+
+    # Calculation warnings (user-visible)
+    warnings: list[str] = Field(default_factory=list)
 
     # CN sensitivity analysis (SCS-CN method only)
     cn_sensitivity: Optional[list[CNSensitivityPoint]] = None

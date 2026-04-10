@@ -418,9 +418,24 @@ def run_calculation(payload: dict) -> dict:
                 f"(check required inputs for that formula)"
             )
         tc_adopted_hr = adopted["tcHours"]
+        tc_adopted_formula_name = adopted["formulaName"]
+        tc_adopted_is_user_selected = True
     else:
         tc_adopted_hr = tc_raw[0]["tcHours"]
+        tc_adopted_formula_name = tc_raw[0]["formulaName"]
+        tc_adopted_is_user_selected = False
     tc_adopted_min = tc_adopted_hr * 60.0
+
+    # ── Calculation warnings (user-visible) ──────────────────────────────
+    calc_warnings: list[str] = []
+
+    # Warn if adopted Tc exceeds IDF data range (most models cover ≤ 1440 min)
+    if tc_adopted_hr > 24.0:
+        calc_warnings.append(
+            f"⚠️ Tc adoptado ({tc_adopted_min:.0f} min) supera las 24 horas. "
+            f"La mayoría de los modelos IDF tienen validez hasta 1440 min. "
+            f"Verificar que la duración de tormenta no exceda el rango de datos IDF disponibles."
+        )
 
     tc_results = [TcFormulaResult(**r) for r in tc_raw]
 
@@ -439,6 +454,11 @@ def run_calculation(payload: dict) -> dict:
                 "(override_duration flag is False).",
                 req.duration_min,
                 tc_adopted_min,
+            )
+            calc_warnings.append(
+                f"⚠️ La duración de tormenta fue ajustada al Tc adoptado "
+                f"({tc_adopted_min:.0f} min). Si desea usar una duración diferente, "
+                f"active la opción de duración manual."
             )
     elif is_rational and req.override_duration:
         duration_override = True
@@ -564,6 +584,11 @@ def run_calculation(payload: dict) -> dict:
     # Rational (needs C)
     if req.runoff_coeff:
         Q_rat = rational_method(req.runoff_coeff, intensity, req.area_km2)
+        _rat_notes = "Aplicable a cuencas < 2–5 km²"
+        if req.area_km2 > 2.0:
+            _rat_notes += (
+                f" ⚠️ Área ingresada ({req.area_km2:.1f} km²) supera el límite recomendado para este método."
+            )
         method_comparison.append(
             MethodResult(
                 method="rational",
@@ -571,7 +596,7 @@ def run_calculation(payload: dict) -> dict:
                 peakFlow=round(Q_rat, 4),
                 tc=round(tc_adopted_hr, 4),
                 intensity=round(intensity, 2),
-                notes="Aplicable a cuencas < 2–5 km²",
+                notes=_rat_notes,
             )
         )
         Q_mod, K_comp = modified_rational_method(req.runoff_coeff, intensity, req.area_km2)
@@ -625,14 +650,18 @@ def run_calculation(payload: dict) -> dict:
         tc_results=tc_results,
         tc_adopted_hours=round(tc_adopted_hr, 4),
         tc_adopted_minutes=round(tc_adopted_min, 2),
+        tc_adopted_formula_name=tc_adopted_formula_name,
+        tc_adopted_is_user_selected=tc_adopted_is_user_selected,
         peak_flow_m3s=round(Q_primary, 4),
         specific_flow_m3s_km2=round(specific_flow, 4),
         method_comparison=method_comparison,
         risk_level=risk_level,
         risk_recommendations=risk_recs,
         infrastructure_type=req.infrastructure_type,
+        use_pampa_lambda=req.use_pampa_lambda,
         effective_duration_min=round(effective_duration_min, 2),
         duration_override=duration_override,
+        warnings=calc_warnings,
         **extra,
     )
 
