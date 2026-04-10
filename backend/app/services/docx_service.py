@@ -505,11 +505,33 @@ class MemoriaCalculoDocxGenerator:
                 "Para diseños definitivos, verificar con registros locales del SMN/INA.",
             )
 
-        self._body(doc, "Fórmula IDF aplicada:  i = (a × T^b) / (t + c)^d", justify=False)
+        self._body(doc, "F\u00f3rmula IDF aplicada:  i = (a \u00d7 T^b) / (t + c)^d", justify=False)
         self._body(
             doc,
-            "donde i [mm/hr], T [años], t [minutos] y a, b, c, d son coeficientes regionales.",
+            "donde i [mm/hr], T [a\u00f1os], t [minutos] y a, b, c, d son coeficientes regionales.",
         )
+
+        # ── TR reliability warning box ────────────────────────────────────
+        _tr_warn = next(
+            (w for w in data.get("warnings", []) if not w.startswith("\u26a0\ufe0f")), None
+        )
+        if _tr_warn:
+            warn_tbl = doc.add_table(rows=1, cols=1)
+            warn_cell = warn_tbl.rows[0].cells[0]
+            warn_cell.width = Cm(16)
+            _set_cell_bg(warn_cell, "fef3c7")
+            warn_para = warn_cell.paragraphs[0]
+            warn_para.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+            warn_para.paragraph_format.space_before = Pt(6)
+            warn_para.paragraph_format.space_after = Pt(6)
+            r_label = warn_para.add_run(
+                "ADVERTENCIA \u2014 Per\u00edodo de retorno seleccionado: "
+            )
+            r_label.font.bold = True
+            r_label.font.size = Pt(9)
+            r_text = warn_para.add_run(_tr_warn)
+            r_text.font.size = Pt(9)
+            doc.add_paragraph()
 
     # ── Section 4: Tc ─────────────────────────────────────────────────────────
 

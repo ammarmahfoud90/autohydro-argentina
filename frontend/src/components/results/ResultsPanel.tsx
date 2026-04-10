@@ -361,8 +361,25 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
     }
   }
 
+  const trWarnings = (results.warnings ?? []).filter(w => !w.startsWith('⚠️'));
+
   return (
     <div className="space-y-4">
+
+      {/* ── TR reliability warning banner ────────────────────────────────── */}
+      {trWarnings.length > 0 && (
+        <div className="rounded-lg border border-amber-400 bg-amber-50 dark:bg-amber-900/30 dark:border-amber-500 px-4 py-3">
+          <div className="flex items-start gap-3">
+            <span className="text-amber-600 dark:text-amber-400 mt-0.5 shrink-0 text-lg leading-none">⚠️</span>
+            <div className="text-sm">
+              <p className="font-bold text-amber-900 dark:text-amber-200 mb-1">Advertencia sobre período de retorno</p>
+              {trWarnings.map((w, i) => (
+                <p key={i} className="text-amber-800 dark:text-amber-300">{w}</p>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Summary ─────────────────────────────────────────────────────── */}
       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">

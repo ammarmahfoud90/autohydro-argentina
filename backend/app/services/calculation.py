@@ -497,6 +497,15 @@ def run_calculation(payload: dict) -> dict:
 
     intensity = idf_result["intensity_mm_hr"]
 
+    # ── TR reliability warning ────────────────────────────────────────────
+    if not is_manual:
+        _limits = locality.get("limitations", {})
+        _max_reliable = _limits.get("max_reliable_return_period")
+        if _max_reliable is not None and req.return_period > _max_reliable:
+            _tr_warn = _limits.get("tr_warning_text")
+            if _tr_warn:
+                calc_warnings.append(_tr_warn)
+
     # ── 4. CN (if SCS-CN) ────────────────────────────────────────────────
     cn_value: Optional[float] = None
     cn_verified: Optional[bool] = None

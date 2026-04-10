@@ -562,6 +562,29 @@ class MemoriaCalculoGenerator:
                     S["body"],
                 ))
 
+        # ── TR reliability warning box ────────────────────────────────────
+        _tr_warn = next(
+            (w for w in data.get("warnings", []) if not w.startswith("⚠️")), None
+        )
+        if _tr_warn:
+            story.append(Spacer(1, 0.4 * cm))
+            _tr_tbl = Table(
+                [[Paragraph(
+                    f"<b>⚠️ ADVERTENCIA — Período de retorno seleccionado</b><br/>{_tr_warn}",
+                    S["body"],
+                )]],
+                colWidths=[16 * cm],
+            )
+            _tr_tbl.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#fef3c7")),
+                ("BOX", (0, 0), (-1, -1), 1, _ORANGE),
+                ("TOPPADDING", (0, 0), (-1, -1), 8),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                ("LEFTPADDING", (0, 0), (-1, -1), 10),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+            ]))
+            story.append(_tr_tbl)
+
         return story
 
     # ── Section 4: Tc ─────────────────────────────────────────────────────

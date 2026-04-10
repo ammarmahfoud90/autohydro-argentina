@@ -141,6 +141,10 @@ export interface HydrologyResult {
   // classical rational; = user-provided duration_min in override mode).
   effective_duration_min?: number;
   duration_override?: boolean;
+  tc_adopted_formula_name?: string;
+  tc_adopted_is_user_selected?: boolean;
+  use_pampa_lambda?: boolean;
+  warnings?: string[];
 }
 
 export interface CNSensitivityPoint {
