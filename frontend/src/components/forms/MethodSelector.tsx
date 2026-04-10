@@ -79,7 +79,7 @@ export function MethodSelector({ formData, onChange, province }: Props) {
       {/* Runoff coefficient — Rational methods */}
       {(formData.method === 'rational' || formData.method === 'modified_rational') && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="runoff-coeff-number" className="block text-sm font-medium text-gray-700 mb-1">
             {t('calculator.runoffCoefficient')} (C) <span className="text-red-500">*</span>
           </label>
           <div className="flex items-center gap-3">
@@ -93,6 +93,7 @@ export function MethodSelector({ formData, onChange, province }: Props) {
               className="flex-1 accent-blue-600"
             />
             <input
+              id="runoff-coeff-number"
               type="number"
               min={0.05}
               max={1.0}

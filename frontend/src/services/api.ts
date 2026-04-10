@@ -1,15 +1,25 @@
 import type { HydrologyInput, HydrologyResult, InterpretationResponse } from '../types';
 import type { IDFLocality } from '../types/idf';
+import { fetchWithRetry } from '../utils/fetchWithRetry';
 
 const BASE = import.meta.env.VITE_API_URL ?? '';
 
-async function request<T>(path: string, options?: RequestInit): Promise<T> {
+async function request<T>(
+  path: string,
+  options?: RequestInit,
+  onRetry?: (attempt: number) => void,
+): Promise<T> {
   try {
-    const res = await fetch(`${BASE}${path}`, {
-      headers: { 'Content-Type': 'application/json' },
-      signal: AbortSignal.timeout(30000),
-      ...options,
-    });
+    const res = await fetchWithRetry(
+      `${BASE}${path}`,
+      {
+        headers: { 'Content-Type': 'application/json' },
+        ...options,
+      },
+      3,
+      3000,
+      onRetry,
+    );
     if (!res.ok) {
       const body = await res.json().catch(() => ({ detail: res.statusText }));
       throw new Error(body.detail ?? `HTTP ${res.status}`);
@@ -27,6 +37,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 
 export async function calculateHydrology(
   input: HydrologyInput,
+  onRetry?: (attempt: number) => void,
 ): Promise<HydrologyResult> {
   // Map camelCase form state to snake_case API payload
   const payload = {
@@ -56,7 +67,7 @@ export async function calculateHydrology(
   return request<HydrologyResult>('/api/calculate', {
     method: 'POST',
     body: JSON.stringify(payload),
-  });
+  }, onRetry);
 }
 
 export async function interpretResults(

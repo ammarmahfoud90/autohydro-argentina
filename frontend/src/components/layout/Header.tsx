@@ -396,7 +396,7 @@ export function Header() {
           <button
             onClick={() => setMenuOpen((o) => !o)}
             className="p-2 rounded-md hover:bg-white/10 transition-colors text-white"
-            aria-label="Toggle navigation menu"
+            aria-label={t('nav.toggleMenu')}
           >
             <AnimatePresence mode="wait" initial={false}>
               {menuOpen ? (

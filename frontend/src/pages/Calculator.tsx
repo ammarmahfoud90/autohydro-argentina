@@ -172,7 +172,7 @@ function NavButtons({
           type="button"
           onClick={onBack}
           disabled={!onBack}
-          className="px-5 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-sm font-medium text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:invisible transition-colors"
+          className="px-5 py-3 rounded-lg border border-gray-300 dark:border-slate-600 text-sm font-medium text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:invisible transition-colors"
         >
           {t('common.back')}
         </button>
@@ -181,7 +181,7 @@ function NavButtons({
           onClick={() => !nextDisabled && !loading && onNext?.()}
           disabled={nextDisabled || loading}
           aria-disabled={nextDisabled || loading}
-          className={`px-6 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 ${
+          className={`px-6 py-3 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 ${
             nextDisabled && !loading
               ? 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-60'
               : 'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50'
@@ -322,11 +322,19 @@ export function Calculator() {
     }
   }, [formData.duration_min, rationalLocksDuration]);
 
+  const [retryAttempt, setRetryAttempt] = useState(0);
+
   const mutation = useMutation({
-    mutationFn: calculateHydrology,
+    mutationFn: (input: HydrologyInput) => {
+      setRetryAttempt(0);
+      return calculateHydrology(input, setRetryAttempt);
+    },
     onSuccess: (data) => {
       setResults(data);
       setStep(4);
+    },
+    onSettled: () => {
+      setRetryAttempt(0);
     },
   });
 
@@ -823,7 +831,7 @@ export function Calculator() {
             <ReportOptions formData={formData} onChange={update} />
 
             {errorMessage && (
-              <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 flex items-start gap-2">
+              <div role="alert" className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 flex items-start gap-2">
                 <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -840,6 +848,15 @@ export function Calculator() {
               loading={mutation.isPending}
               validationHint={step3Hint}
             />
+            {mutation.isPending && retryAttempt > 0 && (
+              <div className="flex items-center justify-center gap-2 text-sm text-amber-600 dark:text-amber-400 mt-2">
+                <svg className="animate-spin w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                </svg>
+                El servidor está iniciando, por favor aguardá... (intento {retryAttempt}/3)
+              </div>
+            )}
           </div>
         )}
 

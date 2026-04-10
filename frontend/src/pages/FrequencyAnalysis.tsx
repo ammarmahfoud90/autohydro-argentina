@@ -330,7 +330,7 @@ export function FrequencyAnalysis() {
           )}
 
           {apiError && (
-            <p className="mt-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">{apiError}</p>
+            <p role="alert" className="mt-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">{apiError}</p>
           )}
 
           {(() => {

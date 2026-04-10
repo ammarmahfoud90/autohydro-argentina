@@ -10,6 +10,7 @@ export async function fetchWithRetry(
   options: RequestInit,
   retries = 3,
   baseDelay = 3000,
+  onRetry?: (attempt: number) => void,
 ): Promise<Response> {
   let lastError: Error = new Error('No attempts made');
 
@@ -31,6 +32,8 @@ export async function fetchWithRetry(
       await new Promise<void>((resolve) =>
         setTimeout(resolve, baseDelay * (attempt + 1)),
       );
+      // Notify caller which attempt number we are about to try (1-based)
+      onRetry?.(attempt + 2);
     }
   }
 

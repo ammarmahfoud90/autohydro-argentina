@@ -18,6 +18,8 @@ interface Props {
 export function CNSelector({ categories, soilGroup, onChange }: Props) {
   const { t } = useTranslation();
   const [activeGroup, setActiveGroup] = useState<CNGroup>(CN_CATEGORY_GROUPS[0]);
+  // Local string state for area_percent during editing — keyed by land_use id to survive add/remove
+  const [areaStrs, setAreaStrs] = useState<Record<string, string>>({});
 
   const totalPct = categories.reduce((s, c) => s + c.area_percent, 0);
   const compositeCN = categories.length > 0
@@ -176,16 +178,25 @@ export function CNSelector({ categories, soilGroup, onChange }: Props) {
                   <div className="flex items-center gap-3">
                     {/* Area percent */}
                     <div className="flex items-center gap-1.5 flex-1">
-                      <label className="text-xs text-gray-500 shrink-0">% área:</label>
+                      <label htmlFor={`area-pct-${cat.land_use}`} className="text-xs text-gray-500 shrink-0">% área:</label>
                       <input
-                        type="number"
-                        min={0.1}
-                        max={100}
-                        step={0.1}
-                        value={cat.area_percent}
-                        onChange={(e) =>
-                          updateCategory(idx, { area_percent: Number(e.target.value) })
-                        }
+                        id={`area-pct-${cat.land_use}`}
+                        type="text"
+                        inputMode="decimal"
+                        value={cat.land_use in areaStrs ? areaStrs[cat.land_use] : String(cat.area_percent)}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          if (raw === '' || /^\d*\.?\d*$/.test(raw)) {
+                            setAreaStrs((s) => ({ ...s, [cat.land_use]: raw }));
+                          }
+                        }}
+                        onBlur={() => {
+                          const raw = areaStrs[cat.land_use] ?? String(cat.area_percent);
+                          const n = parseFloat(raw);
+                          const clamped = Number.isFinite(n) ? Math.min(Math.max(n, 0.1), 100) : cat.area_percent;
+                          updateCategory(idx, { area_percent: clamped });
+                          setAreaStrs((s) => { const next = { ...s }; delete next[cat.land_use]; return next; });
+                        }}
                         className="w-20 rounded border border-gray-300 px-2 py-1 text-xs text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
                       />
                     </div>

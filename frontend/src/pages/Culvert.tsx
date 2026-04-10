@@ -242,16 +242,13 @@ export function Culvert() {
     });
 
     try {
-      let attempt = 0;
       const res = await fetchWithRetry(
         `${BASE}/api/hydraulics/culvert`,
         { method: 'POST', headers: { 'Content-Type': 'application/json' }, body },
         3,
         3000,
+        (attempt) => setLoadingAttempt(attempt),
       );
-      // Update attempt counter so UI shows retry messages on slow cold starts
-      // We approximate by incrementing on each retry delay tick
-      void attempt; // suppress lint
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({ detail: res.statusText }));
         throw new Error(errBody.detail ?? `HTTP ${res.status}`);
@@ -393,11 +390,12 @@ export function Culvert() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Length */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
+              <label htmlFor="culvert-length" className="block text-xs font-medium text-gray-600 mb-1">
                 Longitud de la alcantarilla
               </label>
               <div className="relative">
                 <input
+                  id="culvert-length"
                   type="number" min="0" step="0.5"
                   value={length}
                   onChange={(e) => setLength(e.target.value)}
@@ -410,11 +408,12 @@ export function Culvert() {
 
             {/* Slope */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
+              <label htmlFor="culvert-slope" className="block text-xs font-medium text-gray-600 mb-1">
                 Pendiente del conducto
               </label>
               <div className="relative">
                 <input
+                  id="culvert-slope"
                   type="number" min="0" step="0.001"
                   value={slope}
                   onChange={(e) => setSlope(e.target.value)}
@@ -427,11 +426,12 @@ export function Culvert() {
 
             {/* Headwater max */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
+              <label htmlFor="culvert-hwmax" className="block text-xs font-medium text-gray-600 mb-1">
                 Tirante aguas arriba admisible (HW máx.)
               </label>
               <div className="relative">
                 <input
+                  id="culvert-hwmax"
                   type="number" min="0" step="0.1"
                   value={hwMax}
                   onChange={(e) => setHwMax(e.target.value)}
@@ -444,11 +444,12 @@ export function Culvert() {
 
             {/* Tailwater */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">
+              <label htmlFor="culvert-tailwater" className="block text-xs font-medium text-gray-600 mb-1">
                 Nivel aguas abajo (cola)
               </label>
               <div className="relative">
                 <input
+                  id="culvert-tailwater"
                   type="number" min="0" step="0.1"
                   value={tailwater}
                   onChange={(e) => setTailwater(e.target.value)}
@@ -493,7 +494,7 @@ export function Culvert() {
           </div>
 
           {error && (
-            <div className="mt-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+            <div role="alert" className="mt-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
               {error}
             </div>
           )}
@@ -512,7 +513,7 @@ export function Culvert() {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                   </svg>
                   {loadingAttempt > 0
-                    ? `Iniciando servidor… (intento ${loadingAttempt + 1}/3)`
+                    ? `Iniciando servidor… (intento ${loadingAttempt}/3)`
                     : 'Calculando…'}
                 </span>
               ) : 'Dimensionar alcantarilla'}

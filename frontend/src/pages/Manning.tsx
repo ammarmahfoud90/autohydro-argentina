@@ -370,12 +370,16 @@ export function Manning() {
               </select>
               {nPreset === 'Personalizado' ? (
                 <input
-                  type="number"
-                  min={0.005}
-                  max={0.2}
-                  step={0.001}
+                  type="text"
+                  inputMode="decimal"
                   value={customN}
-                  onChange={(e) => { setCustomN(e.target.value); setManningN(parseFloat(e.target.value)); }}
+                  onChange={(e) => setCustomN(e.target.value)}
+                  onBlur={(e) => {
+                    const n = parseFloat(e.target.value);
+                    const clamped = Number.isFinite(n) ? Math.min(Math.max(n, 0.005), 0.2) : manningN;
+                    setCustomN(String(clamped));
+                    setManningN(clamped);
+                  }}
                   className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Ingresá n (ej: 0.025)"
                 />

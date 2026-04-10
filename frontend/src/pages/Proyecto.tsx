@@ -221,16 +221,17 @@ function PillButtons<T extends string | number>({
 }
 
 function InputField({
-  label, value, unit, onChange, step = '0.001', min = '0',
+  id, label, value, unit, onChange, step = '0.001', min = '0',
 }: {
-  label: string; value: string; unit?: string;
+  id?: string; label: string; value: string; unit?: string;
   onChange: (v: string) => void; step?: string; min?: string;
 }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">{label}</label>
+      <label htmlFor={id} className="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">{label}</label>
       <div className="flex items-center gap-1">
         <input
+          id={id}
           type="number"
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -643,15 +644,16 @@ export function Proyecto() {
           <Card title="Paso 2 — Parámetros de cuenca">
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <InputField label="Área de la cuenca (A) *" value={area} unit="km²" onChange={setArea} step="0.01" />
-                <InputField label="Longitud del cauce (L) *" value={length} unit="km" onChange={setLength} step="0.01" />
-                <InputField label="Pendiente media (S) *" value={slope} unit="m/m" onChange={setSlope} step="0.001" />
+                <InputField id="proyecto-area" label="Área de la cuenca (A) *" value={area} unit="km²" onChange={setArea} step="0.01" />
+                <InputField id="proyecto-length" label="Longitud del cauce (L) *" value={length} unit="km" onChange={setLength} step="0.01" />
+                <InputField id="proyecto-slope" label="Pendiente media (S) *" value={slope} unit="m/m" onChange={setSlope} step="0.001" />
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">
+                  <label htmlFor="proyecto-elev-diff" className="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">
                     Desnivel total (H) <span className="text-gray-400">— para California</span>
                   </label>
                   <div className="flex items-center gap-1">
                     <input
+                      id="proyecto-elev-diff"
                       type="number"
                       value={elevDiff}
                       onChange={(e) => setElevDiff(e.target.value)}
@@ -663,11 +665,12 @@ export function Proyecto() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">
+                  <label htmlFor="proyecto-avg-elev" className="block text-xs font-medium text-gray-600 dark:text-slate-400 mb-1">
                     Elevación media sobre salida (Hm) <span className="text-gray-400">— para Giandotti</span>
                   </label>
                   <div className="flex items-center gap-1">
                     <input
+                      id="proyecto-avg-elev"
                       type="number"
                       value={avgElev}
                       onChange={(e) => setAvgElev(e.target.value)}
@@ -695,7 +698,7 @@ export function Proyecto() {
                     <span>Permeable 0.05</span><span>Impermeable 0.95</span>
                   </div>
                 </div>
-                <InputField label="Número de curva (CN)" value={cn} onChange={setCn} step="1" min="40" />
+                <InputField id="proyecto-cn" label="Número de curva (CN)" value={cn} onChange={setCn} step="1" min="40" />
               </div>
 
               <div>
@@ -962,30 +965,30 @@ export function Proyecto() {
               <div className="grid grid-cols-2 gap-3">
                 {channelType === 'rectangular' && (
                   <>
-                    <InputField label="Ancho (b)" value={chWidth} unit="m" onChange={setChWidth} />
-                    <InputField label="Tirante (y)" value={chDepth} unit="m" onChange={setChDepth} />
+                    <InputField id="proyecto-ch-width" label="Ancho (b)" value={chWidth} unit="m" onChange={setChWidth} />
+                    <InputField id="proyecto-ch-depth" label="Tirante (y)" value={chDepth} unit="m" onChange={setChDepth} />
                   </>
                 )}
                 {channelType === 'trapezoidal' && (
                   <>
-                    <InputField label="Ancho de fondo (b)" value={chBottom} unit="m" onChange={setChBottom} />
-                    <InputField label="Tirante (y)" value={chDepth} unit="m" onChange={setChDepth} />
-                    <InputField label="Talud (z : 1)" value={chSideSlope} unit="" onChange={setChSideSlope} step="0.1" />
+                    <InputField id="proyecto-ch-bottom" label="Ancho de fondo (b)" value={chBottom} unit="m" onChange={setChBottom} />
+                    <InputField id="proyecto-ch-depth" label="Tirante (y)" value={chDepth} unit="m" onChange={setChDepth} />
+                    <InputField id="proyecto-ch-sideslope" label="Talud (z : 1)" value={chSideSlope} unit="" onChange={setChSideSlope} step="0.1" />
                   </>
                 )}
                 {channelType === 'circular' && (
                   <>
-                    <InputField label="Diámetro (D)" value={chDiameter} unit="m" onChange={setChDiameter} step="0.1" />
-                    <InputField label="Tirante (y)" value={chDepth} unit="m" onChange={setChDepth} />
+                    <InputField id="proyecto-ch-diameter" label="Diámetro (D)" value={chDiameter} unit="m" onChange={setChDiameter} step="0.1" />
+                    <InputField id="proyecto-ch-depth" label="Tirante (y)" value={chDepth} unit="m" onChange={setChDepth} />
                   </>
                 )}
                 {channelType === 'triangular' && (
                   <>
-                    <InputField label="Talud (z : 1)" value={chTriSlope} unit="" onChange={setChTriSlope} step="0.1" />
-                    <InputField label="Tirante (y)" value={chDepth} unit="m" onChange={setChDepth} />
+                    <InputField id="proyecto-ch-trislope" label="Talud (z : 1)" value={chTriSlope} unit="" onChange={setChTriSlope} step="0.1" />
+                    <InputField id="proyecto-ch-depth" label="Tirante (y)" value={chDepth} unit="m" onChange={setChDepth} />
                   </>
                 )}
-                <InputField label="Pendiente (S)" value={chSlope} unit="m/m" onChange={setChSlope} step="0.0001" />
+                <InputField id="proyecto-ch-slope" label="Pendiente (S)" value={chSlope} unit="m/m" onChange={setChSlope} step="0.0001" />
               </div>
 
               {/* Manning n */}
@@ -1006,10 +1009,18 @@ export function Proyecto() {
                 </select>
                 {nPreset === 'Personalizado' ? (
                   <input
-                    type="number" min={0.005} max={0.2} step={0.001}
+                    type="text"
+                    inputMode="decimal"
                     value={customN}
-                    onChange={(e) => { setCustomN(e.target.value); setManningN(parseFloat(e.target.value)); }}
+                    onChange={(e) => setCustomN(e.target.value)}
+                    onBlur={(e) => {
+                      const n = parseFloat(e.target.value);
+                      const clamped = Number.isFinite(n) ? Math.min(Math.max(n, 0.005), 0.2) : manningN;
+                      setCustomN(String(clamped));
+                      setManningN(clamped);
+                    }}
                     className="w-full rounded-lg border border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="ej: 0.025"
                   />
                 ) : (
                   <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 px-3 py-1.5 text-sm text-blue-800 dark:text-blue-300 font-semibold">

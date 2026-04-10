@@ -9,7 +9,8 @@
     "calculator": "Calculator",
     "calculators": "Calculators",
     "sources": "Sources",
-    "about": "About"
+    "about": "About",
+    "toggleMenu": "Toggle navigation menu"
   },
   "steps": {
     "location": "Location",

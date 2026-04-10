@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { HydrologyInput } from '../../types';
 
 const INPUT_CLASS =
-  'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm ' +
+  'w-full rounded-lg border border-gray-300 px-3 py-3 text-sm shadow-sm ' +
   'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500';
 
 // Allow only characters that can appear in a positive decimal number.
@@ -15,6 +15,7 @@ interface Props {
 }
 
 interface FieldProps {
+  id?: string;
   label: string;
   unit?: string;
   required?: boolean;
@@ -22,10 +23,10 @@ interface FieldProps {
   children: React.ReactNode;
 }
 
-function Field({ label, unit, required, hint, children }: FieldProps) {
+function Field({ id, label, unit, required, hint, children }: FieldProps) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
         {label}
         {required && <span className="text-red-500 ml-0.5">*</span>}
         {unit && <span className="ml-1 text-gray-400 font-normal">({unit})</span>}
@@ -135,8 +136,9 @@ export function BasinInputs({ formData, onChange }: Props) {
   return (
     <div className="space-y-5">
       {/* Location description */}
-      <Field label={t('calculator.location')} hint={t('calculator.locationPlaceholder')}>
+      <Field id="basin-location" label={t('calculator.location')} hint={t('calculator.locationPlaceholder')}>
         <input
+          id="basin-location"
           type="text"
           value={formData.location_description}
           placeholder={t('calculator.locationPlaceholder')}
@@ -147,8 +149,9 @@ export function BasinInputs({ formData, onChange }: Props) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Area */}
-        <Field label={t('calculator.area')} unit={t('calculator.areaUnit')} required>
+        <Field id="basin-area" label={t('calculator.area')} unit={t('calculator.areaUnit')} required>
           <input
+            id="basin-area"
             type="text"
             inputMode="decimal"
             value={area}
@@ -160,8 +163,9 @@ export function BasinInputs({ formData, onChange }: Props) {
         </Field>
 
         {/* Channel length */}
-        <Field label={t('calculator.channelLength')} unit={t('calculator.channelLengthUnit')} required>
+        <Field id="basin-length" label={t('calculator.channelLength')} unit={t('calculator.channelLengthUnit')} required>
           <input
+            id="basin-length"
             type="text"
             inputMode="decimal"
             value={length}
@@ -174,12 +178,14 @@ export function BasinInputs({ formData, onChange }: Props) {
 
         {/* Slope — the field that triggered this rewrite */}
         <Field
+          id="basin-slope"
           label={t('calculator.avgSlope')}
           unit={t('calculator.avgSlopeUnit')}
           required
           hint="Ej: 0.005 = 0.5%"
         >
           <input
+            id="basin-slope"
             type="text"
             inputMode="decimal"
             value={slope}
@@ -192,11 +198,13 @@ export function BasinInputs({ formData, onChange }: Props) {
 
         {/* Elevation difference (optional — California formula) */}
         <Field
+          id="basin-elev-diff"
           label={t('calculator.elevationDiff')}
           unit={t('calculator.elevationDiffUnit')}
           hint={`${t('common.optional')} — fórmula California`}
         >
           <input
+            id="basin-elev-diff"
             type="text"
             inputMode="decimal"
             value={elevDiff}
@@ -209,11 +217,13 @@ export function BasinInputs({ formData, onChange }: Props) {
 
         {/* Average elevation (optional — Giandotti formula) */}
         <Field
+          id="basin-avg-elev"
           label={t('calculator.avgElevation')}
           unit={t('calculator.avgElevationUnit')}
           hint={`${t('common.optional')} — fórmula Giandotti`}
         >
           <input
+            id="basin-avg-elev"
             type="text"
             inputMode="decimal"
             value={avgElev}
