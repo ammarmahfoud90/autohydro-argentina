@@ -1,5 +1,7 @@
+from typing import Optional
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
+from pydantic import BaseModel, Field
 from app.services.report_service import MemoriaCalculoGenerator
 from app.services.docx_service import MemoriaCalculoDocxGenerator
 from app.services.excel_service import ExcelReportGenerator
@@ -10,42 +12,32 @@ from app.services.proyecto_report_service import ProyectoReportGenerator
 router = APIRouter()
 
 
+class ReportRequest(BaseModel):
+    calculationData: dict
+    projectName: str = Field(default="Proyecto Hidrológico", max_length=100)
+    location: Optional[str] = Field(default=None, max_length=200)
+    clientName: Optional[str] = Field(default=None, max_length=100)
+    language: str = Field(default="es", max_length=10)
+    aiInterpretation: str = Field(default="", max_length=10000)
+    fetchAISections: bool = True
+    basinPolygon: Optional[list] = None
+    comparisonData: Optional[dict] = None
+
+
 @router.post("/report")
-def generate_report(payload: dict) -> StreamingResponse:
+def generate_report(req: ReportRequest) -> StreamingResponse:
     """
     Generate PDF Memoria de Cálculo Hidrológico.
-
-    Request body:
-        calculationData: full CalculationResponse dict
-        projectName: project name for cover page
-        location: location description
-        clientName: optional client name
-        language: "es" | "en"
-        aiInterpretation: optional pre-generated AI interpretation text
-        fetchAISections: if true, calls Claude to generate report text sections
     """
-    calculation_data = payload.get("calculationData", {})
-    project_name = payload.get("projectName", "Proyecto Hidrológico")
-    location = payload.get("location", calculation_data.get("city", "Argentina"))
-    client_name = payload.get("clientName")
-    language = payload.get("language", "es")
-    ai_interpretation = payload.get("aiInterpretation", "")
-    fetch_ai = payload.get("fetchAISections", True)
-    basin_polygon = payload.get("basinPolygon")  # list of [lat, lng] or None
-    comparison_data = payload.get("comparisonData")  # optional second scenario
-
-    if not calculation_data:
-        raise HTTPException(
-            status_code=422, detail="calculationData is required"
-        )
+    location = req.location or req.calculationData.get("city", "Argentina")
 
     # Optionally fetch AI-generated section text
     ai_sections: dict = {}
-    if fetch_ai:
+    if req.fetchAISections:
         try:
             ai_sections = generate_report_sections(
-                {**calculation_data, "language": language},
-                language=language,
+                {**req.calculationData, "language": req.language},
+                language=req.language,
             )
         except Exception:
             # Non-fatal — report generates with placeholder text
@@ -53,18 +45,18 @@ def generate_report(payload: dict) -> StreamingResponse:
 
     try:
         generator = MemoriaCalculoGenerator(
-            project_name=project_name,
+            project_name=req.projectName,
             location=location,
-            client=client_name,
-            language=language,
+            client=req.clientName,
+            language=req.language,
         )
 
         buffer = generator.generate(
-            calculation_data=calculation_data,
-            ai_interpretation=ai_interpretation,
+            calculation_data=req.calculationData,
+            ai_interpretation=req.aiInterpretation,
             ai_recommendations=ai_sections,
-            basin_polygon=basin_polygon,
-            comparison_data=comparison_data,
+            basin_polygon=req.basinPolygon,
+            comparison_data=req.comparisonData,
         )
     except Exception as exc:
         raise HTTPException(
@@ -74,7 +66,7 @@ def generate_report(payload: dict) -> StreamingResponse:
 
     safe_name = "".join(
         c if c.isalnum() or c in (" ", "-", "_") else "_"
-        for c in project_name[:40]
+        for c in req.projectName[:40]
     ).strip()
     filename = f"memoria_calculo_{safe_name}.pdf"
 
@@ -85,48 +77,47 @@ def generate_report(payload: dict) -> StreamingResponse:
     )
 
 
+class DocxReportRequest(BaseModel):
+    calculationData: dict
+    projectName: str = Field(default="Proyecto Hidrológico", max_length=100)
+    location: Optional[str] = Field(default=None, max_length=200)
+    clientName: Optional[str] = Field(default=None, max_length=100)
+    language: str = Field(default="es", max_length=10)
+    aiInterpretation: str = Field(default="", max_length=10000)
+    fetchAISections: bool = True
+    basinPolygon: Optional[list] = None
+
+
 @router.post("/report/docx")
-def generate_report_docx(payload: dict) -> StreamingResponse:
+def generate_report_docx(req: DocxReportRequest) -> StreamingResponse:
     """
     Generate Word (.docx) Memoria de Cálculo Hidrológico.
-
-    Accepts the same request body as POST /report (PDF).
     """
-    calculation_data = payload.get("calculationData", {})
-    project_name = payload.get("projectName", "Proyecto Hidrológico")
-    location = payload.get("location", calculation_data.get("city", "Argentina"))
-    client_name = payload.get("clientName")
-    language = payload.get("language", "es")
-    ai_interpretation = payload.get("aiInterpretation", "")
-    fetch_ai = payload.get("fetchAISections", True)
-    basin_polygon = payload.get("basinPolygon")  # list of [lat, lng] or None
-
-    if not calculation_data:
-        raise HTTPException(status_code=422, detail="calculationData is required")
+    location = req.location or req.calculationData.get("city", "Argentina")
 
     ai_sections: dict = {}
-    if fetch_ai:
+    if req.fetchAISections:
         try:
             ai_sections = generate_report_sections(
-                {**calculation_data, "language": language},
-                language=language,
+                {**req.calculationData, "language": req.language},
+                language=req.language,
             )
         except Exception:
             ai_sections = {}
 
     try:
         generator = MemoriaCalculoDocxGenerator(
-            project_name=project_name,
+            project_name=req.projectName,
             location=location,
-            client=client_name,
-            language=language,
+            client=req.clientName,
+            language=req.language,
         )
 
         buffer = generator.generate(
-            calculation_data=calculation_data,
-            ai_interpretation=ai_interpretation,
+            calculation_data=req.calculationData,
+            ai_interpretation=req.aiInterpretation,
             ai_recommendations=ai_sections,
-            basin_polygon=basin_polygon,
+            basin_polygon=req.basinPolygon,
         )
     except Exception as exc:
         raise HTTPException(
@@ -136,7 +127,7 @@ def generate_report_docx(payload: dict) -> StreamingResponse:
 
     safe_name = "".join(
         c if c.isalnum() or c in (" ", "-", "_") else "_"
-        for c in project_name[:40]
+        for c in req.projectName[:40]
     ).strip()
     filename = f"memoria_calculo_{safe_name}.docx"
 
@@ -147,29 +138,27 @@ def generate_report_docx(payload: dict) -> StreamingResponse:
     )
 
 
+class ExcelReportRequest(BaseModel):
+    calculationData: dict
+    projectName: str = Field(default="Proyecto Hidrológico", max_length=100)
+    location: Optional[str] = Field(default=None, max_length=200)
+    clientName: Optional[str] = Field(default=None, max_length=100)
+
+
 @router.post("/report/excel")
-def generate_report_excel(payload: dict) -> StreamingResponse:
+def generate_report_excel(req: ExcelReportRequest) -> StreamingResponse:
     """
     Generate Excel (.xlsx) Memoria de Cálculo Hidrológico.
-
-    Accepts the same request body as POST /report (PDF).
-    Returns a professional multi-sheet workbook.
     """
-    calculation_data = payload.get("calculationData", {})
-    project_name = payload.get("projectName", "Proyecto Hidrológico")
-    location = payload.get("location", calculation_data.get("city", "Argentina"))
-    client_name = payload.get("clientName")
-
-    if not calculation_data:
-        raise HTTPException(status_code=422, detail="calculationData is required")
+    location = req.location or req.calculationData.get("city", "Argentina")
 
     try:
         generator = ExcelReportGenerator(
-            project_name=project_name,
+            project_name=req.projectName,
             location=location,
-            client=client_name,
+            client=req.clientName,
         )
-        buffer = generator.generate(calculation_data=calculation_data)
+        buffer = generator.generate(calculation_data=req.calculationData)
     except Exception as exc:
         raise HTTPException(
             status_code=500,
@@ -178,7 +167,7 @@ def generate_report_excel(payload: dict) -> StreamingResponse:
 
     safe_name = "".join(
         c if c.isalnum() or c in (" ", "-", "_") else "_"
-        for c in project_name[:40]
+        for c in req.projectName[:40]
     ).strip()
     filename = f"memoria_calculo_{safe_name}.xlsx"
 
@@ -189,34 +178,26 @@ def generate_report_excel(payload: dict) -> StreamingResponse:
     )
 
 
+class ManningReportRequest(BaseModel):
+    params: dict = Field(default_factory=dict)
+    result: dict
+    projectName: str = Field(default="Proyecto Hidráulico", max_length=100)
+    location: str = Field(default="Argentina", max_length=200)
+    clientName: Optional[str] = Field(default=None, max_length=100)
+
+
 @router.post("/report/manning-pdf")
-def generate_manning_pdf(payload: dict) -> StreamingResponse:
+def generate_manning_pdf(req: ManningReportRequest) -> StreamingResponse:
     """
     Generate PDF Memoria de Cálculo Hidráulico for a Manning channel calculation.
-
-    Request body:
-        params: channel input parameters (channel_type, manning_n, slope, dimensions, etc.)
-        result: calculation result (flow_m3s, velocity_ms, area_m2, etc.)
-        projectName: project name
-        location: location description
-        clientName: optional client name
     """
-    params = payload.get("params", {})
-    result = payload.get("result", {})
-    project_name = payload.get("projectName", "Proyecto Hidráulico")
-    location = payload.get("location", "Argentina")
-    client_name = payload.get("clientName")
-
-    if not result:
-        raise HTTPException(status_code=422, detail="result is required")
-
     try:
         generator = ManningReportGenerator(
-            project_name=project_name,
-            location=location,
-            client=client_name,
+            project_name=req.projectName,
+            location=req.location,
+            client=req.clientName,
         )
-        buffer = generator.generate(params=params, result=result)
+        buffer = generator.generate(params=req.params, result=req.result)
     except Exception as exc:
         raise HTTPException(
             status_code=500,
@@ -225,7 +206,7 @@ def generate_manning_pdf(payload: dict) -> StreamingResponse:
 
     safe_name = "".join(
         c if c.isalnum() or c in (" ", "-", "_") else "_"
-        for c in project_name[:40]
+        for c in req.projectName[:40]
     ).strip()
     filename = f"memoria_hidraulica_manning_{safe_name}.pdf"
 
@@ -236,35 +217,29 @@ def generate_manning_pdf(payload: dict) -> StreamingResponse:
     )
 
 
+class ProyectoReportRequest(BaseModel):
+    proyectoData: dict
+    projectName: str = Field(default="Proyecto Hidráulico", max_length=100)
+    comitente: str = Field(default="", max_length=100)
+    profesional: str = Field(default="", max_length=100)
+    fecha: str = Field(default="", max_length=50)
+    notas: str = Field(default="", max_length=2000)
+
+
 @router.post("/report/proyecto-pdf")
-def generate_proyecto_pdf(payload: dict) -> StreamingResponse:
+def generate_proyecto_pdf(req: ProyectoReportRequest) -> StreamingResponse:
     """
     Generate consolidated PDF Memoria de Cálculo Hidrológico-Hidráulica.
-
-    Request body:
-        proyectoData: full ProyectoHidraulico object (paso1..paso6)
-        projectName: project name for cover page
-        comitente: client/company name
-        profesional: responsible engineer
-        fecha: date string
-        notas: optional notes
     """
-    proyecto_data = payload.get("proyectoData", {})
-    project_name = payload.get("projectName", "Proyecto Hidráulico")
-    comitente = payload.get("comitente", "")
-    profesional = payload.get("profesional", "")
-    fecha = payload.get("fecha", "")
-    notas = payload.get("notas", "")
-
     try:
         generator = ProyectoReportGenerator(
-            project_name=project_name,
-            comitente=comitente,
-            profesional=profesional,
-            fecha=fecha,
-            notas=notas,
+            project_name=req.projectName,
+            comitente=req.comitente,
+            profesional=req.profesional,
+            fecha=req.fecha,
+            notas=req.notas,
         )
-        buffer = generator.generate(proyecto_data)
+        buffer = generator.generate(req.proyectoData)
     except Exception as exc:
         raise HTTPException(
             status_code=500,
@@ -273,7 +248,7 @@ def generate_proyecto_pdf(payload: dict) -> StreamingResponse:
 
     safe_name = "".join(
         c if c.isalnum() or c in (" ", "-", "_") else "_"
-        for c in project_name[:40]
+        for c in req.projectName[:40]
     ).strip()
     filename = f"memoria_proyecto_{safe_name}.pdf"
 
@@ -284,32 +259,25 @@ def generate_proyecto_pdf(payload: dict) -> StreamingResponse:
     )
 
 
+class CulvertReportRequest(BaseModel):
+    result: dict
+    projectName: str = Field(default="Proyecto Hidráulico", max_length=100)
+    location: str = Field(default="Argentina", max_length=200)
+    clientName: Optional[str] = Field(default=None, max_length=100)
+
+
 @router.post("/report/culvert-pdf")
-def generate_culvert_pdf(payload: dict) -> StreamingResponse:
+def generate_culvert_pdf(req: CulvertReportRequest) -> StreamingResponse:
     """
     Generate PDF Memoria de Cálculo Hidráulico for a culvert sizing calculation.
-
-    Request body:
-        result: culvert calculation result (design_flow_m3s, recommended, alternatives, etc.)
-        projectName: project name
-        location: location description
-        clientName: optional client name
     """
-    result = payload.get("result", {})
-    project_name = payload.get("projectName", "Proyecto Hidráulico")
-    location = payload.get("location", "Argentina")
-    client_name = payload.get("clientName")
-
-    if not result:
-        raise HTTPException(status_code=422, detail="result is required")
-
     try:
         generator = CulvertReportGenerator(
-            project_name=project_name,
-            location=location,
-            client=client_name,
+            project_name=req.projectName,
+            location=req.location,
+            client=req.clientName,
         )
-        buffer = generator.generate(result=result)
+        buffer = generator.generate(result=req.result)
     except Exception as exc:
         raise HTTPException(
             status_code=500,
@@ -318,7 +286,7 @@ def generate_culvert_pdf(payload: dict) -> StreamingResponse:
 
     safe_name = "".join(
         c if c.isalnum() or c in (" ", "-", "_") else "_"
-        for c in project_name[:40]
+        for c in req.projectName[:40]
     ).strip()
     filename = f"memoria_hidraulica_alcantarilla_{safe_name}.pdf"
 

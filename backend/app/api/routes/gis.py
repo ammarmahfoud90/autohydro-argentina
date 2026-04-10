@@ -59,6 +59,9 @@ def export_shapefile(payload: dict) -> StreamingResponse:
     )
 
 
+MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB
+
+
 @router.post("/gis/import-shapefile")
 async def import_shapefile(file: UploadFile = File(...)) -> dict:
     """
@@ -75,7 +78,12 @@ async def import_shapefile(file: UploadFile = File(...)) -> dict:
         raise HTTPException(status_code=422, detail="No se recibió archivo")
 
     fname_lower = file.filename.lower()
-    content = await file.read()
+    content = await file.read(MAX_UPLOAD_BYTES + 1)
+    if len(content) > MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail="Archivo demasiado grande. Máximo permitido: 10 MB.",
+        )
 
     if not content:
         raise HTTPException(status_code=422, detail="El archivo está vacío")

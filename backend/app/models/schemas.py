@@ -32,6 +32,16 @@ class ManualIDFTable(BaseModel):
                 )
         return self
 
+    @model_validator(mode="after")
+    def check_intensity_bounds(self) -> "ManualIDFTable":
+        for row in self.intensities_mm_hr:
+            for v in row:
+                if v > 5000:
+                    raise ValueError(
+                        "Intensidad > 5000 mm/hr no es físicamente realista."
+                    )
+        return self
+
 
 _VALID_FORMULA_TYPES = {"talbot3", "talbot2", "sherman", "bernard"}
 

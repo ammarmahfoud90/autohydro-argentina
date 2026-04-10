@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from fastapi import APIRouter, HTTPException, Request
+from pydantic import BaseModel, Field
+from app.core.limiter import limiter
 from app.models.schemas import CalculationRequest, CalculationResponse
 from app.services.calculation import run_calculation
 from app.services.idf_service import get_localities, get_locality
@@ -10,9 +11,9 @@ router = APIRouter()
 
 
 class _IDFTableValidationRequest(BaseModel):
-    durations_min: list[float]
-    return_periods_years: list[int]
-    intensities_mm_hr: list[list[float]]
+    durations_min: list[float] = Field(..., min_length=2, max_length=50)
+    return_periods_years: list[int] = Field(..., min_length=2, max_length=20)
+    intensities_mm_hr: list[list[float]] = Field(..., min_length=2, max_length=50)
 
 
 @router.get("/localities")
@@ -48,7 +49,10 @@ def get_cn_categories() -> dict:
 
 
 @router.post("/idf/validate-table")
-def validate_idf_table_endpoint(body: _IDFTableValidationRequest) -> dict:
+@limiter.limit("5/minute")
+async def validate_idf_table_endpoint(
+    request: Request, body: _IDFTableValidationRequest
+) -> dict:
     """
     Validate an IDF table for physical consistency.
 
@@ -67,7 +71,8 @@ def validate_idf_table_endpoint(body: _IDFTableValidationRequest) -> dict:
 
 
 @router.post("/calculate", response_model=CalculationResponse)
-def calculate(req: CalculationRequest) -> dict:
+@limiter.limit("30/minute")
+async def calculate(request: Request, req: CalculationRequest) -> dict:
     """Run full hydrological calculation."""
     try:
         return run_calculation(req.model_dump())

@@ -61,6 +61,7 @@ The model for each locality is stored in the JSON field "idf_model".
 
 import json
 import math
+import re
 from pathlib import Path
 from typing import Optional
 
@@ -192,11 +193,10 @@ def get_locality(locality_id: str) -> dict:
     Raises:
         ValueError: If locality_id is not found.
     """
+    if not re.fullmatch(r'[a-z0-9_]+', locality_id):
+        raise ValueError("Invalid locality_id format.")
     if locality_id not in _LOCALITIES:
-        available = sorted(_LOCALITIES.keys())
-        raise ValueError(
-            f"Locality '{locality_id}' not found. Available localities: {available}"
-        )
+        raise ValueError(f"Locality '{locality_id}' not found.")
     return _LOCALITIES[locality_id]
 
 

@@ -11,13 +11,14 @@ class Settings(BaseSettings):
     @property
     def cors_origins_list(self) -> List[str]:
         try:
-            parsed = json.loads(self.CORS_ORIGINS)
-            if isinstance(parsed, list):
-                return [o.strip() for o in parsed]
-        except (json.JSONDecodeError, ValueError):
-            pass
-        # Comma-separated fallback: "https://a.com,https://b.com"
-        return [o.strip() for o in self.CORS_ORIGINS.split(",")]
+            origins = json.loads(self.CORS_ORIGINS)
+            if not isinstance(origins, list):
+                raise ValueError("CORS_ORIGINS must be a JSON array")
+            return [o.strip() for o in origins]
+        except json.JSONDecodeError:
+            raise ValueError(
+                f"CORS_ORIGINS is not valid JSON: {self.CORS_ORIGINS}"
+            )
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
