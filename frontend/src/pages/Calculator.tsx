@@ -241,6 +241,8 @@ export function Calculator() {
   const [selectedLocality, setSelectedLocality] = useState<IDFLocality | null>(null);
   const [results, setResults] = useState<HydrologyResult | null>(null);
   const [basinPolygon, setBasinPolygon] = useState<[number, number][] | undefined>(undefined);
+  // Local string state so the user can freely clear and retype the duration field
+  const [durationStr, setDurationStr] = useState(() => String(formData.duration_min));
 
   // Sync URL params whenever formData changes (skip if caseStudyData — URL stays clean)
   useEffect(() => {
@@ -312,6 +314,13 @@ export function Calculator() {
       setFormData((prev) => ({ ...prev, duration_min: rounded }));
     }
   }, [rationalLocksDuration, adoptedTcMin, formData.duration_min]);
+
+  // Keep durationStr in sync when duration_min is set externally (rational lock)
+  useEffect(() => {
+    if (rationalLocksDuration) {
+      setDurationStr(String(formData.duration_min));
+    }
+  }, [formData.duration_min, rationalLocksDuration]);
 
   const mutation = useMutation({
     mutationFn: calculateHydrology,
@@ -560,10 +569,20 @@ export function Calculator() {
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
-                    value={formData.duration_min}
+                    value={durationStr}
                     onChange={(e) => {
-                      const val = Math.round(Number(e.target.value));
-                      if (val >= durationMin && val <= durationMax) update({ duration_min: val });
+                      const raw = e.target.value;
+                      setDurationStr(raw);
+                      const val = Math.round(Number(raw));
+                      if (raw !== '' && !isNaN(val)) update({ duration_min: val });
+                    }}
+                    onBlur={() => {
+                      const val = Math.round(Number(durationStr));
+                      const clamped = (isNaN(val) || durationStr === '')
+                        ? durationMin
+                        : Math.min(Math.max(val, durationMin), durationMax);
+                      setDurationStr(String(clamped));
+                      update({ duration_min: clamped });
                     }}
                     min={durationMin}
                     max={durationMax}

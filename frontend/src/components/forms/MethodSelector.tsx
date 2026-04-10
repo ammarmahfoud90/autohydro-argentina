@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { HydroMethod, HydrologyInput, InfrastructureType } from '../../types';
 
@@ -29,6 +30,16 @@ const INFRA_TYPES: InfrastructureType[] = [
 export function MethodSelector({ formData, onChange, province }: Props) {
   const isPampaProvince = province != null && PAMPA_PROVINCES.has(province);
   const { t } = useTranslation();
+
+  // Local string state for the runoff coefficient number input
+  const [runoffStr, setRunoffStr] = useState(() => String(formData.runoff_coeff ?? 0.6));
+  const runoffOwnChange = useRef(false);
+  useEffect(() => {
+    if (!runoffOwnChange.current) {
+      setRunoffStr(String(formData.runoff_coeff ?? 0.6));
+    }
+    runoffOwnChange.current = false;
+  }, [formData.runoff_coeff]);
 
   return (
     <div className="space-y-5">
@@ -86,8 +97,26 @@ export function MethodSelector({ formData, onChange, province }: Props) {
               min={0.05}
               max={1.0}
               step={0.01}
-              value={formData.runoff_coeff ?? 0.6}
-              onChange={(e) => onChange({ runoff_coeff: Number(e.target.value) })}
+              value={runoffStr}
+              onChange={(e) => {
+                const raw = e.target.value;
+                setRunoffStr(raw);
+                const val = Number(raw);
+                if (raw !== '' && !isNaN(val)) {
+                  runoffOwnChange.current = true;
+                  onChange({ runoff_coeff: val });
+                }
+              }}
+              onBlur={() => {
+                const val = Number(runoffStr);
+                const clamped = (isNaN(val) || runoffStr === '')
+                  ? 0.6
+                  : Math.min(Math.max(val, 0.05), 1.0);
+                const rounded = Math.round(clamped * 100) / 100;
+                setRunoffStr(String(rounded));
+                runoffOwnChange.current = true;
+                onChange({ runoff_coeff: rounded });
+              }}
               className="w-20 rounded-lg border border-gray-300 px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
