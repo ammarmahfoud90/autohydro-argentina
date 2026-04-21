@@ -3,7 +3,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -31,6 +31,22 @@ body {
 
 #root {
   min-height: 100vh;
+}
+
+/* Webkit scrollbar — subtle, matches dark nav */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 118, 160, 0.35);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 118, 160, 0.6);
 }
 
 @keyframes slideIndeterminate {

@@ -181,7 +181,7 @@ export function Header() {
     <header
       className={`sticky top-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-[#071224] shadow-[0_4px_24px_rgba(0,0,0,0.5)]'
+          ? 'bg-[#071224]/95 backdrop-blur-md shadow-[0_4px_24px_rgba(0,0,0,0.5)] border-b border-white/5'
           : 'bg-[#0a1628]'
       }`}
     >
@@ -293,7 +293,7 @@ export function Header() {
                     </div>
                     <div>
                       <div className={`text-sm font-semibold ${pathname === PROYECTO_ITEM.to ? 'text-violet-700 dark:text-violet-300' : 'text-gray-800 dark:text-slate-200'}`}>
-                        🗂 {PROYECTO_ITEM.label}
+                        {PROYECTO_ITEM.label}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">{PROYECTO_ITEM.desc}</div>
                     </div>
@@ -463,7 +463,7 @@ export function Header() {
                 onClick={() => setMenuOpen(false)}
                 className={`block pl-5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${pathname === PROYECTO_ITEM.to ? 'bg-white/15 text-white' : 'text-violet-300 hover:bg-white/10 hover:text-white'}`}
               >
-                🗂 {PROYECTO_ITEM.label}
+                {PROYECTO_ITEM.label}
               </Link>
               <Link to="/sources" onClick={() => setMenuOpen(false)}
                 className={`block px-3 py-2 rounded-md text-sm font-medium transition-colors ${pathname === '/sources' ? 'bg-white/15 text-white' : 'text-blue-200 hover:bg-white/10 hover:text-white'}`}>

@@ -23,8 +23,9 @@ const TOOLS = [
           d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
       </svg>
     ),
-    color: 'from-blue-500/10 to-blue-600/5 hover:from-blue-500/20 hover:to-blue-600/10',
-    iconBg: 'bg-blue-500/10 text-blue-600',
+    color: 'from-blue-600/15 to-indigo-600/10 hover:from-blue-600/25 hover:to-indigo-600/18',
+    iconBg: 'bg-blue-500/20 text-blue-500 dark:text-blue-400',
+    shadowHover: '0 8px 30px rgba(59,130,246,0.12)',
   },
   {
     labelKey: 'home.toolManningLabel',
@@ -35,8 +36,9 @@ const TOOLS = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
       </svg>
     ),
-    color: 'from-cyan-500/10 to-cyan-600/5 hover:from-cyan-500/20 hover:to-cyan-600/10',
-    iconBg: 'bg-cyan-500/10 text-cyan-600',
+    color: 'from-cyan-500/15 to-teal-600/10 hover:from-cyan-500/25 hover:to-teal-600/18',
+    iconBg: 'bg-cyan-500/20 text-cyan-500 dark:text-cyan-400',
+    shadowHover: '0 8px 30px rgba(6,182,212,0.12)',
   },
   {
     labelKey: 'home.toolCulvertsLabel',
@@ -47,8 +49,9 @@ const TOOLS = [
         <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
       </svg>
     ),
-    color: 'from-indigo-500/10 to-indigo-600/5 hover:from-indigo-500/20 hover:to-indigo-600/10',
-    iconBg: 'bg-indigo-500/10 text-indigo-600',
+    color: 'from-indigo-600/15 to-violet-600/10 hover:from-indigo-600/25 hover:to-violet-600/18',
+    iconBg: 'bg-indigo-500/20 text-indigo-500 dark:text-indigo-400',
+    shadowHover: '0 8px 30px rgba(99,102,241,0.12)',
   },
   {
     labelKey: 'home.toolHyetogramLabel',
@@ -60,9 +63,17 @@ const TOOLS = [
           d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
       </svg>
     ),
-    color: 'from-violet-500/10 to-violet-600/5 hover:from-violet-500/20 hover:to-violet-600/10',
-    iconBg: 'bg-violet-500/10 text-violet-600',
+    color: 'from-violet-500/15 to-purple-600/10 hover:from-violet-500/25 hover:to-purple-600/18',
+    iconBg: 'bg-violet-500/20 text-violet-500 dark:text-violet-400',
+    shadowHover: '0 8px 30px rgba(167,139,250,0.12)',
   },
+];
+
+const STATS = [
+  { value: '18', label: 'Localidades IDF' },
+  { value: '11', label: 'Provincias' },
+  { value: '8+', label: 'Herramientas' },
+  { value: 'MIT', label: 'Open Source' },
 ];
 
 const fadeUp = {
@@ -75,47 +86,59 @@ const stagger = {
 };
 
 function LocalityCard({ loc, index }: { loc: LocalitySummary; index: number }) {
+  const isWarning = !!loc.warning_badge;
   return (
     <motion.div
       variants={fadeUp}
       whileHover={{ scale: 1.02, y: -4 }}
       transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-      className={`bg-white dark:bg-slate-800 rounded-2xl border p-5 cursor-default ${
-        loc.warning_badge
-          ? 'border-amber-200 dark:border-amber-700 hover:border-amber-300 hover:shadow-[0_8px_30px_rgba(251,191,36,0.15)]'
-          : 'border-gray-200 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-600 hover:shadow-[0_8px_30px_rgba(59,130,246,0.12)]'
-      } shadow-sm transition-all duration-300`}
+      className={`bg-white dark:bg-slate-800 rounded-2xl border overflow-hidden shadow-sm transition-all duration-300 cursor-default ${
+        isWarning
+          ? 'border-amber-200 dark:border-amber-700 hover:border-amber-300 hover:shadow-[0_8px_30px_rgba(251,191,36,0.12)]'
+          : 'border-gray-200 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-600 hover:shadow-[0_8px_30px_rgba(59,130,246,0.10)]'
+      }`}
     >
-      <div className="flex items-start justify-between gap-2 mb-3">
-        <div>
-          <div className="flex items-center gap-1.5 mb-0.5">
-            <span className="text-xs font-medium text-gray-400">{String(index + 1).padStart(2, '0')}</span>
+      {/* Colored top stripe */}
+      <div
+        className={`h-0.5 w-full ${
+          isWarning
+            ? 'bg-gradient-to-r from-amber-400 to-amber-300'
+            : 'bg-gradient-to-r from-blue-500 to-indigo-400'
+        }`}
+      />
+
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-2 mb-3">
+          <div>
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <span className="text-xs font-medium text-gray-400">{String(index + 1).padStart(2, '0')}</span>
+            </div>
+            <h3 className="font-semibold text-gray-900 dark:text-slate-100 text-sm leading-snug">{loc.name}</h3>
+            <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5 font-medium">{loc.province}</p>
           </div>
-          <h3 className="font-semibold text-gray-900 dark:text-slate-100 text-sm leading-snug">{loc.name}</h3>
-          <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5 font-medium">{loc.province}</p>
+          {loc.warning_badge && (
+            <span className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full shrink-0">
+              {loc.warning_badge}
+            </span>
+          )}
         </div>
-        {loc.warning_badge && (
-          <span className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full shrink-0">
-            {loc.warning_badge}
-          </span>
-        )}
+        <dl className="space-y-1.5 text-xs text-gray-600 dark:text-slate-300">
+          <div className="flex justify-between gap-2">
+            <dt className="text-gray-400 dark:text-slate-500 shrink-0">Fuente</dt>
+            <dd className="text-right max-w-[62%] leading-tight text-gray-600 dark:text-slate-300">{loc.source_document}</dd>
+          </div>
+          <div className="flex justify-between gap-2">
+            <dt className="text-gray-400 dark:text-slate-500 shrink-0">Período</dt>
+            <dd className="text-right text-gray-600 dark:text-slate-300">{loc.series_period}</dd>
+          </div>
+          {loc.max_reliable_return_period != null && (
+            <div className="flex justify-between gap-2 pt-1.5 border-t border-gray-100 dark:border-slate-700">
+              <dt className="text-gray-400 dark:text-slate-500 shrink-0">TR máximo confiable</dt>
+              <dd className="font-semibold text-gray-800 dark:text-slate-200">{loc.max_reliable_return_period} años</dd>
+            </div>
+          )}
+        </dl>
       </div>
-      <dl className="space-y-1.5 text-xs text-gray-600 dark:text-slate-300">
-        <div className="flex justify-between gap-2">
-          <dt className="text-gray-400 dark:text-slate-500 shrink-0">Fuente</dt>
-          <dd className="text-right max-w-[62%] leading-tight text-gray-600 dark:text-slate-300">{loc.source_document}</dd>
-        </div>
-        <div className="flex justify-between gap-2">
-          <dt className="text-gray-400 dark:text-slate-500 shrink-0">Período</dt>
-          <dd className="text-right text-gray-600 dark:text-slate-300">{loc.series_period}</dd>
-        </div>
-        {loc.max_reliable_return_period != null && (
-          <div className="flex justify-between gap-2 pt-1.5 border-t border-gray-100 dark:border-slate-700">
-            <dt className="text-gray-400 dark:text-slate-500 shrink-0">TR máximo confiable</dt>
-            <dd className="font-semibold text-gray-800 dark:text-slate-200">{loc.max_reliable_return_period} años</dd>
-          </div>
-        )}
-      </dl>
     </motion.div>
   );
 }
@@ -138,13 +161,22 @@ export function Home() {
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <section
         className="relative overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #0a1628 0%, #0d2a5e 45%, #1a1260 100%)' }}
+        style={{ background: 'linear-gradient(135deg, #050d1f 0%, #0a1f4e 45%, #0f0b3d 100%)' }}
       >
-        {/* Subtle background pattern */}
+        {/* Dot grid overlay */}
         <div
-          className="absolute inset-0 opacity-[0.04]"
+          className="absolute inset-0 pointer-events-none"
           style={{
-            backgroundImage: 'radial-gradient(circle at 20% 50%, #3b82f6 0%, transparent 50%), radial-gradient(circle at 80% 20%, #6366f1 0%, transparent 50%)',
+            backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.055) 1px, transparent 1px)',
+            backgroundSize: '28px 28px',
+          }}
+        />
+        {/* Radial color blobs */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              'radial-gradient(ellipse at 15% 55%, rgba(59,130,246,0.20) 0%, transparent 55%), radial-gradient(ellipse at 85% 15%, rgba(99,102,241,0.16) 0%, transparent 55%)',
           }}
         />
 
@@ -169,7 +201,13 @@ export function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-4xl sm:text-5xl font-bold leading-tight text-white mb-4"
+            className="text-5xl sm:text-6xl font-bold leading-[1.1] mb-4"
+            style={{
+              background: 'linear-gradient(135deg, #ffffff 0%, #bfdbfe 55%, #93c5fd 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
           >
             AutoHydro Argentina
           </motion.h1>
@@ -204,7 +242,11 @@ export function Home() {
               data-tour="iniciar-calculo"
               to="/calculator"
               className="inline-flex items-center gap-2 font-semibold px-7 py-3 rounded-xl text-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-              style={{ background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)', color: 'white', boxShadow: '0 4px 20px rgba(79,70,229,0.4)' }}
+              style={{
+                background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)',
+                color: 'white',
+                boxShadow: '0 4px 24px rgba(79,70,229,0.45)',
+              }}
             >
               {t('home.cta')}
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -217,6 +259,21 @@ export function Home() {
             >
               {t('home.ctaSources')}
             </Link>
+          </motion.div>
+
+          {/* Stats strip */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.65 }}
+            className="flex flex-wrap gap-x-10 gap-y-4 mt-12 pt-8 border-t border-white/10"
+          >
+            {STATS.map(({ value, label }) => (
+              <div key={label}>
+                <div className="text-2xl font-bold text-white">{value}</div>
+                <div className="text-xs text-blue-300/70 mt-0.5 font-medium">{label}</div>
+              </div>
+            ))}
           </motion.div>
         </div>
       </section>
@@ -231,10 +288,13 @@ export function Home() {
           className="flex items-start justify-between gap-4 mb-6 flex-wrap"
         >
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-2">
-              {t('home.localitiesTitle')}
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-slate-400">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-1 h-6 bg-blue-500 rounded-full shrink-0" />
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
+                {t('home.localitiesTitle')}
+              </h2>
+            </div>
+            <p className="text-sm text-gray-500 dark:text-slate-400 ml-4">
               {t('home.localitiesSubtitle')}
             </p>
           </div>
@@ -242,7 +302,7 @@ export function Home() {
           <div className="flex items-center gap-1 bg-gray-100 dark:bg-slate-700 rounded-lg p-1 shrink-0">
             <button
               onClick={() => setLocalitiesView('map')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
                 localitiesView === 'map'
                   ? 'bg-white dark:bg-slate-600 text-gray-900 dark:text-slate-100 shadow-sm'
                   : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
@@ -255,7 +315,7 @@ export function Home() {
             </button>
             <button
               onClick={() => setLocalitiesView('list')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
                 localitiesView === 'list'
                   ? 'bg-white dark:bg-slate-600 text-gray-900 dark:text-slate-100 shadow-sm'
                   : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
@@ -319,8 +379,11 @@ export function Home() {
             transition={{ duration: 0.5 }}
             className="mb-8"
           >
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-2">{t('home.calculatorsTitle')}</h2>
-            <p className="text-sm text-gray-500 dark:text-slate-400">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-1 h-6 bg-blue-500 rounded-full shrink-0" />
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-slate-100">{t('home.calculatorsTitle')}</h2>
+            </div>
+            <p className="text-sm text-gray-500 dark:text-slate-400 ml-4">
               {t('home.calculatorsSubtitle')}
             </p>
           </motion.div>
@@ -338,7 +401,7 @@ export function Home() {
                   to={tool.href}
                   className={`group flex items-start gap-4 bg-gradient-to-br ${tool.color} border border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500 rounded-2xl p-5 transition-all duration-300 hover:shadow-md`}
                 >
-                  <div className={`shrink-0 w-10 h-10 rounded-xl ${tool.iconBg} flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}>
+                  <div className={`shrink-0 w-11 h-11 rounded-xl ${tool.iconBg} flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}>
                     {tool.icon}
                   </div>
                   <div className="flex-1 min-w-0">
