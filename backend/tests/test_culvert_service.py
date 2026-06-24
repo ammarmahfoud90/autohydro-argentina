@@ -16,12 +16,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from app.services.culvert_service import (
     calculate_culvert,
-    _areal_reduction_k,
     _inlet_control_hw,
     _outlet_control_hw,
     _check_circular,
     _check_box,
-    _areal_reduction_k,
 )
 
 
