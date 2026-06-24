@@ -70,6 +70,7 @@ function App() {
               <Route path="/calculadora/alcantarilla" element={<Culvert />} />
               <Route path="/alcantarilla" element={<Culvert />} />
               <Route path="/culverts" element={<Navigate to="/calculadora/alcantarilla" replace />} />
+              <Route path="/culvert" element={<Navigate to="/calculadora/alcantarilla" replace />} />
               <Route path="/calculadora/hietograma" element={<Hyetograph />} />
               <Route path="/calculadora/frecuencia" element={<FrequencyAnalysis />} />
               <Route path="/calculadora/transito" element={<FloodRouting />} />

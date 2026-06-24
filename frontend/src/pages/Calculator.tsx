@@ -48,11 +48,19 @@ const VALID_METHODS = new Set<HydrologyInput['method']>([
   'scs_cn',
 ]);
 
-function hydrateFormFromParams(params: URLSearchParams): HydrologyInput | null {
+export function hydrateFormFromParams(params: URLSearchParams): HydrologyInput | null {
   const localidad = params.get('localidad');
-  if (!localidad) return null;
   const methodRaw = params.get('method') as HydrologyInput['method'] | null;
   const method = methodRaw && VALID_METHODS.has(methodRaw) ? methodRaw : DEFAULT_FORM.method;
+
+  if (!localidad) {
+    // No locality: only hydrate if a valid method was explicitly provided via ?method=
+    if (method !== DEFAULT_FORM.method) {
+      return { ...DEFAULT_FORM, method };
+    }
+    return null;
+  }
+
   return {
     ...DEFAULT_FORM,
     locality_id: localidad,

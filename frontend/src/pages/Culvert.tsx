@@ -50,6 +50,8 @@ interface SizeResult {
   ok: boolean;
   area_m2: number;
   culvert_insufficient?: boolean;
+  /** HW/D > 3: result is an unphysical extrapolation — display as invalid */
+  hwd_out_of_range?: boolean;
 }
 
 // ── SVG Diagrams ──────────────────────────────────────────────────────────────
@@ -625,23 +627,32 @@ export function Culvert() {
                   <tbody>
                     {result.alternatives.map((alt, i) => {
                       const isRec = alt.label === rec.label;
+                      const outOfRange = alt.hwd_out_of_range ?? false;
                       return (
                         <tr key={i} className={`border-b border-gray-100 ${isRec ? 'bg-blue-50' : ''}`}>
                           <td className="py-2 pr-3 font-medium text-gray-800">
                             {alt.label}
                             {isRec && <span className="ml-2 text-xs text-blue-600 font-semibold">← recomendado</span>}
                           </td>
-                          <td className="text-right py-2 px-3 tabular-nums">{alt.hw_m.toFixed(3)}</td>
+                          <td className="text-right py-2 px-3 tabular-nums">
+                            {outOfRange
+                              ? <span className="text-xs text-gray-400 italic">fuera de rango</span>
+                              : alt.hw_m.toFixed(3)}
+                          </td>
                           <td className="text-right py-2 px-3 tabular-nums">{alt.hwd_ratio.toFixed(2)}</td>
                           <td className="text-right py-2 px-3 tabular-nums">{alt.outlet_velocity_ms.toFixed(2)}</td>
                           <td className="text-center py-2 pl-3">
-                            <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                              alt.control === 'inlet'
-                                ? 'bg-orange-100 text-orange-700'
-                                : 'bg-purple-100 text-purple-700'
-                            }`}>
-                              {alt.control === 'inlet' ? 'Entrada' : 'Salida'}
-                            </span>
+                            {outOfRange ? (
+                              <span className="text-xs text-gray-400">—</span>
+                            ) : (
+                              <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                                alt.control === 'inlet'
+                                  ? 'bg-orange-100 text-orange-700'
+                                  : 'bg-purple-100 text-purple-700'
+                              }`}>
+                                {alt.control === 'inlet' ? 'Entrada' : 'Salida'}
+                              </span>
+                            )}
                           </td>
                           <td className="text-center py-2 pl-3">
                             <span className={`text-xs font-semibold ${alt.ok ? 'text-green-600' : 'text-red-500'}`}>

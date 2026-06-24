@@ -274,6 +274,8 @@ def _check_circular(
 
     hwd_ratio = hw / D
     insufficient = hwd_ratio > 4.0
+    # HW/D > 3 means the result is an unphysical extrapolation; flag for display.
+    hwd_out_of_range = hwd_ratio > 3.0
     ok = hw <= hw_max and not insufficient
 
     return {
@@ -281,6 +283,7 @@ def _check_circular(
         "diameter_m": D,
         "label": f"Ø {D:.2f} m",
         "culvert_insufficient": insufficient,
+        "hwd_out_of_range": hwd_out_of_range,
         "hw_m": round(hw, 3),
         "hw_ic_m": round(hw_ic, 3),
         "hw_oc_m": round(hw_oc, 3),
@@ -319,11 +322,13 @@ def _check_box(
     D_ref = H
     hwd_ratio = hw / D_ref
     insufficient = hwd_ratio > 4.0
+    hwd_out_of_range = hwd_ratio > 3.0
     ok = hw <= hw_max and not insufficient
 
     return {
         "type": "box",
         "culvert_insufficient": insufficient,
+        "hwd_out_of_range": hwd_out_of_range,
         "width_m": W,
         "height_m": H,
         "label": f"{W:.1f}×{H:.1f} m",

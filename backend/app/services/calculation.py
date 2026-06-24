@@ -170,11 +170,16 @@ def rational_method(
 
 def _areal_reduction_k(A_km2: float) -> float:
     """
-    Témez areal reduction factor.
+    Areal Reduction Factor (ARF) for the Modified Rational Method.
 
-    K = 1 - (A^0.1 - 1) / 7    (A in km²)
+    K_ARF = 1 - (A^0.1 - 1) / 7    (A in km²)
 
+    K_ARF < 1: reduces peak discharge to account for the fact that
+    design-storm rainfall is not simultaneously uniform over the whole basin.
     Clipped to [0.1, 1.0] for physical validity.
+
+    Note: this is an areal reduction factor (K_ARF < 1), NOT the Témez
+    temporal uniformity coefficient (which would be > 1).
     """
     k = 1.0 - (A_km2 ** 0.1 - 1.0) / 7.0
     return max(0.1, min(1.0, k))
@@ -590,9 +595,41 @@ def run_calculation(payload: dict) -> dict:
     # ── 7. Method comparison (compute all three always) ──────────────────
     method_comparison: list[MethodResult] = []
 
+    # BUG 1 FIX: For Rational and Modified Rational, storm duration = Tc adopted.
+    # When the primary method is SCS-CN, `intensity` was computed at the user's
+    # storm duration (effective_duration_min), which may differ from tc_adopted_min.
+    # Re-evaluate IDF at tc_adopted_min so each comparison row uses the intensity
+    # that corresponds to its own storm duration.
+    if not is_rational and abs(tc_adopted_min - effective_duration_min) > 0.5:
+        if is_manual:
+            if req.manual_idf_table is not None:
+                _rat_idf = manual_idf_service.calculate_intensity_from_table(
+                    req.manual_idf_table,
+                    return_period=float(req.return_period),
+                    duration_min=tc_adopted_min,
+                )
+            else:
+                _rat_idf = manual_idf_service.calculate_intensity_from_formula(
+                    req.manual_idf_formula,  # type: ignore[arg-type]
+                    return_period=float(req.return_period),
+                    duration_min=tc_adopted_min,
+                )
+        else:
+            _rat_idf = idf_calculate_intensity(
+                req.locality_id,
+                return_period=float(req.return_period),
+                duration_min=tc_adopted_min,
+                station_name=getattr(req, "station_name", None),
+                station_id=getattr(req, "station_id", None),
+            )
+        intensity_for_rational = _rat_idf["intensity_mm_hr"]
+    else:
+        # Primary method is already Rational/ModRational (duration == Tc) — reuse.
+        intensity_for_rational = intensity
+
     # Rational (needs C)
     if req.runoff_coeff:
-        Q_rat = rational_method(req.runoff_coeff, intensity, req.area_km2)
+        Q_rat = rational_method(req.runoff_coeff, intensity_for_rational, req.area_km2)
         _rat_notes = "Aplicable a cuencas < 2–5 km²"
         if req.area_km2 > 2.0:
             _rat_notes += (
@@ -604,19 +641,19 @@ def run_calculation(payload: dict) -> dict:
                 methodName="Método Racional",
                 peakFlow=round(Q_rat, 4),
                 tc=round(tc_adopted_hr, 4),
-                intensity=round(intensity, 2),
+                intensity=round(intensity_for_rational, 2),
                 notes=_rat_notes,
             )
         )
-        Q_mod, K_comp = modified_rational_method(req.runoff_coeff, intensity, req.area_km2)
+        Q_mod, K_comp = modified_rational_method(req.runoff_coeff, intensity_for_rational, req.area_km2)
         method_comparison.append(
             MethodResult(
                 method="modified_rational",
                 methodName="Racional Modificado",
                 peakFlow=round(Q_mod, 4),
                 tc=round(tc_adopted_hr, 4),
-                intensity=round(intensity, 2),
-                notes=f"K={K_comp:.3f} (reducción areal Témez)",
+                intensity=round(intensity_for_rational, 2),
+                notes=f"K_ARF={K_comp:.3f} (Factor de reducción areal)",
             )
         )
 

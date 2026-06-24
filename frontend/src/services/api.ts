@@ -74,10 +74,21 @@ export async function interpretResults(
   result: HydrologyResult,
   language: string,
 ): Promise<InterpretationResponse> {
-  return request<InterpretationResponse>('/api/interpret', {
+  // The backend's InterpretRequest schema expects { results: {...}, language }.
+  // Use a short 10-second timeout — interpretation is optional and slow failures
+  // should not block the results page.
+  const BASE = import.meta.env.VITE_API_URL ?? '';
+  const res = await fetch(`${BASE}/api/interpret`, {
     method: 'POST',
-    body: JSON.stringify({ ...result, language }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ results: result, language }),
+    signal: AbortSignal.timeout(10000),
   });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(body.detail ?? `HTTP ${res.status}`);
+  }
+  return res.json() as Promise<InterpretationResponse>;
 }
 
 export async function generateReport(

@@ -19,6 +19,7 @@ from app.services.calculation import (
     _areal_reduction_k,
 )
 from app.models.schemas import CalculationRequest
+from app.services.idf_service import calculate_intensity as idf_intensity
 
 
 # ── Rational Method ───────────────────────────────────────────────────────────
@@ -291,3 +292,153 @@ class TestRunCalculation:
     def test_risk_level_in_response(self):
         result = run_calculation(self.BASE_RATIONAL)
         assert result["risk_level"] in {"muy_bajo", "bajo", "moderado", "alto", "muy_alto"}
+
+
+# ── BUG 1: Comparison table intensity at Tc ───────────────────────────────────
+
+class TestBug1ComparisonIntensityAtTc:
+    """
+    BUG 1 fix: when the primary method is SCS-CN, the Rational and Modified Rational
+    rows in method_comparison must use intensity evaluated at Tc (their storm duration),
+    NOT the intensity cached from the SCS-CN storm duration.
+
+    Hand-check: Témez Tc for L=2km, S=0.02, A=2km²:
+        Tc = 0.3 * (L_m / S^0.5)^0.76  [hr] (Témez formula)
+        L_m = 2000 m, S^0.5 = 0.1414
+        Tc ≈ 0.3 * (2000/0.1414)^0.76 ≈ 0.3 * 14142^0.76
+    This gives Tc around 35–45 min, well below the 240-min SCS storm duration.
+    IDF intensity at ~40 min >> intensity at 240 min for any locality,
+    so the two intensities differ substantially.
+    """
+
+    _BASE_SCS_LONG_DURATION = {
+        "locality_id": "amgr",
+        "return_period": 25,
+        "duration_min": 240,          # long SCS storm duration
+        "area_km2": 2.0,
+        "length_km": 2.0,
+        "slope": 0.02,
+        "method": "scs_cn",
+        "soil_group": "B",
+        "land_use_categories": [
+            {"land_use": "soja_siembra_directa", "area_percent": 100.0, "condition": "fair"},
+        ],
+        "infrastructure_type": "canal_rural",
+        "tc_formulas": ["temez"],
+        "tc_adopted_formula": "temez",
+        "runoff_coeff": 0.6,          # C needed so Rational row appears
+    }
+
+    def test_rational_row_uses_intensity_at_tc(self):
+        """Rational row intensity == IDF(Tc), not IDF(240 min)."""
+        result = run_calculation(self._BASE_SCS_LONG_DURATION)
+        tc_min = result["tc_adopted_minutes"]
+
+        rat_row = next(r for r in result["method_comparison"] if r["method"] == "rational")
+
+        i_at_tc = idf_intensity("amgr", return_period=25.0, duration_min=tc_min)["intensity_mm_hr"]
+        i_at_240 = idf_intensity("amgr", return_period=25.0, duration_min=240.0)["intensity_mm_hr"]
+
+        # The two intensities must differ significantly (Tc << 240 min)
+        assert abs(i_at_tc - i_at_240) > 1.0, (
+            f"Test precondition failed: i(Tc={tc_min:.0f}min)={i_at_tc:.2f} ≈ i(240min)={i_at_240:.2f}"
+        )
+
+        # Rational row must match i_at_tc, not i_at_240
+        assert abs(rat_row["intensity"] - i_at_tc) < 0.5, (
+            f"Rational row intensity {rat_row['intensity']:.2f} should equal IDF at "
+            f"Tc={tc_min:.0f}min ({i_at_tc:.2f}), not at 240min ({i_at_240:.2f})"
+        )
+
+    def test_modified_rational_row_uses_intensity_at_tc(self):
+        """Modified Rational row intensity == IDF(Tc), not IDF(240 min)."""
+        result = run_calculation(self._BASE_SCS_LONG_DURATION)
+        tc_min = result["tc_adopted_minutes"]
+
+        mod_row = next(r for r in result["method_comparison"] if r["method"] == "modified_rational")
+        i_at_tc = idf_intensity("amgr", return_period=25.0, duration_min=tc_min)["intensity_mm_hr"]
+
+        assert abs(mod_row["intensity"] - i_at_tc) < 0.5, (
+            f"ModRational row intensity {mod_row['intensity']:.2f} should equal IDF at Tc={tc_min:.0f}min ({i_at_tc:.2f})"
+        )
+
+    def test_rational_row_intensity_when_primary_is_rational(self):
+        """When primary method IS Rational, comparison row reuses the same intensity (no re-lookup)."""
+        payload = {
+            "locality_id": "amgr",
+            "return_period": 25,
+            "duration_min": 60,
+            "area_km2": 2.0,
+            "length_km": 3.0,
+            "slope": 0.005,
+            "method": "rational",
+            "runoff_coeff": 0.6,
+            "infrastructure_type": "canal_urbano",
+            "tc_formulas": ["temez"],
+            "tc_adopted_formula": "temez",
+        }
+        result = run_calculation(payload)
+        tc_min = result["tc_adopted_minutes"]
+        rat_row = next(r for r in result["method_comparison"] if r["method"] == "rational")
+        i_at_tc = idf_intensity("amgr", return_period=25.0, duration_min=tc_min)["intensity_mm_hr"]
+        # Should still match intensity at Tc (Rational auto-locks duration to Tc)
+        assert abs(rat_row["intensity"] - i_at_tc) < 0.5
+
+
+# ── BUG 2: K coefficient label ─────────────────────────────────────────────────
+
+class TestBug2KCoefficientLabel:
+    """
+    BUG 2 fix: Modified Rational notes must say 'Factor de reducción areal', not 'Témez'.
+
+    Hand-check: K_ARF for A=2 km²:
+        K = 1 - (2^0.1 - 1)/7 = 1 - (1.0718 - 1)/7 = 1 - 0.01025 = 0.9897
+    So the notes should read "K_ARF=0.990 (Factor de reducción areal)" approximately.
+    """
+
+    _PAYLOAD = {
+        "locality_id": "amgr",
+        "return_period": 25,
+        "duration_min": 60,
+        "area_km2": 2.0,
+        "length_km": 3.0,
+        "slope": 0.005,
+        "method": "rational",
+        "runoff_coeff": 0.6,
+        "infrastructure_type": "canal_urbano",
+        "tc_formulas": ["temez"],
+        "tc_adopted_formula": "temez",
+    }
+
+    def test_mod_rational_notes_contain_arf_label(self):
+        result = run_calculation(self._PAYLOAD)
+        mod_row = next(r for r in result["method_comparison"] if r["method"] == "modified_rational")
+        assert "Factor de reducción areal" in mod_row["notes"], (
+            f"Expected 'Factor de reducción areal' in notes, got: {mod_row['notes']!r}"
+        )
+
+    def test_mod_rational_notes_contain_k_arf(self):
+        result = run_calculation(self._PAYLOAD)
+        mod_row = next(r for r in result["method_comparison"] if r["method"] == "modified_rational")
+        assert "K_ARF" in mod_row["notes"], (
+            f"Expected 'K_ARF' in notes, got: {mod_row['notes']!r}"
+        )
+
+    def test_mod_rational_notes_not_attributed_to_temez(self):
+        """The <1 ARF factor must no longer be labelled as a Témez coefficient."""
+        result = run_calculation(self._PAYLOAD)
+        mod_row = next(r for r in result["method_comparison"] if r["method"] == "modified_rational")
+        assert "Témez" not in mod_row["notes"], (
+            f"'Témez' should not appear in ARF notes, got: {mod_row['notes']!r}"
+        )
+
+    def test_k_arf_value_for_2km2(self):
+        """
+        Hand-checked: K_ARF(A=2 km²) = 1 - (2^0.1 - 1)/7 ≈ 0.9897.
+        The formula must remain unchanged (only the label changed).
+        """
+        import math
+        k = _areal_reduction_k(2.0)
+        expected = 1.0 - (2.0 ** 0.1 - 1.0) / 7.0
+        assert abs(k - expected) < 1e-6
+        assert abs(k - 0.9897) < 0.001, f"K_ARF(2km²)={k:.4f}, expected ≈0.9897"

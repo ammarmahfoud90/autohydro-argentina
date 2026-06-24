@@ -471,7 +471,7 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
           )}
           {results.runoff_coeff != null && <p>C = {results.runoff_coeff.toFixed(2)}</p>}
           {results.areal_reduction_k != null && (
-            <p>K (reducción areal) = {results.areal_reduction_k.toFixed(3)}</p>
+            <p>K_ARF (factor de reducción areal) = {results.areal_reduction_k.toFixed(3)}</p>
           )}
         </div>
       </div>
@@ -805,42 +805,39 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
       )}
 
       {/* ── AI Interpretation ────────────────────────────────────────────── */}
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
-        <h3 className="font-semibold text-gray-700 dark:text-slate-200 mb-3">{t('results.aiInterpretation')}</h3>
+      {/* Hidden entirely when the service is unavailable (no key, rate limit, etc.) */}
+      {!interpretQuery.isError && (
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+          <h3 className="font-semibold text-gray-700 dark:text-slate-200 mb-3">{t('results.aiInterpretation')}</h3>
 
-        {interpretQuery.isPending && (
-          <div className="flex items-center gap-2 text-sm text-blue-600">
-            <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8v8z"
-              />
-            </svg>
-            {t('results.aiLoading')}
-          </div>
-        )}
+          {interpretQuery.isPending && (
+            <div className="flex items-center gap-2 text-sm text-blue-600">
+              <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v8z"
+                />
+              </svg>
+              {t('results.aiLoading')}
+            </div>
+          )}
 
-        {interpretQuery.isError && (
-          <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded px-3 py-2">
-            {t('errors.interpretationFailed')}
-          </p>
-        )}
-
-        {interpretQuery.data && (
-          <div className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">
-            {interpretQuery.data.interpretation}
-          </div>
-        )}
-      </div>
+          {interpretQuery.data && (
+            <div className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">
+              {interpretQuery.data.interpretation}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── Disclaimer ───────────────────────────────────────────────────── */}
       <div className="rounded-lg bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 px-4 py-3 text-xs text-yellow-700 dark:text-yellow-300">
