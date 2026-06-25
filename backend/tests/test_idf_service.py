@@ -200,7 +200,31 @@ class TestApaExtrapolationWarning:
         assert result["duration_valid_range_min"] < result["duration_valid_range_max"]
 
 
-# ── 9. Mendoza duration bounds (Task 3 — INA-CRA Mendoza) ────────────────────
+# ── 9. TR reliability warning for APA Chaco (Task 3 extension — AUDIT #5) ───
+
+def test_el_colorado_tr_within_reliable_limit_no_warning():
+    """El Colorado TR=10 equals max_reliable_return_period → no reliability warning."""
+    result = calculate_intensity("el_colorado", 10, 60)
+    assert result["tr_reliability_warning"] is False
+
+
+def test_el_colorado_tr_above_reliable_limit_warns():
+    """El Colorado TR=50 exceeds max_reliable_return_period=10 → warning must be True."""
+    result = calculate_intensity("el_colorado", 50, 60)
+    assert result["intensity_mm_hr"] > 0, "Calculation must still succeed"
+    assert result["tr_reliability_warning"] is True
+    assert result.get("max_reliable_return_period") == 10
+
+
+def test_pr_saenz_pena_tr_above_reliable_limit_warns():
+    """PR Sáenz Peña TR=50 exceeds max_reliable_return_period=25 → warning must be True."""
+    result = calculate_intensity("pr_saenz_pena", 50, 60)
+    assert result["intensity_mm_hr"] > 0, "Calculation must still succeed"
+    assert result["tr_reliability_warning"] is True
+    assert result.get("max_reliable_return_period") == 25
+
+
+# ── 10. Mendoza duration bounds (Task 3 — INA-CRA Mendoza) ───────────────────
 
 def test_mendoza_too_short_duration_raises():
     """Duration below valid_duration_min (5 min) must raise ValueError."""

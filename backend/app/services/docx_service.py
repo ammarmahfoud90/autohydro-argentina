@@ -32,6 +32,11 @@ _METHOD_NAMES: dict[str, str] = {
     "modified_rational": "Método Racional Modificado",
     "scs_cn": "Método SCS-CN (Soil Conservation Service)",
 }
+_METHOD_NAMES_EN: dict[str, str] = {
+    "rational": "Rational Method",
+    "modified_rational": "Modified Rational Method",
+    "scs_cn": "SCS-CN Method (Soil Conservation Service)",
+}
 
 _INFRASTRUCTURE_NAMES: dict[str, str] = {
     "alcantarilla_menor": "Alcantarilla menor (< 1 m)",
@@ -49,6 +54,13 @@ _RISK_LABELS_ES: dict[str, str] = {
     "moderado": "MODERADO",
     "alto": "ALTO",
     "muy_alto": "MUY ALTO",
+}
+_RISK_LABELS_EN: dict[str, str] = {
+    "muy_bajo": "VERY LOW",
+    "bajo": "LOW",
+    "moderado": "MODERATE",
+    "alto": "HIGH",
+    "muy_alto": "VERY HIGH",
 }
 
 
@@ -99,6 +111,22 @@ class MemoriaCalculoDocxGenerator:
         self.engineer_name = engineer_name
         self.client = client
         self.language = language
+
+    def _t(self, es: str, en: str) -> str:
+        """Return ES or EN string based on self.language."""
+        return en if self.language == "en" else es
+
+    def _method_name(self, key: str) -> str:
+        """Language-aware method name lookup."""
+        if self.language == "en":
+            return _METHOD_NAMES_EN.get(key, key)
+        return _METHOD_NAMES.get(key, key)
+
+    def _risk_label(self, key: str) -> str:
+        """Language-aware risk label lookup."""
+        if self.language == "en":
+            return _RISK_LABELS_EN.get(key, key.upper())
+        return _RISK_LABELS_ES.get(key, key.upper())
 
     # ── Document initialisation ────────────────────────────────────────────────
 
@@ -377,15 +405,15 @@ class MemoriaCalculoDocxGenerator:
         self._h1(doc, "\u00cdNDICE")
 
         toc_items = [
-            ("1.", "Objeto del Estudio"),
-            ("2.", "Descripción de la Cuenca"),
-            ("3.", "Ubicación de la Cuenca"),
-            ("4.", "Análisis Pluviométrico — Curvas IDF"),
-            ("5.", "Tiempo de Concentración"),
-            ("6.", "Metodología de Cálculo"),
-            ("7.", "Cálculos y Resultados"),
-            ("8.", "Análisis e Interpretación"),
-            ("9.", "Conclusiones y Recomendaciones"),
+            ("1.", self._t("Objeto del Estudio", "Study Objective")),
+            ("2.", self._t("Descripción de la Cuenca", "Basin Description")),
+            ("3.", self._t("Ubicación de la Cuenca", "Basin Location")),
+            ("4.", self._t("Análisis Pluviométrico — Curvas IDF", "Rainfall Analysis — IDF Curves")),
+            ("5.", self._t("Tiempo de Concentración", "Time of Concentration")),
+            ("6.", self._t("Metodología de Cálculo", "Calculation Methodology")),
+            ("7.", self._t("Cálculos y Resultados", "Calculations and Results")),
+            ("8.", self._t("Análisis e Interpretación", "Analysis and Interpretation")),
+            ("9.", self._t("Conclusiones y Recomendaciones", "Conclusions and Recommendations")),
             ("Anexo A.", "Planilla de Cálculo Detallada"),
         ]
 
@@ -403,7 +431,7 @@ class MemoriaCalculoDocxGenerator:
     # ── Section 1: Objeto ──────────────────────────────────────────────────────
 
     def _build_section_objeto(self, doc: Document, ai_sections: dict) -> None:
-        self._h1(doc, "1. OBJETO DEL ESTUDIO")
+        self._h1(doc, self._t("1. OBJETO DEL ESTUDIO", "1. STUDY OBJECTIVE"))
         text = ai_sections.get("objeto") or (
             "El presente estudio tiene por objeto determinar el caudal m\u00e1ximo de "
             "dise\u00f1o para la infraestructura hidrol\u00f3gica propuesta, mediante la "
@@ -417,7 +445,7 @@ class MemoriaCalculoDocxGenerator:
     def _build_section_cuenca(
         self, doc: Document, data: dict, ai_sections: dict
     ) -> None:
-        self._h1(doc, "2. DESCRIPCI\u00d3N DE LA CUENCA")
+        self._h1(doc, self._t("2. DESCRIPCI\u00d3N DE LA CUENCA", "2. BASIN DESCRIPTION"))
 
         text = ai_sections.get("descripcion_cuenca") or ""
         if text:
@@ -443,7 +471,7 @@ class MemoriaCalculoDocxGenerator:
     def _build_section_ubicacion(
         self, doc: Document, basin_polygon: Optional[list[list[float]]]
     ) -> None:
-        self._h1(doc, "3. UBICACIÓN DE LA CUENCA")
+        self._h1(doc, self._t("3. UBICACIÓN DE LA CUENCA", "3. BASIN LOCATION"))
 
         if basin_polygon and len(basin_polygon) >= 3:
             img_bytes = generate_basin_map_image(basin_polygon, width=800, height=500)
@@ -476,7 +504,7 @@ class MemoriaCalculoDocxGenerator:
     # ── Section 4: IDF ────────────────────────────────────────────────────────
 
     def _build_section_idf(self, doc: Document, data: dict) -> None:
-        self._h1(doc, "4. ANÁLISIS PLUVIOMÉTRICO — CURVAS IDF")
+        self._h1(doc, self._t("4. ANÁLISIS PLUVIOMÉTRICO — CURVAS IDF", "4. RAINFALL ANALYSIS — IDF CURVES"))
 
         intro = (
             f"Los datos pluviom\u00e9tricos se obtuvieron de la estaci\u00f3n de referencia "
@@ -536,7 +564,7 @@ class MemoriaCalculoDocxGenerator:
     # ── Section 4: Tc ─────────────────────────────────────────────────────────
 
     def _build_section_tc(self, doc: Document, data: dict) -> None:
-        self._h1(doc, "5. TIEMPO DE CONCENTRACIÓN (Tc)")
+        self._h1(doc, self._t("5. TIEMPO DE CONCENTRACIÓN (Tc)", "5. TIME OF CONCENTRATION (Tc)"))
 
         tc_results = data.get("tc_results", [])
         n = len(tc_results)
@@ -592,9 +620,9 @@ class MemoriaCalculoDocxGenerator:
     def _build_section_metodologia(
         self, doc: Document, data: dict, ai_sections: dict
     ) -> None:
-        self._h1(doc, "6. METODOLOGÍA DE CÁLCULO")
+        self._h1(doc, self._t("6. METODOLOGÍA DE CÁLCULO", "6. CALCULATION METHODOLOGY"))
 
-        method_name = _METHOD_NAMES.get(data.get("method", ""), data.get("method", ""))
+        method_name = self._method_name(data.get("method", ""))
         para = doc.add_paragraph()
         r1 = para.add_run("M\u00e9todo seleccionado: ")
         r1.font.bold = True
@@ -621,7 +649,7 @@ class MemoriaCalculoDocxGenerator:
                 justify=False,
             )
             self._body(
-                doc, "Qp = 0.208 \u00d7 A \u00d7 Q / Tp  |  Tp = 0.6 \u00d7 Tc", justify=False
+                doc, "Qp = 0.208 \u00d7 A \u00d7 Q / Tp  |  Tp = D/2 + 0.6 \u00d7 Tc", justify=False
             )
             lam = (
                 "0.05 (Pampa H\u00fameda)"
@@ -645,7 +673,7 @@ class MemoriaCalculoDocxGenerator:
     # ── Section 6: Cálculos ───────────────────────────────────────────────────
 
     def _build_section_calculos(self, doc: Document, data: dict) -> None:
-        self._h1(doc, "7. CÁLCULOS Y RESULTADOS")
+        self._h1(doc, self._t("7. CÁLCULOS Y RESULTADOS", "7. CALCULATIONS AND RESULTS"))
         self._h2(doc, "7.1 Parámetros de cálculo")
 
         param_rows: list[list] = [["Par\u00e1metro", "Valor", "Unidad"]]
@@ -752,10 +780,10 @@ class MemoriaCalculoDocxGenerator:
         ai_interpretation: str,
         ai_sections: dict,
     ) -> None:
-        self._h1(doc, "8. ANÁLISIS E INTERPRETACIÓN")
+        self._h1(doc, self._t("8. ANÁLISIS E INTERPRETACIÓN", "8. ANALYSIS AND INTERPRETATION"))
 
         risk = data.get("risk_level", "moderado")
-        risk_label = _RISK_LABELS_ES.get(risk, risk.upper())
+        risk_label = self._risk_label(risk)
         infra = _INFRASTRUCTURE_NAMES.get(data.get("infrastructure_type", ""), "\u2014")
 
         para = doc.add_paragraph()
@@ -793,7 +821,7 @@ class MemoriaCalculoDocxGenerator:
     def _build_section_conclusiones(
         self, doc: Document, data: dict, ai_sections: dict
     ) -> None:
-        self._h1(doc, "9. CONCLUSIONES Y RECOMENDACIONES")
+        self._h1(doc, self._t("9. CONCLUSIONES Y RECOMENDACIONES", "9. CONCLUSIONS AND RECOMMENDATIONS"))
 
         text = ai_sections.get("conclusiones") or (
             f"Se determin\u00f3 un caudal pico de dise\u00f1o de "
@@ -806,8 +834,8 @@ class MemoriaCalculoDocxGenerator:
             ["Par\u00e1metro", "Valor adoptado"],
             ["Caudal de dise\u00f1o", f"Q = {data.get('peak_flow_m3s', 0):.3f} m\u00b3/s"],
             ["Per\u00edodo de retorno", f"T = {data.get('return_period', '\u2014')} a\u00f1os"],
-            ["M\u00e9todo de c\u00e1lculo", _METHOD_NAMES.get(data.get("method", ""), "\u2014")],
-            ["Nivel de riesgo", _RISK_LABELS_ES.get(data.get("risk_level", ""), "\u2014")],
+            [self._t("M\u00e9todo de c\u00e1lculo", "Calculation method"), self._method_name(data.get("method", ""))],
+            [self._t("Nivel de riesgo", "Risk level"), self._risk_label(data.get("risk_level", ""))],
         ]
         self._make_table(doc, summary_rows)
 
@@ -827,7 +855,7 @@ class MemoriaCalculoDocxGenerator:
     # ── Annex: Detailed calculation sheet ─────────────────────────────────────
 
     def _build_annex(self, doc: Document, data: dict) -> None:
-        self._h1(doc, "ANEXO A \u2014 PLANILLA DE C\u00c1LCULO DETALLADA")
+        self._h1(doc, self._t("ANEXO A \u2014 PLANILLA DE C\u00c1LCULO DETALLADA", "ANNEX A \u2014 DETAILED CALCULATION SHEET"))
 
         flat: list[tuple[str, str]] = [
             ("Ciudad de referencia", data.get("city", "\u2014")),
@@ -844,7 +872,7 @@ class MemoriaCalculoDocxGenerator:
                 f"{data.get('tc_adopted_hours', '\u2014')} hr  /  "
                 f"{data.get('tc_adopted_minutes', '\u2014')} min",
             ),
-            ("M\u00e9todo", _METHOD_NAMES.get(data.get("method", ""), "\u2014")),
+            (self._t("M\u00e9todo", "Method"), self._method_name(data.get("method", ""))),
         ]
 
         if data.get("runoff_coeff") is not None:
@@ -862,7 +890,7 @@ class MemoriaCalculoDocxGenerator:
         flat += [
             ("Caudal pico (Q)", f"{data.get('peak_flow_m3s', '\u2014')} m\u00b3/s"),
             ("Caudal espec\u00edfico (q)", f"{data.get('specific_flow_m3s_km2', '\u2014')} m\u00b3/s/km\u00b2"),
-            ("Nivel de riesgo", _RISK_LABELS_ES.get(data.get("risk_level", ""), "\u2014")),
+            (self._t("Nivel de riesgo", "Risk level"), self._risk_label(data.get("risk_level", ""))),
             (
                 "Infraestructura",
                 _INFRASTRUCTURE_NAMES.get(data.get("infrastructure_type", ""), "\u2014"),

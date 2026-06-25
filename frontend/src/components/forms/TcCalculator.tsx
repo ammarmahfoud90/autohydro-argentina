@@ -128,7 +128,8 @@ export function TcCalculator({ selectedFormulas, adoptedFormula, basinData, onCh
       {/* Live Tc results preview */}
       {hasBasin && tcResults.length > 0 && (
         <div className="rounded-lg border border-gray-200 overflow-hidden">
-          <table className="w-full text-xs">
+          <div className="overflow-x-auto">
+          <table className="w-full text-xs min-w-[320px]">
             <thead>
               <tr className="bg-gray-800 text-white">
                 <th className="px-3 py-2 text-left font-medium">Fórmula</th>
@@ -185,6 +186,7 @@ export function TcCalculator({ selectedFormulas, adoptedFormula, basinData, onCh
               })}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

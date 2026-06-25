@@ -86,10 +86,20 @@ _METHOD_NAMES = {
     "modified_rational": "Método Racional Modificado",
     "scs_cn": "Método SCS-CN (Soil Conservation Service)",
 }
+_METHOD_NAMES_EN = {
+    "rational": "Rational Method",
+    "modified_rational": "Modified Rational Method",
+    "scs_cn": "SCS-CN Method (Soil Conservation Service)",
+}
 
 _METHOD_NAMES_SHORT = {
     "rational": "Racional",
     "modified_rational": "Racional Modif.",
+    "scs_cn": "SCS-CN",
+}
+_METHOD_NAMES_SHORT_EN = {
+    "rational": "Rational",
+    "modified_rational": "Modified Rational",
     "scs_cn": "SCS-CN",
 }
 
@@ -124,6 +134,22 @@ class MemoriaCalculoGenerator:
         self.client = client
         self.language = language
         self.styles = self._create_styles()
+
+    def _t(self, es: str, en: str) -> str:
+        """Return ES or EN string based on self.language."""
+        return en if self.language == "en" else es
+
+    def _method_name(self, key: str, short: bool = False) -> str:
+        """Language-aware method name lookup."""
+        if self.language == "en":
+            return (_METHOD_NAMES_SHORT_EN if short else _METHOD_NAMES_EN).get(key, key)
+        return (_METHOD_NAMES_SHORT if short else _METHOD_NAMES).get(key, key)
+
+    def _risk_label(self, key: str) -> str:
+        """Language-aware risk label lookup."""
+        if self.language == "en":
+            return _RISK_LABELS_EN.get(key, key.upper())
+        return _RISK_LABELS_ES.get(key, key.upper())
 
     # ── Styles ────────────────────────────────────────────────────────────
 
@@ -345,20 +371,20 @@ class MemoriaCalculoGenerator:
 
     def _build_toc(self) -> list:
         S = self.styles
-        story = [Paragraph("ÍNDICE", S["h1"])]
+        story = [Paragraph(self._t("ÍNDICE", "TABLE OF CONTENTS"), S["h1"])]
         story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=12))
 
         toc_items = [
-            ("1.", "Objeto del Estudio"),
-            ("2.", "Descripción de la Cuenca"),
-            ("3.", "Ubicación de la Cuenca"),
-            ("4.", "Análisis Pluviométrico — Curvas IDF"),
-            ("5.", "Tiempo de Concentración"),
-            ("6.", "Metodología de Cálculo"),
-            ("7.", "Cálculos y Resultados"),
-            ("8.", "Análisis e Interpretación"),
-            ("9.", "Conclusiones y Recomendaciones"),
-            ("Anexo A.", "Planilla de Cálculo Detallada"),
+            ("1.", self._t("Objeto del Estudio", "Study Objective")),
+            ("2.", self._t("Descripción de la Cuenca", "Basin Description")),
+            ("3.", self._t("Ubicación de la Cuenca", "Basin Location")),
+            ("4.", self._t("Análisis Pluviométrico — Curvas IDF", "Rainfall Analysis — IDF Curves")),
+            ("5.", self._t("Tiempo de Concentración", "Time of Concentration")),
+            ("6.", self._t("Metodología de Cálculo", "Calculation Methodology")),
+            ("7.", self._t("Cálculos y Resultados", "Calculations and Results")),
+            ("8.", self._t("Análisis e Interpretación", "Analysis and Interpretation")),
+            ("9.", self._t("Conclusiones y Recomendaciones", "Conclusions and Recommendations")),
+            ("Anexo A.", self._t("Planilla de Cálculo Detallada", "Detailed Calculation Sheet")),
         ]
 
         for num, title in toc_items:
@@ -371,7 +397,7 @@ class MemoriaCalculoGenerator:
 
     def _build_section_objeto(self, ai_sections: dict[str, str]) -> list:
         S = self.styles
-        story = [Paragraph("1. OBJETO DEL ESTUDIO", S["h1"])]
+        story = [Paragraph(self._t("1. OBJETO DEL ESTUDIO", "1. STUDY OBJECTIVE"), S["h1"])]
         story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=8))
 
         text = ai_sections.get("objeto") or (
@@ -388,7 +414,7 @@ class MemoriaCalculoGenerator:
         self, data: dict[str, Any], ai_sections: dict[str, str]
     ) -> list:
         S = self.styles
-        story = [Paragraph("2. DESCRIPCIÓN DE LA CUENCA", S["h1"])]
+        story = [Paragraph(self._t("2. DESCRIPCIÓN DE LA CUENCA", "2. BASIN DESCRIPTION"), S["h1"])]
         story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=8))
 
         text = ai_sections.get("descripcion_cuenca") or ""
@@ -418,7 +444,7 @@ class MemoriaCalculoGenerator:
         self, basin_polygon: Optional[list[list[float]]]
     ) -> list:
         S = self.styles
-        story = [Paragraph("3. UBICACIÓN DE LA CUENCA", S["h1"])]
+        story = [Paragraph(self._t("3. UBICACIÓN DE LA CUENCA", "3. BASIN LOCATION"), S["h1"])]
         story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=8))
 
         if basin_polygon and len(basin_polygon) >= 3:
@@ -463,7 +489,7 @@ class MemoriaCalculoGenerator:
 
     def _build_section_idf(self, data: dict[str, Any]) -> list:
         S = self.styles
-        story = [Paragraph("4. ANÁLISIS PLUVIOMÉTRICO — CURVAS IDF", S["h1"])]
+        story = [Paragraph(self._t("4. ANÁLISIS PLUVIOMÉTRICO — CURVAS IDF", "4. RAINFALL ANALYSIS — IDF CURVES"), S["h1"])]
         story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=8))
 
         intro = (
@@ -591,7 +617,7 @@ class MemoriaCalculoGenerator:
 
     def _build_section_tc(self, data: dict[str, Any]) -> list:
         S = self.styles
-        story = [Paragraph("5. TIEMPO DE CONCENTRACIÓN (Tc)", S["h1"])]
+        story = [Paragraph(self._t("5. TIEMPO DE CONCENTRACIÓN (Tc)", "5. TIME OF CONCENTRATION (Tc)"), S["h1"])]
         story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=8))
 
         tc_results = data.get("tc_results", [])
@@ -695,10 +721,10 @@ class MemoriaCalculoGenerator:
         self, data: dict[str, Any], ai_sections: dict[str, str]
     ) -> list:
         S = self.styles
-        story = [Paragraph("6. METODOLOGÍA DE CÁLCULO", S["h1"])]
+        story = [Paragraph(self._t("6. METODOLOGÍA DE CÁLCULO", "6. CALCULATION METHODOLOGY"), S["h1"])]
         story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=8))
 
-        method_name = _METHOD_NAMES.get(data.get("method", ""), data.get("method", ""))
+        method_name = self._method_name(data.get("method", ""))
         story.append(Paragraph(f"<b>Método seleccionado:</b> {method_name}", S["body_left"]))
 
         text = ai_sections.get("metodologia") or ""
@@ -715,7 +741,7 @@ class MemoriaCalculoGenerator:
             story.append(Paragraph("K = 1 − (A<sup>0.1</sup> − 1) / 7  (Témez)", S["body_left"]))
         elif data.get("method") == "scs_cn":
             story.append(Paragraph("S = 25400/CN − 254  |  Ia = λ × S  |  Q = (P−Ia)² / (P−Ia+S)", S["body_left"]))
-            story.append(Paragraph("Qp = 0.208 × A × Q / Tp  |  Tp = 0.6 × Tc", S["body_left"]))
+            story.append(Paragraph("Qp = 0.208 × A × Q / Tp  |  Tp = D/2 + 0.6 × Tc", S["body_left"]))
             lam = "0.05 (Pampa Húmeda)" if data.get("use_pampa_lambda") else "0.20 (estándar)"
             story.append(Paragraph(f"Abstracción inicial: λ = {lam}", S["body"]))
             if data.get("use_pampa_lambda"):
@@ -737,7 +763,7 @@ class MemoriaCalculoGenerator:
 
     def _build_section_calculos(self, data: dict[str, Any]) -> list:
         S = self.styles
-        story = [Paragraph("7. CÁLCULOS Y RESULTADOS", S["h1"])]
+        story = [Paragraph(self._t("7. CÁLCULOS Y RESULTADOS", "7. CALCULATIONS AND RESULTS"), S["h1"])]
         story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=8))
 
         story.append(Paragraph("7.1 Parámetros de cálculo", S["h2"]))
@@ -931,13 +957,13 @@ class MemoriaCalculoGenerator:
         self, data: dict[str, Any], ai_interpretation: str, ai_sections: dict[str, str]
     ) -> list:
         S = self.styles
-        story = [Paragraph("8. ANÁLISIS E INTERPRETACIÓN", S["h1"])]
+        story = [Paragraph(self._t("8. ANÁLISIS E INTERPRETACIÓN", "8. ANALYSIS AND INTERPRETATION"), S["h1"])]
         story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=8))
 
         # Risk badge
         risk = data.get("risk_level", "moderado")
         risk_color = _RISK_COLORS.get(risk, _GRAY)
-        risk_label = _RISK_LABELS_ES.get(risk, risk.upper())
+        risk_label = self._risk_label(risk)
 
         infra = _INFRASTRUCTURE_NAMES.get(data.get("infrastructure_type", ""), "—")
         story.append(
@@ -982,7 +1008,7 @@ class MemoriaCalculoGenerator:
 
     def _build_annex_ai(self, ai_interpretation: str) -> list:
         S = self.styles
-        story = [Paragraph("ANEXO B — INTERPRETACIÓN ASISTIDA POR IA", S["h1"])]
+        story = [Paragraph(self._t("ANEXO B — INTERPRETACIÓN ASISTIDA POR IA", "ANNEX B — AI-ASSISTED INTERPRETATION"), S["h1"])]
         story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=8))
         story.append(Paragraph(
             "<b>Aviso:</b> El siguiente texto fue generado automáticamente por un "
@@ -1005,7 +1031,7 @@ class MemoriaCalculoGenerator:
         self, data: dict[str, Any], ai_sections: dict[str, str]
     ) -> list:
         S = self.styles
-        story = [Paragraph("9. CONCLUSIONES Y RECOMENDACIONES", S["h1"])]
+        story = [Paragraph(self._t("9. CONCLUSIONES Y RECOMENDACIONES", "9. CONCLUSIONS AND RECOMMENDATIONS"), S["h1"])]
         story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=8))
 
         text = ai_sections.get("conclusiones") or (
@@ -1020,8 +1046,8 @@ class MemoriaCalculoGenerator:
             ["Parámetro", "Valor adoptado"],
             ["Caudal de diseño", f"Q = {data.get('peak_flow_m3s', 0):.3f} m³/s"],
             ["Período de retorno", f"T = {data.get('return_period', '—')} años"],
-            ["Método de cálculo", _METHOD_NAMES.get(data.get("method", ""), "—")],
-            ["Nivel de riesgo", _RISK_LABELS_ES.get(data.get("risk_level", ""), "—")],
+            [self._t("Método de cálculo", "Calculation method"), self._method_name(data.get("method", ""))],
+            [self._t("Nivel de riesgo", "Risk level"), self._risk_label(data.get("risk_level", ""))],
         ]
         story.append(self._make_table(summary_rows, highlight_last=False))
 
@@ -1044,7 +1070,7 @@ class MemoriaCalculoGenerator:
         self, data1: dict[str, Any], data2: dict[str, Any]
     ) -> list:
         S = self.styles
-        story = [Paragraph("COMPARACIÓN DE ESCENARIOS", S["h1"])]
+        story = [Paragraph(self._t("COMPARACIÓN DE ESCENARIOS", "SCENARIO COMPARISON"), S["h1"])]
         story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=8))
         story.append(
             Paragraph(
@@ -1099,12 +1125,12 @@ class MemoriaCalculoGenerator:
             v2_raw = data2.get(key, "—")
 
             if key == "method":
-                v1 = _METHOD_NAMES_SHORT.get(str(v1_raw), str(v1_raw))
-                v2 = _METHOD_NAMES_SHORT.get(str(v2_raw), str(v2_raw))
+                v1 = self._method_name(str(v1_raw), short=True)
+                v2 = self._method_name(str(v2_raw), short=True)
                 diff = "—"
             elif key == "risk_level":
-                v1 = _RISK_LABELS_ES.get(str(v1_raw), str(v1_raw))
-                v2 = _RISK_LABELS_ES.get(str(v2_raw), str(v2_raw))
+                v1 = self._risk_label(str(v1_raw))
+                v2 = self._risk_label(str(v2_raw))
                 diff = "—"
             elif fmt:
                 try:
@@ -1127,7 +1153,7 @@ class MemoriaCalculoGenerator:
 
     def _build_annex(self, data: dict[str, Any]) -> list:
         S = self.styles
-        story = [Paragraph("ANEXO A — PLANILLA DE CÁLCULO DETALLADA", S["h1"])]
+        story = [Paragraph(self._t("ANEXO A — PLANILLA DE CÁLCULO DETALLADA", "ANNEX A — DETAILED CALCULATION SHEET"), S["h1"])]
         story.append(HRFlowable(width="100%", thickness=1, color=_LIGHT_BLUE, spaceAfter=8))
 
         all_rows = [["Campo", "Valor"]]
@@ -1143,7 +1169,7 @@ class MemoriaCalculoGenerator:
             ("Intensidad IDF (i)", f"{data.get('intensity_mm_hr', '—')} mm/hr"),
             ("Fuente IDF", Paragraph(data.get("idf_source", "—"), S["body"])),
             ("Tc adoptado", f"{data.get('tc_adopted_hours', '—')} hr  /  {data.get('tc_adopted_minutes', '—')} min"),
-            ("Método", _METHOD_NAMES.get(data.get("method", ""), "—")),
+            (self._t("Método", "Method"), self._method_name(data.get("method", ""))),
         ]
 
         if data.get("runoff_coeff") is not None:
@@ -1161,7 +1187,7 @@ class MemoriaCalculoGenerator:
         flat_fields.extend([
             ("Caudal pico (Q)", f"{data.get('peak_flow_m3s', '—')} m³/s"),
             ("Caudal específico (q)", f"{data.get('specific_flow_m3s_km2', '—')} m³/s/km²"),
-            ("Nivel de riesgo", _RISK_LABELS_ES.get(data.get("risk_level", ""), "—")),
+            (self._t("Nivel de riesgo", "Risk level"), self._risk_label(data.get("risk_level", ""))),
             ("Infraestructura", _INFRASTRUCTURE_NAMES.get(data.get("infrastructure_type", ""), "—")),
             ("Fecha de cálculo", datetime.now().strftime("%d/%m/%Y %H:%M")),
         ])

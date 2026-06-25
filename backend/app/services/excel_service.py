@@ -368,6 +368,8 @@ class ExcelReportGenerator:
             Q_mm = data.get("runoff_depth_mm", "?")
             Qp = data.get("peak_flow_m3s", "?")
             tc = data.get("tc_adopted_hours", "?")
+            _D_hr = data.get("duration_min", 60) / 60.0
+            _Tp_hr = data.get("time_to_peak_hr") or (_D_hr / 2.0 + 0.6 * float(tc))
             steps.extend([
                 ("PASO 3", "Cálculo del Número de Curva y Retención",
                  f"CN = {CN:.1f}\n"
@@ -378,9 +380,9 @@ class ExcelReportGenerator:
                  f"Q = (P - Ia)² / (P - Ia + S)\n"
                  f"Q_escorrentía = {Q_mm:.2f} mm"),
                 ("PASO 5", "Caudal Pico (Hidrograma Unitario SCS)",
-                 f"Tp = 0.6 × Tc = 0.6 × {tc:.3f} = {0.6*float(tc):.3f} hr\n"
+                 f"Tp = D/2 + 0.6 × Tc = {_D_hr:.3f}/2 + 0.6 × {tc:.3f} = {_Tp_hr:.3f} hr\n"
                  f"Qp = 0.208 × A × Q_mm / Tp\n"
-                 f"Qp = 0.208 × {data.get('area_km2', '?')} × {Q_mm:.2f} / {0.6*float(tc):.3f} = {Qp:.3f} m³/s"),
+                 f"Qp = 0.208 × {data.get('area_km2', '?')} × {Q_mm:.2f} / {_Tp_hr:.3f} = {Qp:.3f} m³/s"),
             ])
 
         _apply_header_row(ws, row, ["Paso", "Descripción", "Fórmula / Resultado"], bg=_NAVY)

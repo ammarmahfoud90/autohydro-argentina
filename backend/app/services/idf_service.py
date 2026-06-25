@@ -256,6 +256,9 @@ def _calculate_intensity_apa(loc: dict, return_period: float, duration_min: floa
         i_upper = _formula_intensity(params_by_tr[str(upper_tr)], duration_min)
         intensity = _linear_interp(return_period, lower_tr, upper_tr, i_lower, i_upper)
 
+    max_reliable_tr = loc.get("limitations", {}).get("max_reliable_return_period")
+    tr_reliability_warning = bool(max_reliable_tr and return_period > max_reliable_tr)
+
     result = {
         "intensity_mm_hr": round(intensity, 3),
         "return_period": return_period,
@@ -264,10 +267,13 @@ def _calculate_intensity_apa(loc: dict, return_period: float, duration_min: floa
         "formula_used": True,
         "source": loc["source"]["document"],
         "duration_extrapolation_warning": duration_extrapolation_warning,
+        "tr_reliability_warning": tr_reliability_warning,
     }
     if duration_extrapolation_warning and table_durs:
         result["duration_valid_range_min"] = table_durs[0]
         result["duration_valid_range_max"] = table_durs[-1]
+    if tr_reliability_warning and max_reliable_tr:
+        result["max_reliable_return_period"] = max_reliable_tr
     return result
 
 
