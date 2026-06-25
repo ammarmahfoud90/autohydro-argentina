@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { useTranslation } from 'react-i18next';
 import {
   BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -12,15 +13,7 @@ import type { IDFLocality } from '../types/idf';
 
 const RETURN_PERIODS = [2, 5, 10, 25, 50, 100];
 
-const DURATIONS = [
-  { label: '30 min', value: 30 },
-  { label: '1 hora', value: 60 },
-  { label: '2 horas', value: 120 },
-  { label: '3 horas', value: 180 },
-  { label: '6 horas', value: 360 },
-  { label: '12 horas', value: 720 },
-  { label: '24 horas', value: 1440 },
-];
+const DURATIONS = [30, 60, 120, 180, 360, 720, 1440];
 
 const TIME_STEPS = [
   { label: '5 min', value: 5 },
@@ -31,30 +24,10 @@ const TIME_STEPS = [
 ];
 
 const METHODS = [
-  {
-    id: 'alternating_blocks',
-    label: 'Bloques Alternos',
-    desc: 'Método más utilizado en Argentina. Distribuye los bloques de lluvia simétricamente alrededor del pico central.',
-    icon: '📊',
-  },
-  {
-    id: 'scs_type_ii',
-    label: 'SCS Tipo II',
-    desc: 'Distribución adimensional USDA-NRCS para regiones húmedas (NEA, Pampa Húmeda). Pico al 70% de la duración.',
-    icon: '🌧',
-  },
-  {
-    id: 'chicago',
-    label: 'Chicago (r = 0.4)',
-    desc: 'Tormenta asimétrica con pico a 40% de la duración total. Común en estudios urbanos argentinos.',
-    icon: '📈',
-  },
-  {
-    id: 'uniform',
-    label: 'Uniforme',
-    desc: 'Intensidad constante igual al valor IDF para la duración total. Conservador y simple.',
-    icon: '➡',
-  },
+  { id: 'alternating_blocks', icon: '📊' },
+  { id: 'scs_type_ii', icon: '🌧' },
+  { id: 'chicago', icon: '📈' },
+  { id: 'uniform', icon: '➡' },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -114,6 +87,7 @@ function StepDot({ n, active, done }: { n: number; active: boolean; done: boolea
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function Hyetograph() {
+  const { t } = useTranslation();
   const [step, setStep] = useState(0);
   const [localities, setLocalities] = useState<IDFLocality[]>([]);
 
@@ -138,10 +112,11 @@ export function Hyetograph() {
   const [error, setError] = useState<string | null>(null);
 
   const hyetoMissingMsg: string | null = (() => {
-    if (!localityId) return 'Seleccioná una localidad.';
-    if (!(returnPeriod > 0)) return 'Seleccioná un período de retorno.';
-    if (!(duration > 0)) return 'Ingresá una duración > 0.';
-    if (!(timeStep > 0)) return 'Ingresá un paso de tiempo > 0.';
+    if (!localityId) return t('hyetograph.validation.localityRequired');
+    if (!(returnPeriod > 0)) return t('hyetograph.validation.returnPeriodRequired');
+    if (!(duration > 0)) return t('hyetograph.validation.durationRequired');
+    if (!(timeStep > 0)) return t('hyetograph.validation.timeStepRequired');
+    if (timeStep > duration) return t('hyetograph.validation.timeStepExceedsDuration');
     return null;
   })();
 
@@ -160,13 +135,18 @@ export function Hyetograph() {
       setResult(data);
       setStep(3);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al generar el hietograma.');
+      setError(err instanceof Error ? err.message : t('common.unknownError'));
     } finally {
       setLoading(false);
     }
   }
 
-  const steps = ['Datos IDF', 'Parámetros', 'Método', 'Resultados'];
+  const steps = [
+    t('hyetograph.steps.idfData'),
+    t('hyetograph.steps.parameters'),
+    t('hyetograph.steps.method'),
+    t('hyetograph.steps.results'),
+  ];
 
   // Chart data
   const chartData = result
@@ -182,16 +162,14 @@ export function Hyetograph() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Helmet>
-        <title>Hietogramas de Diseño — AutoHydro Argentina</title>
-        <meta name="description" content="Tormenta de diseño con distribución temporal: Bloques Alternos, SCS Tipo II, Chicago, Uniforme." />
+        <title>{t('hyetograph.pageTitle')} — AutoHydro Argentina</title>
+        <meta name="description" content={t('hyetograph.pageSubtitle')} />
       </Helmet>
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Generador de Hietogramas</h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Tormenta de diseño — Distribución temporal de la precipitación
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('hyetograph.pageTitle')}</h1>
+          <p className="text-gray-500 text-sm mt-1">{t('hyetograph.pageSubtitle')}</p>
         </div>
 
         {/* Step indicator */}
@@ -213,18 +191,18 @@ export function Hyetograph() {
 
         {/* ── Step 0: IDF source ──────────────────────────────────────────── */}
         {step === 0 && (
-          <Card title="Fuente IDF — Ciudad y período de retorno">
+          <Card title={t('hyetograph.idfStep.title')}>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Ciudad <span className="text-red-400">*</span>
+                  {t('hyetograph.idfStep.city')} <span className="text-red-400">*</span>
                 </label>
                 <select
                   value={localityId}
                   onChange={(e) => setLocalityId(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="">— Seleccioná una localidad —</option>
+                  <option value="">{t('hyetograph.idfStep.cityPlaceholder')}</option>
                   {localities.map((loc) => (
                     <option key={loc.id} value={loc.id}>
                       {loc.name} ({loc.province})
@@ -234,7 +212,7 @@ export function Hyetograph() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Período de retorno (T)
+                  {t('hyetograph.idfStep.returnPeriod')}
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {RETURN_PERIODS.map((T) => (
@@ -248,7 +226,7 @@ export function Hyetograph() {
                           : 'border-gray-300 text-gray-600 hover:border-blue-300'
                       }`}
                     >
-                      {T} años
+                      {T} {t('hyetograph.idfStep.years')}
                     </button>
                   ))}
                 </div>
@@ -260,7 +238,7 @@ export function Hyetograph() {
                   onClick={() => setStep(1)}
                   className="px-6 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  Continuar →
+                  {t('hyetograph.idfStep.continue')}
                 </button>
               </div>
             </div>
@@ -269,25 +247,25 @@ export function Hyetograph() {
 
         {/* ── Step 1: Storm parameters ────────────────────────────────────── */}
         {step === 1 && (
-          <Card title="Parámetros de la tormenta de diseño">
+          <Card title={t('hyetograph.paramsStep.title')}>
             <div className="space-y-5">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Duración total de la tormenta
+                  {t('hyetograph.paramsStep.duration')}
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {DURATIONS.map((d) => (
                     <button
-                      key={d.value}
+                      key={d}
                       type="button"
-                      onClick={() => setDuration(d.value)}
+                      onClick={() => setDuration(d)}
                       className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                        duration === d.value
+                        duration === d
                           ? 'bg-blue-600 text-white border-blue-600'
                           : 'border-gray-300 text-gray-600 hover:border-blue-300'
                       }`}
                     >
-                      {d.label}
+                      {d < 60 ? `${d} min` : `${d / 60} h`}
                     </button>
                   ))}
                 </div>
@@ -295,7 +273,7 @@ export function Hyetograph() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Intervalo de tiempo (Δt)
+                  {t('hyetograph.paramsStep.timeStep')}
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {TIME_STEPS.filter((ts) => ts.value <= duration / 4).map((ts) => (
@@ -314,7 +292,9 @@ export function Hyetograph() {
                   ))}
                 </div>
                 <p className="text-xs text-gray-400 mt-1">
-                  n = {Math.floor(duration / timeStep)} intervalos de {timeStep} min
+                  {t('hyetograph.paramsStep.intervalsNote')
+                    .replace('{{n}}', String(Math.floor(duration / timeStep)))
+                    .replace('{{dt}}', String(timeStep))}
                 </p>
               </div>
 
@@ -324,14 +304,14 @@ export function Hyetograph() {
                   onClick={() => setStep(0)}
                   className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-50"
                 >
-                  ← Volver
+                  {t('hyetograph.paramsStep.back')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setStep(2)}
                   className="px-6 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
                 >
-                  Continuar →
+                  {t('hyetograph.paramsStep.continue')}
                 </button>
               </div>
             </div>
@@ -340,7 +320,7 @@ export function Hyetograph() {
 
         {/* ── Step 2: Method ──────────────────────────────────────────────── */}
         {step === 2 && (
-          <Card title="Método de distribución temporal">
+          <Card title={t('hyetograph.methodStep.title')}>
             <div className="space-y-3">
               {METHODS.map((m) => (
                 <button
@@ -357,14 +337,14 @@ export function Hyetograph() {
                     <span className="text-2xl">{m.icon}</span>
                     <div>
                       <div className={`font-semibold text-sm ${method === m.id ? 'text-blue-800' : 'text-gray-800'}`}>
-                        {m.label}
+                        {t(`hyetograph.methods.${m.id}.label`)}
                         {m.id === 'alternating_blocks' && (
                           <span className="ml-2 text-xs font-normal bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                            Recomendado
+                            {t('hyetograph.methodStep.recommended')}
                           </span>
                         )}
                       </div>
-                      <div className="text-xs text-gray-500 mt-0.5">{m.desc}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">{t(`hyetograph.methods.${m.id}.desc`)}</div>
                     </div>
                   </div>
                 </button>
@@ -382,7 +362,7 @@ export function Hyetograph() {
                   onClick={() => setStep(1)}
                   className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-50"
                 >
-                  ← Volver
+                  {t('hyetograph.methodStep.back')}
                 </button>
                 <button
                   type="button"
@@ -402,9 +382,9 @@ export function Hyetograph() {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                       </svg>
-                      Generando…
+                      {t('hyetograph.methodStep.generating')}
                     </>
-                  ) : 'Generar Hietograma →'}
+                  ) : t('hyetograph.methodStep.generate')}
                 </button>
               </div>
               {hyetoMissingMsg && !loading && (
@@ -420,15 +400,15 @@ export function Hyetograph() {
             {/* Summary stats */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
-                { label: 'Precipitación total', value: `${result.total_depth_mm.toFixed(1)} mm` },
-                { label: 'Intensidad pico', value: `${result.peak_intensity_mm_hr.toFixed(1)} mm/hr` },
+                { label: t('hyetograph.results.totalRainfall'), value: `${result.total_depth_mm.toFixed(1)} mm` },
+                { label: t('hyetograph.results.peakIntensity'), value: `${result.peak_intensity_mm_hr.toFixed(1)} mm/hr` },
                 {
-                  label: 'Tiempo al pico',
+                  label: t('hyetograph.results.timeToPeak'),
                   value: result.method === 'uniform' || result.method === 'uniforme'
-                    ? '— (distribución plana)'
+                    ? t('hyetograph.results.flatDist')
                     : formatTime(result.peak_time_min),
                 },
-                { label: 'Intervalo Δt', value: `${result.time_step_min} min` },
+                { label: t('hyetograph.results.timeStep'), value: `${result.time_step_min} min` },
               ].map((s) => (
                 <div key={s.label} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 text-center">
                   <p className="text-xs text-gray-500 mb-1">{s.label}</p>
@@ -439,13 +419,13 @@ export function Hyetograph() {
 
             {/* Info badge */}
             <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-xs text-blue-700">
-              <strong>{result.city}</strong> · T = {result.return_period} años · D = {result.duration_min} min ·
-              Método: <strong>{result.method_label}</strong> · Fuente IDF: {result.idf_source}
+              <strong>{result.city}</strong> · T = {result.return_period} {t('common.years')} · D = {result.duration_min} min ·
+              {t('common.method')}: <strong>{result.method_label}</strong> · {result.idf_source}
             </div>
 
             {/* Hyetograph bar chart */}
-            <Card title="Hietograma — Intensidad por intervalo">
-              <div role="img" aria-label="Hietograma — intensidad de lluvia por intervalo de tiempo">
+            <Card title={t('hyetograph.results.chartTitle')}>
+              <div role="img" aria-label={t('hyetograph.results.chartTitle')}>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -453,7 +433,7 @@ export function Hyetograph() {
                     dataKey="timeLabel"
                     tick={{ fontSize: 9 }}
                     interval="preserveStartEnd"
-                    label={{ value: 'Tiempo', position: 'insideBottom', offset: -2, fontSize: 9 }}
+                    label={{ value: t('common.time'), position: 'insideBottom', offset: -2, fontSize: 9 }}
                   />
                   <YAxis
                     unit=" mm/hr"
@@ -462,7 +442,7 @@ export function Hyetograph() {
                     label={{ value: 'i (mm/hr)', angle: -90, position: 'insideLeft', offset: 8, fontSize: 9 }}
                   />
                   <Tooltip
-                    formatter={(v) => [`${Number(v).toFixed(2)} mm/hr`, 'Intensidad']}
+                    formatter={(v) => [`${Number(v).toFixed(2)} mm/hr`, t('hyetograph.results.peakIntensity')]}
                     labelFormatter={(l) => `t = ${l}`}
                     labelStyle={{ fontWeight: 600 }}
                   />
@@ -473,8 +453,8 @@ export function Hyetograph() {
             </Card>
 
             {/* Cumulative rainfall line chart */}
-            <Card title="Precipitación acumulada">
-              <div role="img" aria-label="Gráfico de precipitación acumulada a lo largo del tiempo">
+            <Card title={t('hyetograph.results.cumulativeTitle')}>
+              <div role="img" aria-label={t('hyetograph.results.cumulativeTitle')}>
               <ResponsiveContainer width="100%" height={180}>
                 <LineChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
@@ -489,7 +469,7 @@ export function Hyetograph() {
                     width={52}
                   />
                   <Tooltip
-                    formatter={(v) => [`${Number(v).toFixed(2)} mm`, 'Acumulado']}
+                    formatter={(v) => [`${Number(v).toFixed(2)} mm`, t('hyetograph.results.tableCumulative')]}
                     labelFormatter={(l) => `t = ${l}`}
                   />
                   <Line
@@ -506,21 +486,21 @@ export function Hyetograph() {
             </Card>
 
             {/* Data table */}
-            <Card title="Tabla de datos">
+            <Card title={t('hyetograph.results.tableTitle')}>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-left py-1.5 pr-3 text-gray-600 font-semibold">Tiempo (min)</th>
-                      <th className="text-right py-1.5 px-3 text-gray-600 font-semibold">Intensidad (mm/hr)</th>
-                      <th className="text-right py-1.5 px-3 text-gray-600 font-semibold">Prof. (mm)</th>
-                      <th className="text-right py-1.5 pl-3 text-gray-600 font-semibold">Acum. (mm)</th>
+                      <th className="text-left py-1.5 pr-3 text-gray-600 font-semibold">{t('hyetograph.results.tableTime')}</th>
+                      <th className="text-right py-1.5 px-3 text-gray-600 font-semibold">{t('hyetograph.results.tableIntensity')}</th>
+                      <th className="text-right py-1.5 px-3 text-gray-600 font-semibold">{t('hyetograph.results.tableDepth')}</th>
+                      <th className="text-right py-1.5 pl-3 text-gray-600 font-semibold">{t('hyetograph.results.tableCumulative')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
-                    {result.times_min.map((t, i) => (
+                    {result.times_min.map((tVal, i) => (
                       <tr key={i} className="hover:bg-gray-50">
-                        <td className="py-1 pr-3 text-gray-700">{t}</td>
+                        <td className="py-1 pr-3 text-gray-700">{tVal}</td>
                         <td className="py-1 px-3 text-right tabular-nums font-semibold text-blue-700">
                           {result.intensities_mm_hr[i].toFixed(2)}
                         </td>
@@ -544,7 +524,7 @@ export function Hyetograph() {
                 onClick={() => { setStep(0); setResult(null); }}
                 className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-50"
               >
-                Nuevo cálculo
+                {t('hyetograph.results.newCalculation')}
               </button>
               <div className="flex gap-2">
                 <button
@@ -555,14 +535,13 @@ export function Hyetograph() {
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
-                  Descargar CSV
+                  {t('hyetograph.results.downloadCsv')}
                 </button>
               </div>
             </div>
 
             <p className="text-xs text-gray-400 text-center">
-              Hietograma de diseño generado con datos IDF de {result.city} ({result.province}) ·
-              Método: {result.method_label}
+              {result.city} ({result.province}) · {result.method_label}
             </p>
           </div>
         )}

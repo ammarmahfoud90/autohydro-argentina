@@ -162,3 +162,53 @@ def test_apa_parametric_formula_for_non_discrete_duration():
     assert i_300 > i_720 > 0, (
         f"Parametric formula should work for extended durations: i(300)={i_300:.2f} i(720)={i_720:.2f}"
     )
+
+
+# ── 8. Duration extrapolation warning (Task 3 — APA Chaco) ────────────────────
+
+class TestApaExtrapolationWarning:
+    """
+    APA Chaco formula is calibrated on a specific set of tabulated durations
+    (e.g. 15–180 min for AMGR, PR Sáenz Peña).  Requests outside that range
+    must return duration_extrapolation_warning=True so the UI can surface a
+    reliability notice.  The calculation itself still proceeds (the formula is
+    mathematically well-defined outside the calibrated range).
+    """
+
+    def test_in_range_duration_no_warning(self):
+        """60 min is within the AMGR table range → no extrapolation warning."""
+        result = calculate_intensity("amgr", 10, 60)
+        assert result["duration_extrapolation_warning"] is False
+
+    def test_below_table_min_warns(self):
+        """5 min is below the AMGR table min (15 min) → warning must be True."""
+        result = calculate_intensity("amgr", 10, 5)
+        assert result["intensity_mm_hr"] > 0, "Calculation must still succeed"
+        assert result["duration_extrapolation_warning"] is True
+
+    def test_above_table_max_warns(self):
+        """300 min is above the AMGR table max (180 min) → warning must be True."""
+        result = calculate_intensity("amgr", 10, 300)
+        assert result["intensity_mm_hr"] > 0, "Calculation must still succeed"
+        assert result["duration_extrapolation_warning"] is True
+
+    def test_warning_carries_valid_range(self):
+        """When warning is True, valid range bounds must be included in the result."""
+        result = calculate_intensity("amgr", 10, 5)
+        assert "duration_valid_range_min" in result
+        assert "duration_valid_range_max" in result
+        assert result["duration_valid_range_min"] < result["duration_valid_range_max"]
+
+
+# ── 9. Mendoza duration bounds (Task 3 — INA-CRA Mendoza) ────────────────────
+
+def test_mendoza_too_short_duration_raises():
+    """Duration below valid_duration_min (5 min) must raise ValueError."""
+    with pytest.raises(ValueError, match="below the valid minimum"):
+        calculate_intensity("mendoza_pedemonte", 10, 1)
+
+
+def test_mendoza_too_long_duration_raises():
+    """Duration above valid_duration_max (1440 min) must raise ValueError."""
+    with pytest.raises(ValueError, match="exceeds the valid maximum"):
+        calculate_intensity("mendoza_pedemonte", 10, 2000)

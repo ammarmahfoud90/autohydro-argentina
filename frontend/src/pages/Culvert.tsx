@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { generateCulvertPdf } from '../services/api';
 import { fetchWithRetry } from '../utils/fetchWithRetry';
 
@@ -13,6 +14,11 @@ interface HydroSourceInfo {
 const METHOD_LABEL: Record<string, string> = {
   rational:          'Racional',
   modified_rational: 'Racional Mod.',
+  scs_cn:            'SCS-CN',
+};
+const METHOD_LABEL_EN: Record<string, string> = {
+  rational:          'Rational',
+  modified_rational: 'Modified Rational',
   scs_cn:            'SCS-CN',
 };
 
@@ -116,13 +122,13 @@ function Card({ title, children }: { title?: string; children: React.ReactNode }
   );
 }
 
-function ControlBadge({ control }: { control: string }) {
+function ControlBadge({ control, t }: { control: string; t: (key: string) => string }) {
   const inlet = control === 'inlet';
   return (
     <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
       inlet ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800'
     }`}>
-      {inlet ? 'Control de entrada' : 'Control de salida'}
+      {inlet ? t('culvert.inletControlBadge') : t('culvert.outletControlBadge')}
     </span>
   );
 }
@@ -159,6 +165,8 @@ const INLET_TYPES = [
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export function Culvert() {
+  const { t, i18n } = useTranslation();
+  const methodLabel = i18n.language === 'en' ? METHOD_LABEL_EN : METHOD_LABEL;
   const location = useLocation();
   const routeState = location.state as { prefilledFlow?: number; flow?: number; sourceInfo?: HydroSourceInfo } | null;
   const passedFlow = routeState?.prefilledFlow ?? routeState?.flow; // prefilledFlow preferred, flow for back-compat
@@ -195,10 +203,10 @@ export function Culvert() {
     hwMax !== '' && parseFloat(hwMax) > 0;
 
   const culvertMissingMsg: string | null = (() => {
-    if (!(parseFloat(flow) > 0)) return 'Ingresá el caudal de diseño (> 0 m³/s).';
-    if (!(parseFloat(length) > 0)) return 'Ingresá la longitud del conducto (> 0 m).';
-    if (!(parseFloat(slope) > 0)) return 'Ingresá la pendiente longitudinal (> 0).';
-    if (!(parseFloat(hwMax) > 0)) return 'Ingresá el tirante máximo admisible (> 0 m).';
+    if (!(parseFloat(flow) > 0)) return t('culvert.validation.flowRequired');
+    if (!(parseFloat(length) > 0)) return t('culvert.validation.lengthRequired');
+    if (!(parseFloat(slope) > 0)) return t('culvert.validation.slopeRequired');
+    if (!(parseFloat(hwMax) > 0)) return t('culvert.validation.hwMaxRequired');
     return null;
   })();
 
@@ -260,7 +268,7 @@ export function Culvert() {
     } catch (e: unknown) {
       setError(
         e instanceof Error && e.message.toLowerCase().includes('timeout')
-          ? 'El servidor tardó demasiado en responder. Intentá de nuevo en unos segundos.'
+          ? t('results_extra.serverSlowError')
           : e instanceof Error
             ? e.message
             : 'Error desconocido',
@@ -286,8 +294,8 @@ export function Culvert() {
               </svg>
             </div>
             <div>
-              <h1 className="text-lg font-bold leading-tight">Dimensionamiento de Alcantarillas</h1>
-              <p className="text-sm text-blue-200">Control de entrada y salida · Tamaños comerciales argentinos</p>
+              <h1 className="text-lg font-bold leading-tight">{t('culvert.pageTitle')}</h1>
+              <p className="text-sm text-blue-200">{t('culvert.pageSubtitle')}</p>
             </div>
           </div>
         </div>
@@ -296,17 +304,17 @@ export function Culvert() {
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-5">
 
         {/* ── Step 1: Design flow ─────────────────────────────────────────── */}
-        <Card title="Caudal de diseño">
+        <Card title={t('culvert.designFlow')}>
           {flowFromCalc && (
             <div className="mb-3 rounded-lg bg-blue-50 border border-blue-200 px-4 py-3 text-sm flex items-start justify-between gap-3">
               <div>
                 <p className="font-semibold text-blue-900 text-xs mb-0.5">
-                  Caudal de diseño pre-cargado desde cálculo hidrológico
+                  {t('culvert.flowFromCalcBadge')}
                 </p>
                 {sourceInfo && (
                   <p className="text-xs text-blue-700">
-                    Q = {flow} m³/s · TR = {sourceInfo.return_period} años · {sourceInfo.locality}
-                    {' · '}{METHOD_LABEL[sourceInfo.method] ?? sourceInfo.method} · {sourceInfo.duration_min} min
+                    Q = {flow} m³/s · TR = {sourceInfo.return_period} {t('common.years')} · {sourceInfo.locality}
+                    {' · '}{methodLabel[sourceInfo.method] ?? sourceInfo.method} · {sourceInfo.duration_min} min
                   </p>
                 )}
               </div>
@@ -315,7 +323,7 @@ export function Culvert() {
                 onClick={() => { setFlow(''); setFlowFromCalc(false); }}
                 className="shrink-0 text-xs font-semibold text-blue-400 hover:text-blue-700 transition-colors whitespace-nowrap"
               >
-                × Limpiar
+                {t('culvert.clearFlow')}
               </button>
             </div>
           )}
@@ -332,12 +340,12 @@ export function Culvert() {
               />
               <span className="absolute right-3 top-2.5 text-xs text-gray-400">m³/s</span>
             </div>
-            <span className="text-sm text-gray-500">Caudal de diseño (Q)</span>
+            <span className="text-sm text-gray-500">{t('culvert.designFlow')} (Q)</span>
           </div>
         </Card>
 
         {/* ── Step 2: Culvert type ────────────────────────────────────────── */}
-        <Card title="Tipo de alcantarilla">
+        <Card title={t('culvert.culvertType')}>
           <div className="grid grid-cols-2 gap-3">
             {/* Circular */}
             <button
@@ -356,9 +364,9 @@ export function Culvert() {
               </svg>
               <div>
                 <div className={`text-sm font-semibold ${culvertType === 'circular' ? 'text-blue-700' : 'text-gray-700'}`}>
-                  Caño circular
+                  {t('culvert.circular')}
                 </div>
-                <div className="text-xs text-gray-500">Hormigón · PEAD · Chapa</div>
+                <div className="text-xs text-gray-500">{t('culvert.circularDesc')}</div>
               </div>
             </button>
 
@@ -379,21 +387,21 @@ export function Culvert() {
               </svg>
               <div>
                 <div className={`text-sm font-semibold ${culvertType === 'box' ? 'text-blue-700' : 'text-gray-700'}`}>
-                  Alcantarilla cajón
+                  {t('culvert.box')}
                 </div>
-                <div className="text-xs text-gray-500">Box culvert rectangular</div>
+                <div className="text-xs text-gray-500">{t('culvert.boxDesc')}</div>
               </div>
             </button>
           </div>
         </Card>
 
         {/* ── Step 3: Design parameters ───────────────────────────────────── */}
-        <Card title="Parámetros de diseño">
+        <Card title={t('culvert.designParams')}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Length */}
             <div>
               <label htmlFor="culvert-length" className="block text-xs font-medium text-gray-600 mb-1">
-                Longitud de la alcantarilla
+                {t('culvert.length')}
               </label>
               <div className="relative">
                 <input
@@ -411,7 +419,7 @@ export function Culvert() {
             {/* Slope */}
             <div>
               <label htmlFor="culvert-slope" className="block text-xs font-medium text-gray-600 mb-1">
-                Pendiente del conducto
+                {t('culvert.slope')}
               </label>
               <div className="relative">
                 <input
@@ -429,7 +437,7 @@ export function Culvert() {
             {/* Headwater max */}
             <div>
               <label htmlFor="culvert-hwmax" className="block text-xs font-medium text-gray-600 mb-1">
-                Tirante aguas arriba admisible (HW máx.)
+                {t('culvert.hwMax')}
               </label>
               <div className="relative">
                 <input
@@ -447,7 +455,7 @@ export function Culvert() {
             {/* Tailwater */}
             <div>
               <label htmlFor="culvert-tailwater" className="block text-xs font-medium text-gray-600 mb-1">
-                Nivel aguas abajo (cola)
+                {t('culvert.tailwater')}
               </label>
               <div className="relative">
                 <input
@@ -455,7 +463,7 @@ export function Culvert() {
                   type="number" min="0" step="0.1"
                   value={tailwater}
                   onChange={(e) => setTailwater(e.target.value)}
-                  placeholder="0 = descarga libre"
+                  placeholder={t('culvert.tailwaterPlaceholder')}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <span className="absolute right-3 top-2.5 text-xs text-gray-400">m</span>
@@ -465,7 +473,7 @@ export function Culvert() {
             {/* Material */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">
-                Material
+                {t('culvert.material')}
               </label>
               <select
                 value={material}
@@ -481,7 +489,7 @@ export function Culvert() {
             {/* Inlet type */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">
-                Tipo de entrada
+                {t('culvert.inletType')}
               </label>
               <select
                 value={inletType}
@@ -515,10 +523,10 @@ export function Culvert() {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                   </svg>
                   {loadingAttempt > 0
-                    ? `Iniciando servidor… (intento ${loadingAttempt}/3)`
-                    : 'Calculando…'}
+                    ? t('culvert.serverRetry').replace('{{attempt}}', String(loadingAttempt))
+                    : t('common.calculating')}
                 </span>
-              ) : 'Dimensionar alcantarilla'}
+              ) : t('culvert.calculateBtn')}
             </button>
             {culvertMissingMsg && !loading && (
               <p className="text-sm text-amber-600 mt-2 text-center">{culvertMissingMsg}</p>
@@ -559,69 +567,66 @@ export function Culvert() {
                     <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
                       rec.ok ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     }`}>
-                      {rec.ok ? '✓ Cumple' : '✗ No cumple'}
+                      {rec.ok ? t('culvert.passes') : t('culvert.fails')}
                     </span>
-                    <ControlBadge control={rec.control} />
+                    <ControlBadge control={rec.control} t={t} />
                   </div>
 
                   <h3 className="text-2xl font-bold text-gray-900 mt-1 mb-3">
                     {rec.label}
-                    <span className="ml-2 text-sm font-normal text-gray-500">(tamaño recomendado)</span>
+                    <span className="ml-2 text-sm font-normal text-gray-500">{t('culvert.recommended')}</span>
                   </h3>
 
                   {rec.culvert_insufficient && (
                     <div className="mb-3 rounded-lg border-2 border-red-400 bg-red-50 px-4 py-3 text-sm text-red-800">
-                      <p className="font-semibold">⚠️ Alcantarilla insuficiente</p>
+                      <p className="font-semibold">⚠️ {t('culvert.insufficientTitle')}</p>
                       <p className="mt-1 text-xs">
-                        HW/D = {rec.hwd_ratio.toFixed(2)} excede el límite físico de 4.0. La sección
-                        no puede evacuar este caudal. Se requiere una alcantarilla más grande,
-                        múltiples conductos o un puente. El valor de HW mostrado es extrapolación
-                        polinómica y no es físicamente confiable.
+                        {t('culvert.insufficientDesc').replace('{{ratio}}', rec.hwd_ratio.toFixed(2))}
                       </p>
                     </div>
                   )}
                   {!rec.culvert_insufficient && rec.hwd_ratio > 2.5 && (
                     <div className="mb-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-xs text-amber-800">
-                      HW/D = {rec.hwd_ratio.toFixed(2)} — cercano al límite recomendado. Considerá una sección mayor.
+                      {t('culvert.hwNearLimit').replace('{{ratio}}', rec.hwd_ratio.toFixed(2))}
                     </div>
                   )}
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <MetricCard
-                      label="Tirante aguas arriba (HW)"
+                      label={t('culvert.hwUpstream')}
                       value={rec.culvert_insufficient ? '—' : `${rec.hw_m.toFixed(2)}`}
                       unit={rec.culvert_insufficient ? '' : 'm'}
                       highlight
                     />
-                    <MetricCard label="Relación HW/D" value={rec.hwd_ratio.toFixed(2)} />
-                    <MetricCard label="Vel. de salida" value={`${rec.outlet_velocity_ms.toFixed(2)}`} unit="m/s" />
-                    <MetricCard label="Área de conducto" value={`${rec.area_m2.toFixed(3)}`} unit="m²" />
+                    <MetricCard label={t('culvert.hwRatio')} value={rec.hwd_ratio.toFixed(2)} />
+                    <MetricCard label={t('culvert.outletVelocity')} value={`${rec.outlet_velocity_ms.toFixed(2)}`} unit="m/s" />
+                    <MetricCard label={t('culvert.culvertArea')} value={`${rec.area_m2.toFixed(3)}`} unit="m²" />
                   </div>
 
                   <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-gray-600">
-                    <div><span className="text-gray-400">HW control entrada:</span> {rec.hw_ic_m.toFixed(3)} m</div>
-                    <div><span className="text-gray-400">HW control salida:</span> {rec.hw_oc_m.toFixed(3)} m</div>
-                    <div><span className="text-gray-400">Material:</span> {result.material_label}</div>
-                    <div><span className="text-gray-400">Tipo de entrada:</span> {result.inlet_label}</div>
-                    <div><span className="text-gray-400">Manning n:</span> {result.manning_n}</div>
-                    <div><span className="text-gray-400">Longitud:</span> {result.length_m} m</div>
+                    <div><span className="text-gray-400">{t('culvert.hwInletControl')}</span> {rec.hw_ic_m.toFixed(3)} m</div>
+                    <div><span className="text-gray-400">{t('culvert.hwOutletControl')}</span> {rec.hw_oc_m.toFixed(3)} m</div>
+                    <div><span className="text-gray-400">{t('culvert.materialLabel')}</span> {result.material_label}</div>
+                    <div><span className="text-gray-400">{t('culvert.inletLabel')}</span> {result.inlet_label}</div>
+                    <div><span className="text-gray-400">{t('culvert.manningN')}</span> {result.manning_n}</div>
+                    <div><span className="text-gray-400">{t('culvert.lengthLabel')}</span> {result.length_m} m</div>
                   </div>
                 </div>
               </div>
             </Card>
 
             {/* All alternatives */}
-            <Card title="Comparativa de tamaños comerciales">
+            <Card title={t('culvert.comparisonTitle')}>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-left py-2 pr-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Tamaño</th>
-                      <th className="text-right py-2 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">HW (m)</th>
-                      <th className="text-right py-2 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">HW/D</th>
-                      <th className="text-right py-2 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">V sal. (m/s)</th>
-                      <th className="text-center py-2 pl-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Control</th>
-                      <th className="text-center py-2 pl-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Estado</th>
+                      <th className="text-left py-2 pr-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('culvert.sizeCol')}</th>
+                      <th className="text-right py-2 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('culvert.hwCol')}</th>
+                      <th className="text-right py-2 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('culvert.hwdCol')}</th>
+                      <th className="text-right py-2 px-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('culvert.velocityCol')}</th>
+                      <th className="text-center py-2 pl-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('culvert.controlCol')}</th>
+                      <th className="text-center py-2 pl-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('culvert.statusCol')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -632,11 +637,11 @@ export function Culvert() {
                         <tr key={i} className={`border-b border-gray-100 ${isRec ? 'bg-blue-50' : ''}`}>
                           <td className="py-2 pr-3 font-medium text-gray-800">
                             {alt.label}
-                            {isRec && <span className="ml-2 text-xs text-blue-600 font-semibold">← recomendado</span>}
+                            {isRec && <span className="ml-2 text-xs text-blue-600 font-semibold">{t('culvert.recommendedLabel')}</span>}
                           </td>
                           <td className="text-right py-2 px-3 tabular-nums">
                             {outOfRange
-                              ? <span className="text-xs text-gray-400 italic">fuera de rango</span>
+                              ? <span className="text-xs text-gray-400 italic">{t('culvert.outOfRange')}</span>
                               : alt.hw_m.toFixed(3)}
                           </td>
                           <td className="text-right py-2 px-3 tabular-nums">{alt.hwd_ratio.toFixed(2)}</td>
@@ -650,7 +655,7 @@ export function Culvert() {
                                   ? 'bg-orange-100 text-orange-700'
                                   : 'bg-purple-100 text-purple-700'
                               }`}>
-                                {alt.control === 'inlet' ? 'Entrada' : 'Salida'}
+                                {alt.control === 'inlet' ? t('culvert.inletControl') : t('culvert.outletControl')}
                               </span>
                             )}
                           </td>
@@ -666,31 +671,18 @@ export function Culvert() {
                 </table>
               </div>
               <p className="mt-2 text-xs text-gray-400">
-                ✓ = HW calculado ≤ HW máx. admisible ({result.headwater_max_m} m)
+                {t('culvert.hwMaxNote').replace('{{hwmax}}', String(result.headwater_max_m))}
               </p>
             </Card>
 
             {/* Methodology note */}
             <Card>
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Metodología</h3>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{t('culvert.methodologyTitle')}</h3>
               <div className="text-xs text-gray-600 space-y-1">
-                <p>
-                  Cálculo basado en <strong>FHWA HDS-5</strong> (Hydraulic Design of Highway Culverts).
-                  Se calcula el tirante aguas arriba (HW) bajo control de entrada y salida,
-                  y se adopta el mayor valor (condición gobernante).
-                </p>
-                <p>
-                  <strong>Control de entrada:</strong> limitado por la capacidad de la boca de ingreso
-                  (nomograma FHWA, aproximación polinomial).
-                </p>
-                <p>
-                  <strong>Control de salida:</strong> ecuación de energía con pérdidas por entrada (Ke),
-                  fricción (Manning–Darcy) y velocidad de salida.
-                </p>
-                <p className="text-gray-400 mt-1">
-                  Tamaños comerciales según práctica argentina (IRAM/CIRSOC). Para proyectos definitivos,
-                  validar con normativa provincial y planos de obra.
-                </p>
+                <p>{t('culvert.methodologyText1')}</p>
+                <p><strong>{t('culvert.inletControlBadge')}:</strong> {t('culvert.methodologyInlet')}</p>
+                <p><strong>{t('culvert.outletControlBadge')}:</strong> {t('culvert.methodologyOutlet')}</p>
+                <p className="text-gray-400 mt-1">{t('culvert.methodologyNote')}</p>
               </div>
             </Card>
 
@@ -708,7 +700,7 @@ export function Culvert() {
                 }}
                 className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
               >
-                Nuevo cálculo
+                {t('culvert.newCalculation')}
               </button>
               <button
                 type="button"
@@ -722,14 +714,14 @@ export function Culvert() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                     </svg>
-                    Generando PDF…
+                    {t('culvert.generatingPdf')}
                   </>
                 ) : (
                   <>
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    Generar Memoria de Cálculo (PDF)
+                    {t('culvert.generatePdf')}
                   </>
                 )}
               </button>

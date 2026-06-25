@@ -35,7 +35,9 @@
       "D": "Duración en horas",
       "omega": "Parámetro que depende del período de retorno TR"
     },
-    "note": "D debe expresarse en HORAS. Parámetros 0.268 y 0.883 son constantes del modelo. omega varía según TR.",
+    "valid_duration_min": 5,
+    "valid_duration_max": 1440,
+    "note": "D debe expresarse en HORAS. Parámetros 0.268 y 0.883 son constantes del modelo. omega varía según TR. Rango de validez: 5–1440 min.",
     "omega_by_return_period": {
       "2":   36.049,
       "5":   53.303,

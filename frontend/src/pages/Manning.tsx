@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { generateManningPdf } from '../services/api';
 import { ManningEfficiencyCurves } from '../components/manning/ManningEfficiencyCurves';
 import { ChannelCrossSectionSVG } from '../components/manning/ChannelCrossSectionSVG';
@@ -12,7 +13,13 @@ interface HydroSourceInfo {
   method: string;
 }
 
-const METHOD_LABEL: Record<string, string> = {
+// METHOD_LABEL is used only for the pre-filled flow info badge (proper names, not translated)
+const METHOD_LABEL_EN: Record<string, string> = {
+  rational:          'Rational',
+  modified_rational: 'Modified Rational',
+  scs_cn:            'SCS-CN',
+};
+const METHOD_LABEL_ES: Record<string, string> = {
   rational:          'Racional',
   modified_rational: 'Racional Mod.',
   scs_cn:            'SCS-CN',
@@ -64,22 +71,22 @@ const MANNING_PRESETS = [
 
 // ── Regime badge ──────────────────────────────────────────────────────────────
 
-function RegimeBadge({ regime, fr }: { regime: string; fr: number | null }) {
+function RegimeBadge({ regime, fr, t }: { regime: string; fr: number | null; t: (key: string) => string }) {
   const styles: Record<string, string> = {
     subcritical: 'bg-blue-100 text-blue-800 border-blue-300',
     critical: 'bg-yellow-100 text-yellow-800 border-yellow-300',
     supercritical: 'bg-red-100 text-red-800 border-red-300',
     a_presion: 'bg-gray-100 text-gray-700 border-gray-300',
   };
-  const labels: Record<string, string> = {
-    subcritical: 'Subcrítico (lento)',
-    critical: 'Crítico',
-    supercritical: 'Supercrítico (rápido)',
-    a_presion: 'Flujo a presión',
+  const labelKey: Record<string, string> = {
+    subcritical: 'manning.regimeBadges.subcritical',
+    critical: 'manning.regimeBadges.critical',
+    supercritical: 'manning.regimeBadges.supercritical',
+    a_presion: 'manning.regimeBadges.pressure',
   };
   return (
     <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-sm font-semibold ${styles[regime] ?? styles.subcritical}`}>
-      {labels[regime] ?? regime}
+      {labelKey[regime] ? t(labelKey[regime]) : regime}
       {fr !== null && <span className="font-normal opacity-75">Fr = {fr.toFixed(2)}</span>}
     </span>
   );
@@ -120,6 +127,9 @@ export function Manning() {
   // Triangular
   const [triSideSlope, setTriSideSlope] = useState('2.0');
 
+  const { t, i18n } = useTranslation();
+  const METHOD_LABEL = i18n.language === 'en' ? METHOD_LABEL_EN : METHOD_LABEL_ES;
+
   const [result, setResult] = useState<ManningResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -129,22 +139,25 @@ export function Manning() {
   const slopeNum = parseFloat(slope);
   const hasValidSlope = Number.isFinite(slopeNum) && slopeNum > 0;
   const hasValidN = Number.isFinite(manningN) && manningN > 0;
+  const depthNum = parseFloat(depth);
+  const diamNum = parseFloat(diameter);
   const validationMessage: string | null = (() => {
-    if (!hasValidN) return 'Ingresá un coeficiente n de Manning válido (> 0).';
-    if (!hasValidSlope) return 'Ingresá una pendiente longitudinal válida (> 0).';
+    if (!hasValidN) return t('manning.validation.nRequired');
+    if (!hasValidSlope) return t('manning.validation.slopeRequired');
     if (channelType === 'rectangular') {
-      if (!(parseFloat(width) > 0)) return 'Ingresá el ancho del canal (> 0).';
-      if (!(parseFloat(depth) > 0)) return 'Ingresá el tirante (> 0).';
+      if (!(parseFloat(width) > 0)) return t('manning.validation.widthRequired');
+      if (!(depthNum > 0)) return t('manning.validation.depthRequired');
     } else if (channelType === 'trapezoidal') {
-      if (!(parseFloat(bottomWidth) > 0)) return 'Ingresá el ancho de base (> 0).';
-      if (!(parseFloat(depth) > 0)) return 'Ingresá el tirante (> 0).';
-      if (!(parseFloat(sideSlope) > 0)) return 'Ingresá el talud lateral (z > 0).';
+      if (!(parseFloat(bottomWidth) > 0)) return t('manning.validation.bottomWidthRequired');
+      if (!(depthNum > 0)) return t('manning.validation.depthRequired');
+      if (!(parseFloat(sideSlope) > 0)) return t('manning.validation.sideSlopeRequired');
     } else if (channelType === 'circular') {
-      if (!(parseFloat(diameter) > 0)) return 'Ingresá el diámetro (> 0).';
-      if (!(parseFloat(depth) > 0)) return 'Ingresá el tirante (> 0).';
+      if (!(diamNum > 0)) return t('manning.validation.diameterRequired');
+      if (!(depthNum > 0)) return t('manning.validation.depthRequired');
+      if (depthNum > diamNum) return t('manning.validation.depthExceedsDiameter');
     } else if (channelType === 'triangular') {
-      if (!(parseFloat(triSideSlope) > 0)) return 'Ingresá el talud lateral (z > 0).';
-      if (!(parseFloat(depth) > 0)) return 'Ingresá el tirante (> 0).';
+      if (!(parseFloat(triSideSlope) > 0)) return t('manning.validation.trSlopeRequired');
+      if (!(depthNum > 0)) return t('manning.validation.depthRequired');
     }
     return null;
   })();
@@ -249,25 +262,25 @@ export function Manning() {
   const ssVal = parseFloat(sideSlope) || 1.5;
   const tssVal = parseFloat(triSideSlope) || 2;
   const channelTypeOptions: { type: ChannelType; label: string; icon: string }[] = [
-    { type: 'rectangular', label: 'Rectangular', icon: '▬' },
-    { type: 'trapezoidal', label: 'Trapezoidal', icon: '⏢' },
-    { type: 'circular', label: 'Circular', icon: '⬤' },
-    { type: 'triangular', label: 'Triangular', icon: '▽' },
+    { type: 'rectangular', label: t('manning.channels.rectangular'), icon: '▬' },
+    { type: 'trapezoidal', label: t('manning.channels.trapezoidal'), icon: '⏢' },
+    { type: 'circular', label: t('manning.channels.circular'), icon: '⬤' },
+    { type: 'triangular', label: t('manning.channels.triangular'), icon: '▽' },
   ];
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Helmet>
-        <title>Cálculo Manning — AutoHydro Argentina</title>
-        <meta name="description" content="Capacidad de conducción en canales abiertos. Secciones rectangular, trapezoidal, circular y triangular. Curvas de eficiencia hidráulica." />
+        <title>{t('manning.pageTitle')} — AutoHydro Argentina</title>
+        <meta name="description" content={t('manning.subtitle')} />
       </Helmet>
       <div className="max-w-5xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Cálculo Hidráulico — Ecuación de Manning</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('manning.pageTitle')}</h1>
           <p className="text-gray-500 text-sm mt-1">
             Q = (1/n) × A × R<sup>2/3</sup> × S<sup>1/2</sup>
-            &nbsp;·&nbsp; Capacidad de conducción en canales a superficie libre
+            &nbsp;·&nbsp; {t('manning.subtitle')}
           </p>
         </div>
 
@@ -277,7 +290,7 @@ export function Manning() {
 
             {/* Channel type */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-              <h2 className="text-sm font-semibold text-gray-700 mb-3">Tipo de canal</h2>
+              <h2 className="text-sm font-semibold text-gray-700 mb-3">{t('manning.channelType')}</h2>
               <div className="grid grid-cols-2 gap-2">
                 {channelTypeOptions.map(({ type, label, icon }) => (
                   <button
@@ -318,45 +331,46 @@ export function Manning() {
 
             {/* Dimensions */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-              <h2 className="text-sm font-semibold text-gray-700 mb-3">Dimensiones de la sección</h2>
+              <h2 className="text-sm font-semibold text-gray-700 mb-3">{t('manning.sectionDimensions')}</h2>
               <div className="space-y-3">
                 {channelType === 'rectangular' && (
                   <>
-                    <Field label="Ancho (b)" value={width} unit="m" onChange={setWidth} />
-                    <Field label="Tirante (y)" value={depth} unit="m" onChange={setDepth} />
+                    <Field label={t('manning.fields.width')} value={width} unit="m" onChange={setWidth} />
+                    <Field label={t('manning.fields.depth')} value={depth} unit="m" onChange={setDepth} />
                   </>
                 )}
                 {channelType === 'trapezoidal' && (
                   <>
-                    <Field label="Ancho de fondo (b)" value={bottomWidth} unit="m" onChange={setBottomWidth} />
-                    <Field label="Tirante (y)" value={depth} unit="m" onChange={setDepth} />
-                    <Field label="Talud lateral (z en z:1)" value={sideSlope} unit="" onChange={setSideSlope} step="0.1" />
+                    <Field label={t('manning.fields.bottomWidth')} value={bottomWidth} unit="m" onChange={setBottomWidth} />
+                    <Field label={t('manning.fields.depth')} value={depth} unit="m" onChange={setDepth} />
+                    <Field label={t('manning.fields.sideSlope')} value={sideSlope} unit="" onChange={setSideSlope} step="0.1" />
                   </>
                 )}
                 {channelType === 'circular' && (
                   <>
-                    <Field label="Diámetro (D)" value={diameter} unit="m" onChange={setDiameter} step="0.1" />
-                    <Field label="Tirante (y)" value={depth} unit="m" onChange={setDepth} />
+                    <Field label={t('manning.fields.diameter')} value={diameter} unit="m" onChange={setDiameter} step="0.1" />
+                    <Field label={t('manning.fields.depth')} value={depth} unit="m" onChange={setDepth} />
                   </>
                 )}
                 {channelType === 'triangular' && (
                   <>
-                    <Field label="Talud lateral (z en z:1)" value={triSideSlope} unit="" onChange={setTriSideSlope} step="0.1" />
-                    <Field label="Tirante (y)" value={depth} unit="m" onChange={setDepth} />
+                    <Field label={t('manning.fields.sideSlope')} value={triSideSlope} unit="" onChange={setTriSideSlope} step="0.1" />
+                    <Field label={t('manning.fields.depth')} value={depth} unit="m" onChange={setDepth} />
                   </>
                 )}
-                <Field label="Pendiente longitudinal (S)" value={slope} unit="m/m" onChange={setSlope} step="0.0001" />
+                <Field label={t('manning.fields.slope')} value={slope} unit="m/m" onChange={setSlope} step="0.0001" />
               </div>
             </div>
 
             {/* Manning n */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-              <h2 className="text-sm font-semibold text-gray-700 mb-3">Coeficiente de rugosidad (n)</h2>
+              <h2 className="text-sm font-semibold text-gray-700 mb-3">{t('manning.roughness')}</h2>
               <select
                 value={nPreset}
                 onChange={(e) => selectPreset(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
+                {/* Manning n presets use proper material names — not translated */}
                 {['Revestidos', 'Tierra', 'Estructuras', 'Cauces'].map((group) => (
                   <optgroup key={group} label={group}>
                     {MANNING_PRESETS.filter((p) => p.group === group).map((p) => (
@@ -393,39 +407,41 @@ export function Manning() {
             {/* Lining type for velocity warnings */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
               <h2 className="text-sm font-semibold text-gray-700 mb-1">
-                Material del canal <span className="text-gray-400 font-normal">(opcional)</span>
+                {t('manning.materialCard')} <span className="text-gray-400 font-normal">({t('common.optional')})</span>
               </h2>
-              <p className="text-xs text-gray-500 mb-2">Para verificar velocidades admisibles de erosión y sedimentación.</p>
+              <p className="text-xs text-gray-500 mb-2">{t('manning.materialHint')}</p>
               <select
                 value={liningType}
                 onChange={(e) => setLiningType(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">— Sin verificar —</option>
-                <option value="hormigon">Hormigón</option>
-                <option value="tierra_arcillosa">Tierra arcillosa</option>
-                <option value="tierra_limosa">Tierra limosa</option>
-                <option value="tierra_arenosa">Tierra arenosa</option>
-                <option value="grava_fina">Grava fina</option>
-                <option value="grava_gruesa">Grava gruesa / canto rodado</option>
-                <option value="roca">Roca</option>
+                <option value="">{t('manning.lining.none')}</option>
+                <option value="hormigon">{t('manning.lining.hormigon')}</option>
+                <option value="tierra_arcillosa">{t('manning.lining.tierra_arcillosa')}</option>
+                <option value="tierra_limosa">{t('manning.lining.tierra_limosa')}</option>
+                <option value="tierra_arenosa">{t('manning.lining.tierra_arenosa')}</option>
+                <option value="grava_fina">{t('manning.lining.grava_fina')}</option>
+                <option value="grava_gruesa">{t('manning.lining.grava_gruesa')}</option>
+                <option value="roca">{t('manning.lining.roca')}</option>
               </select>
             </div>
 
             {/* Design check (optional) */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-              <h2 className="text-sm font-semibold text-gray-700 mb-1">Verificar diseño <span className="text-gray-400 font-normal">(opcional)</span></h2>
-              <p className="text-xs text-gray-500 mb-3">Ingresá el caudal de diseño del cálculo hidrológico para verificar si el canal tiene capacidad suficiente.</p>
+              <h2 className="text-sm font-semibold text-gray-700 mb-1">
+                {t('manning.designCheck')} <span className="text-gray-400 font-normal">({t('common.optional')})</span>
+              </h2>
+              <p className="text-xs text-gray-500 mb-3">{t('manning.designCheckHint')}</p>
 
               {flowFromCalc && (
                 <div className="mb-3 rounded-lg bg-blue-50 border border-blue-200 px-4 py-3 text-sm flex items-start justify-between gap-3">
                   <div>
                     <p className="font-semibold text-blue-900 text-xs mb-0.5">
-                      Caudal de diseño pre-cargado desde cálculo hidrológico
+                      {t('manning.flowFromCalcBadge')}
                     </p>
                     {sourceInfo && (
                       <p className="text-xs text-blue-700">
-                        Q = {designFlow} m³/s · TR = {sourceInfo.return_period} años · {sourceInfo.locality}
+                        Q = {designFlow} m³/s · TR = {sourceInfo.return_period} {t('common.years')} · {sourceInfo.locality}
                         {' · '}{METHOD_LABEL[sourceInfo.method] ?? sourceInfo.method} · {sourceInfo.duration_min} min
                       </p>
                     )}
@@ -435,12 +451,12 @@ export function Manning() {
                     onClick={() => { setDesignFlow(''); setFlowFromCalc(false); }}
                     className="shrink-0 text-xs font-semibold text-blue-400 hover:text-blue-700 transition-colors whitespace-nowrap"
                   >
-                    × Limpiar
+                    {t('manning.clearFlow')}
                   </button>
                 </div>
               )}
 
-              <Field label="Caudal de diseño (Q_diseño)" value={designFlow} unit="m³/s" onChange={setDesignFlow} step="0.01" required={false} />
+              <Field label={t('manning.designFlow')} value={designFlow} unit="m³/s" onChange={setDesignFlow} step="0.01" required={false} />
             </div>
 
             {/* Calculate button */}
@@ -461,7 +477,7 @@ export function Manning() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                   </svg>
-                  Calculando…
+                  {t('common.calculating')}
                 </>
               ) : (
                 <>
@@ -469,7 +485,7 @@ export function Manning() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                       d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 11h.01M12 11h.01M15 11h.01M4 19h16a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
-                  Calcular Manning
+                  {t('manning.calculateBtn')}
                 </>
               )}
             </button>
@@ -489,8 +505,8 @@ export function Manning() {
             {!result && !loading && (
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center text-gray-400">
                 <div className="text-4xl mb-3">🌊</div>
-                <p className="font-medium">Completá los parámetros y presioná "Calcular Manning"</p>
-                <p className="text-sm mt-1">Los resultados aparecerán aquí</p>
+                <p className="font-medium">{t('manning.emptyState')}</p>
+                <p className="text-sm mt-1">{t('manning.emptyStateSub')}</p>
               </div>
             )}
 
@@ -498,41 +514,41 @@ export function Manning() {
               <>
                 {/* Main metrics */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <MetricCard label="Caudal (Q)" value={result.flow_m3s.toFixed(3)} unit="m³/s" color="blue" />
-                  <MetricCard label="Velocidad (V)" value={result.velocity_ms.toFixed(3)} unit="m/s" color="teal" />
-                  <MetricCard label="Área mojada (A)" value={result.area_m2.toFixed(4)} unit="m²" color="indigo" />
-                  <MetricCard label="Radio hidráulico (R)" value={result.hydraulic_radius_m.toFixed(4)} unit="m" color="violet" />
+                  <MetricCard label={t('manning.metrics.flow')} value={result.flow_m3s.toFixed(3)} unit="m³/s" color="blue" />
+                  <MetricCard label={t('manning.metrics.velocity')} value={result.velocity_ms.toFixed(3)} unit="m/s" color="teal" />
+                  <MetricCard label={t('manning.metrics.wetArea')} value={result.area_m2.toFixed(4)} unit="m²" color="indigo" />
+                  <MetricCard label={t('manning.metrics.hydraulicRadius')} value={result.hydraulic_radius_m.toFixed(4)} unit="m" color="violet" />
                 </div>
 
                 {/* Secondary metrics */}
                 <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-3">Parámetros hidráulicos</h3>
+                  <h3 className="text-sm font-semibold text-gray-700 mb-3">{t('manning.hydraulicParams')}</h3>
                   <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                    <ParamRow label="Perímetro mojado (P)" value={`${result.wetted_perimeter_m.toFixed(4)} m`} />
+                    <ParamRow label={t('manning.metrics.wettedPerimeter')} value={`${result.wetted_perimeter_m.toFixed(4)} m`} />
                     {result.top_width_m !== null && (
-                      <ParamRow label="Espejo de agua (T)" value={`${result.top_width_m.toFixed(4)} m`} />
+                      <ParamRow label={t('manning.metrics.waterSurface')} value={`${result.top_width_m.toFixed(4)} m`} />
                     )}
-                    <ParamRow label="Pendiente (S)" value={slope} />
-                    <ParamRow label="Manning n" value={String(manningN)} />
+                    <ParamRow label={t('manning.metrics.slope')} value={slope} />
+                    <ParamRow label={t('manning.metrics.manningN')} value={String(manningN)} />
                   </div>
                 </div>
 
                 {/* Flow regime */}
                 <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Régimen de flujo</h3>
-                  <RegimeBadge regime={result.flow_regime} fr={result.froude} />
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">{t('manning.flowRegime')}</h3>
+                  <RegimeBadge regime={result.flow_regime} fr={result.froude} t={t} />
                   <p className="text-xs text-gray-500 mt-2">
-                    {result.flow_regime === 'subcritical' && 'El flujo es controlado aguas abajo. Adecuado para canales de riego y drenaje.'}
-                    {result.flow_regime === 'critical' && 'Condición inestable — pequeñas perturbaciones producen grandes variaciones. Evitar en diseño.'}
-                    {result.flow_regime === 'supercritical' && 'Flujo rápido controlado aguas arriba. Requiere estructuras de disipación al final del canal.'}
-                    {result.flow_regime === 'a_presion' && 'El conducto trabaja bajo presión. Verificar estanqueidad y anclajes.'}
+                    {result.flow_regime === 'subcritical' && t('manning.regimeSubcritical')}
+                    {result.flow_regime === 'critical' && t('manning.regimeCritical')}
+                    {result.flow_regime === 'supercritical' && t('manning.regimeSupercritical')}
+                    {result.flow_regime === 'a_presion' && t('manning.regimePressure')}
                   </p>
                 </div>
 
                 {/* Warnings */}
                 {result.warnings.length > 0 && (
                   <div className="bg-amber-50 rounded-xl border border-amber-300 p-4 space-y-2">
-                    <h3 className="text-sm font-semibold text-amber-800">Avisos de velocidad</h3>
+                    <h3 className="text-sm font-semibold text-amber-800">{t('manning.velocityWarnings')}</h3>
                     {result.warnings.map((w, i) => (
                       <p key={i} className="text-sm text-amber-700 flex items-start gap-2">
                         <span className="shrink-0 mt-0.5">⚠️</span>
@@ -552,13 +568,13 @@ export function Manning() {
                     <h3 className={`text-sm font-semibold mb-2 ${
                       result.design_check.sufficient ? 'text-green-800' : 'text-red-800'
                     }`}>
-                      {result.design_check.sufficient ? '✓' : '✗'} Verificación de diseño
+                      {result.design_check.sufficient ? '✓' : '✗'} {t('manning.designVerification')}
                     </h3>
                     <div className={`grid grid-cols-2 gap-3 text-sm ${
                       result.design_check.sufficient ? 'text-green-700' : 'text-red-700'
                     }`}>
-                      <ParamRow label="Q diseño" value={`${result.design_check.design_flow_m3s.toFixed(3)} m³/s`} />
-                      <ParamRow label="Capacidad canal" value={`${result.design_check.channel_capacity_m3s.toFixed(3)} m³/s`} />
+                      <ParamRow label={t('manning.metrics.designQ')} value={`${result.design_check.design_flow_m3s.toFixed(3)} m³/s`} />
+                      <ParamRow label={t('manning.metrics.channelCapacity')} value={`${result.design_check.channel_capacity_m3s.toFixed(3)} m³/s`} />
                     </div>
                     <p className={`text-sm font-medium mt-2 ${
                       result.design_check.sufficient ? 'text-green-800' : 'text-red-800'
@@ -595,14 +611,14 @@ export function Manning() {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                         </svg>
-                        Generando PDF…
+                        {t('manning.generatingPdf')}
                       </>
                     ) : (
                       <>
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        Generar Memoria de Cálculo (PDF)
+                        {t('manning.generatePdf')}
                       </>
                     )}
                   </button>
@@ -610,15 +626,15 @@ export function Manning() {
 
                 {/* Reference table */}
                 <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-3">Valores de referencia — Manning n (Argentina)</h3>
+                  <h3 className="text-sm font-semibold text-gray-700 mb-3">{t('manning.refTable')}</h3>
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs">
                       <thead>
                         <tr className="border-b border-gray-200">
-                          <th className="text-left py-1.5 pr-3 text-gray-600 font-medium">Material / Cauce</th>
-                          <th className="text-center py-1.5 px-2 text-gray-600 font-medium">Mín.</th>
-                          <th className="text-center py-1.5 px-2 text-gray-600 font-medium">Típico</th>
-                          <th className="text-center py-1.5 px-2 text-gray-600 font-medium">Máx.</th>
+                          <th className="text-left py-1.5 pr-3 text-gray-600 font-medium">{t('manning.refTableHeader.material')}</th>
+                          <th className="text-center py-1.5 px-2 text-gray-600 font-medium">{t('manning.refTableHeader.min')}</th>
+                          <th className="text-center py-1.5 px-2 text-gray-600 font-medium">{t('manning.refTableHeader.typical')}</th>
+                          <th className="text-center py-1.5 px-2 text-gray-600 font-medium">{t('manning.refTableHeader.max')}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-50">

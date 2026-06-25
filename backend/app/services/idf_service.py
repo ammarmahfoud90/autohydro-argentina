@@ -223,6 +223,18 @@ def _calculate_intensity_apa(loc: dict, return_period: float, duration_min: floa
     """
     locality_id = loc["id"]
 
+    # Check if duration falls outside the calibrated table range.
+    # The parametric formula is still evaluated (it is mathematically well-defined),
+    # but a warning flag is returned so callers can surface a reliability notice.
+    idf_table = loc.get("idf_table", {})
+    table_durs = idf_table.get("durations_min", [])
+    duration_extrapolation_warning = False
+    if table_durs:
+        dur_min_valid = table_durs[0]
+        dur_max_valid = table_durs[-1]
+        if duration_min < dur_min_valid or duration_min > dur_max_valid:
+            duration_extrapolation_warning = True
+
     params_by_tr = loc["idf_formula"]["parameters_by_return_period"]
     available_trs = sorted(int(k) for k in params_by_tr.keys())
     tr_min, tr_max = available_trs[0], available_trs[-1]
@@ -244,14 +256,19 @@ def _calculate_intensity_apa(loc: dict, return_period: float, duration_min: floa
         i_upper = _formula_intensity(params_by_tr[str(upper_tr)], duration_min)
         intensity = _linear_interp(return_period, lower_tr, upper_tr, i_lower, i_upper)
 
-    return {
+    result = {
         "intensity_mm_hr": round(intensity, 3),
         "return_period": return_period,
         "duration_min": duration_min,
         "locality_id": locality_id,
         "formula_used": True,
         "source": loc["source"]["document"],
+        "duration_extrapolation_warning": duration_extrapolation_warning,
     }
+    if duration_extrapolation_warning and table_durs:
+        result["duration_valid_range_min"] = table_durs[0]
+        result["duration_valid_range_max"] = table_durs[-1]
+    return result
 
 
 def _calculate_intensity_mendoza(loc: dict, return_period: float, duration_min: float) -> dict:
@@ -261,6 +278,22 @@ def _calculate_intensity_mendoza(loc: dict, return_period: float, duration_min: 
     D is in hours. omega is interpolated linearly between neighbouring TRs.
     """
     locality_id = loc["id"]
+
+    # Validate duration range
+    formula = loc.get("idf_formula", {})
+    dur_min_valid = formula.get("valid_duration_min")
+    dur_max_valid = formula.get("valid_duration_max")
+    if dur_min_valid is not None and duration_min < dur_min_valid:
+        raise ValueError(
+            f"Duration {duration_min} min is below the valid minimum "
+            f"{dur_min_valid} min for locality '{locality_id}'."
+        )
+    if dur_max_valid is not None and duration_min > dur_max_valid:
+        raise ValueError(
+            f"Duration {duration_min} min exceeds the valid maximum "
+            f"{dur_max_valid} min for locality '{locality_id}'."
+        )
+
     omega_by_tr = loc["idf_formula"]["omega_by_return_period"]
     available_trs = sorted(int(k) for k in omega_by_tr.keys())
     tr_min, tr_max = available_trs[0], available_trs[-1]

@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 type ChannelType = 'rectangular' | 'trapezoidal' | 'circular' | 'triangular';
 
 interface Props {
@@ -63,6 +65,7 @@ export function ChannelCrossSectionSVG({
   diameter = 1.2, triSideSlope = 2,
   topWidth, flow, n, slope,
 }: Props) {
+  const { t } = useTranslation();
   const svgId = 'channel-cross-section';
 
   function downloadSVG() {
@@ -222,10 +225,10 @@ export function ChannelCrossSectionSVG({
   const tLabel = `T = ${(sec.actualTopWidth).toFixed(2)} m`;
 
   const sectionTitle =
-    channelType === 'rectangular' ? 'Sección rectangular'
-    : channelType === 'trapezoidal' ? 'Sección trapezoidal'
-    : channelType === 'circular' ? 'Sección circular'
-    : 'Sección triangular';
+    channelType === 'rectangular' ? t('manning.section_rectangular')
+    : channelType === 'trapezoidal' ? t('manning.section_trapezoidal')
+    : channelType === 'circular' ? t('manning.section_circular')
+    : t('manning.section_triangular');
 
   return (
     <div className="space-y-2">
@@ -432,9 +435,9 @@ export function ChannelCrossSectionSVG({
 
         {/* ── Legend symbols ───────────────────────────────────────────────── */}
         <rect x={12} y={36} width={12} height={8} fill={WATER_COLOR} fillOpacity="0.45" />
-        <text x={28} y={44} fontSize="9.5" fill="#64748b">Agua (tirante y)</text>
+        <text x={28} y={44} fontSize="9.5" fill="#64748b">{t('manning.waterLegend')}</text>
         <line x1={60} y1={52} x2={72} y2={52} stroke={FREEBOARD_COLOR} strokeWidth="1" strokeDasharray="4 2" />
-        <text x={76} y={56} fontSize="9.5" fill="#64748b">Borde libre</text>
+        <text x={76} y={56} fontSize="9.5" fill="#64748b">{t('manning.freeboardLegend')}</text>
       </svg>
 
       {/* Download button */}
@@ -446,7 +449,7 @@ export function ChannelCrossSectionSVG({
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
         </svg>
-        Descargar sección (SVG)
+        {t('manning.downloadSvg')}
       </button>
     </div>
   );
