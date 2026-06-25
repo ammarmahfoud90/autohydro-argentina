@@ -224,7 +224,37 @@ def test_pr_saenz_pena_tr_above_reliable_limit_warns():
     assert result.get("max_reliable_return_period") == 25
 
 
-# ── 10. Mendoza duration bounds (Task 3 — INA-CRA Mendoza) ───────────────────
+# ── 10. Mendoza TR reliability warning (AUDIT #6) ────────────────────────────
+
+def test_mendoza_tr_within_reliable_limit_no_warning():
+    """Mendoza TR=25 equals max_reliable_return_period → no reliability warning."""
+    result = calculate_intensity("mendoza_pedemonte", 25, 60)
+    assert result["tr_reliability_warning"] is False
+
+
+def test_mendoza_tr_above_reliable_limit_warns():
+    """Mendoza TR=100 exceeds max_reliable_return_period=25 → warning must be True."""
+    result = calculate_intensity("mendoza_pedemonte", 100, 60)
+    assert result["intensity_mm_hr"] > 0, "Calculation must still succeed"
+    assert result["tr_reliability_warning"] is True
+    assert result.get("max_reliable_return_period") == 25
+
+
+def test_tucuman_tr_above_reliable_limit_warns():
+    """Tucumán TR=50 exceeds max_reliable_return_period=25 → warning must be True."""
+    result = calculate_intensity("tucuman_estaciones", 50, 60, station_id="san_miguel_cc")
+    assert result["intensity_mm_hr"] > 0, "Calculation must still succeed"
+    assert result["tr_reliability_warning"] is True
+    assert result.get("max_reliable_return_period") == 25
+
+
+def test_tucuman_tr_within_reliable_limit_no_warning():
+    """Tucumán TR=10 is within max_reliable_return_period=25 → no warning."""
+    result = calculate_intensity("tucuman_estaciones", 10, 60, station_id="san_miguel_cc")
+    assert result["tr_reliability_warning"] is False
+
+
+# ── 11. Mendoza duration bounds (Task 3 — INA-CRA Mendoza) ───────────────────
 
 def test_mendoza_too_short_duration_raises():
     """Duration below valid_duration_min (5 min) must raise ValueError."""

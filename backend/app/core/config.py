@@ -5,7 +5,9 @@ import json
 
 class Settings(BaseSettings):
     ANTHROPIC_API_KEY: str = ""
-    CORS_ORIGINS: str = '["http://localhost:5173","http://localhost:4173"]'
+    # Override via CORS_ORIGINS env var in production (Railway/Render dashboard).
+    # Default allows all origins because this is a public calculator with no auth.
+    CORS_ORIGINS: str = '["*"]'
     DEBUG: bool = False
 
     @property

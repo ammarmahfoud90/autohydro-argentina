@@ -324,14 +324,21 @@ def _calculate_intensity_mendoza(loc: dict, return_period: float, duration_min: 
 
     intensity = omega / (D + 0.268) ** 0.883
 
-    return {
+    max_reliable_tr = loc.get("limitations", {}).get("max_reliable_return_period")
+    tr_reliability_warning = bool(max_reliable_tr and return_period > max_reliable_tr)
+
+    result = {
         "intensity_mm_hr": round(intensity, 3),
         "return_period": return_period,
         "duration_min": duration_min,
         "locality_id": locality_id,
         "formula_used": True,
         "source": loc["source"]["document"],
+        "tr_reliability_warning": tr_reliability_warning,
     }
+    if tr_reliability_warning and max_reliable_tr:
+        result["max_reliable_return_period"] = max_reliable_tr
+    return result
 
 
 def _calculate_intensity_neuquen(
@@ -858,7 +865,10 @@ def _calculate_intensity_dit_tucuman(
     ln_i = A_prime * phi_T - B_fixed * delta_d + C_prime
     intensity = math.exp(ln_i)
 
-    return {
+    max_reliable_tr = loc.get("limitations", {}).get("max_reliable_return_period")
+    tr_reliability_warning = bool(max_reliable_tr and return_period > max_reliable_tr)
+
+    result = {
         "intensity_mm_hr": round(intensity, 3),
         "return_period": return_period,
         "duration_min": duration_min,
@@ -867,7 +877,11 @@ def _calculate_intensity_dit_tucuman(
         "station_id": station_id,
         "station_name": station_name,
         "source": loc["source"]["document"],
+        "tr_reliability_warning": tr_reliability_warning,
     }
+    if tr_reliability_warning and max_reliable_tr:
+        result["max_reliable_return_period"] = max_reliable_tr
+    return result
 
 
 def _calculate_intensity_simple_scaling_table(

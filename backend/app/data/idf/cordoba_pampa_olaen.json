@@ -37,7 +37,8 @@
     "B": 0.141,
     "C": 5.023,
     "mu_lognormal": 4.126,
-    "sigma_lognormal": 0.401
+    "sigma_lognormal": 0.401,
+    "valid_tr_max": 25
   },
   "idf_table": {
     "description": "Tabla de la ficha INA-CIRSA. Intensidades en mm/h.",
