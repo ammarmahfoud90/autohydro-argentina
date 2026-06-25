@@ -27,6 +27,10 @@ _BLUE = RGBColor(0x25, 0x63, 0xEB)
 _GRAY = RGBColor(0x6B, 0x72, 0x80)
 _WHITE = RGBColor(0xFF, 0xFF, 0xFF)
 
+# Py<3.12 forbids backslash escapes inside f-string {} expressions.
+# Define this constant so it can be safely referenced inside f-string expressions.
+_EM_DASH = '\u2014'
+
 _METHOD_NAMES: dict[str, str] = {
     "rational": "Método Racional",
     "modified_rational": "Método Racional Modificado",
@@ -826,14 +830,14 @@ class MemoriaCalculoDocxGenerator:
         text = ai_sections.get("conclusiones") or (
             f"Se determin\u00f3 un caudal pico de dise\u00f1o de "
             f"{data.get('peak_flow_m3s', 0):.3f}\u00a0m\u00b3/s para un per\u00edodo de "
-            f"retorno de {data.get('return_period', '\u2014')} a\u00f1os."
+            f"retorno de {data.get('return_period', _EM_DASH)} a\u00f1os."
         )
         self._body(doc, text)
 
         summary_rows = [
             ["Par\u00e1metro", "Valor adoptado"],
             ["Caudal de dise\u00f1o", f"Q = {data.get('peak_flow_m3s', 0):.3f} m\u00b3/s"],
-            ["Per\u00edodo de retorno", f"T = {data.get('return_period', '\u2014')} a\u00f1os"],
+            ["Per\u00edodo de retorno", f"T = {data.get('return_period', _EM_DASH)} a\u00f1os"],
             [self._t("M\u00e9todo de c\u00e1lculo", "Calculation method"), self._method_name(data.get("method", ""))],
             [self._t("Nivel de riesgo", "Risk level"), self._risk_label(data.get("risk_level", ""))],
         ]
@@ -860,17 +864,17 @@ class MemoriaCalculoDocxGenerator:
         flat: list[tuple[str, str]] = [
             ("Ciudad de referencia", data.get("city", "\u2014")),
             ("Provincia", data.get("province", "\u2014")),
-            ("Per\u00edodo de retorno (T)", f"{data.get('return_period', '\u2014')} a\u00f1os"),
-            ("Duraci\u00f3n de tormenta (t)", f"{data.get('duration_min', '\u2014')} min"),
-            ("\u00c1rea de la cuenca (A)", f"{data.get('area_km2', '\u2014')} km\u00b2"),
-            ("Longitud del cauce (L)", f"{data.get('length_km', '\u2014')} km"),
-            ("Pendiente media (S)", f"{data.get('slope', '\u2014')} m/m"),
-            ("Intensidad IDF (i)", f"{data.get('intensity_mm_hr', '\u2014')} mm/hr"),
+            ("Per\u00edodo de retorno (T)", f"{data.get('return_period', _EM_DASH)} a\u00f1os"),
+            ("Duraci\u00f3n de tormenta (t)", f"{data.get('duration_min', _EM_DASH)} min"),
+            ("\u00c1rea de la cuenca (A)", f"{data.get('area_km2', _EM_DASH)} km\u00b2"),
+            ("Longitud del cauce (L)", f"{data.get('length_km', _EM_DASH)} km"),
+            ("Pendiente media (S)", f"{data.get('slope', _EM_DASH)} m/m"),
+            ("Intensidad IDF (i)", f"{data.get('intensity_mm_hr', _EM_DASH)} mm/hr"),
             ("Fuente IDF", data.get("idf_source", "\u2014")),
             (
                 "Tc adoptado",
-                f"{data.get('tc_adopted_hours', '\u2014')} hr  /  "
-                f"{data.get('tc_adopted_minutes', '\u2014')} min",
+                f"{data.get('tc_adopted_hours', _EM_DASH)} hr  /  "
+                f"{data.get('tc_adopted_minutes', _EM_DASH)} min",
             ),
             (self._t("M\u00e9todo", "Method"), self._method_name(data.get("method", ""))),
         ]
@@ -888,8 +892,8 @@ class MemoriaCalculoDocxGenerator:
             flat.append(("Factor areal (K)", f"{data['areal_reduction_k']:.4f}"))
 
         flat += [
-            ("Caudal pico (Q)", f"{data.get('peak_flow_m3s', '\u2014')} m\u00b3/s"),
-            ("Caudal espec\u00edfico (q)", f"{data.get('specific_flow_m3s_km2', '\u2014')} m\u00b3/s/km\u00b2"),
+            ("Caudal pico (Q)", f"{data.get('peak_flow_m3s', _EM_DASH)} m\u00b3/s"),
+            ("Caudal espec\u00edfico (q)", f"{data.get('specific_flow_m3s_km2', _EM_DASH)} m\u00b3/s/km\u00b2"),
             (self._t("Nivel de riesgo", "Risk level"), self._risk_label(data.get("risk_level", ""))),
             (
                 "Infraestructura",

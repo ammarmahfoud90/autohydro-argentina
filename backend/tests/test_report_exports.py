@@ -236,3 +236,30 @@ class TestExcelExport:
                     if cell and "D/2" in str(cell):
                         found_tp = True
         assert found_tp, "Excel SCS step must show Tp = D/2 + 0.6 × Tc"
+
+
+# ── Regression guard: Py<3.12 f-string backslash restriction ──────────────────
+
+class TestPy311Compat:
+    """Guard against reintroducing backslash escapes inside f-string {} expressions.
+
+    Python <3.12 raises SyntaxError if a backslash appears inside an f-string
+    expression part (the {} block).  CI runs Python 3.11; this test catches the
+    pattern before it reaches CI by scanning the service source with a regex.
+    """
+
+    def _service_src(self, filename: str) -> str:
+        from pathlib import Path
+        return (Path(__file__).parent.parent / "app" / "services" / filename).read_text(encoding="utf-8")
+
+    def test_docx_service_no_backslash_in_fstring_expr(self):
+        import re
+        src = self._service_src("docx_service.py")
+        # Match any f-string expression block { ... } that contains a backslash
+        # followed by a letter (i.e. an escape sequence like \u, \n, \t).
+        bad = re.findall(r'\{[^}\'\"]*\'[^\']*\\[a-zA-Z][^\']*\'[^}]*\}', src)
+        assert not bad, (
+            "docx_service.py has a backslash escape inside an f-string {} expression "
+            "(SyntaxError on Python <3.12). Use a module-level constant instead. "
+            f"Found: {bad[:3]}"
+        )
