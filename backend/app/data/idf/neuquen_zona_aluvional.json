@@ -4,7 +4,10 @@
   "short_name": "Neuquén árido (Vaca Muerta)",
   "province": "Neuquén",
   "country": "Argentina",
-  "coordinates": {"lat": -38.95, "lon": -68.06},
+  "coordinates": {
+    "lat": -38.95,
+    "lon": -68.06
+  },
   "source": {
     "document": "Instructivo ERH — SsRH Neuquén 2018",
     "title": "Instructivo para la Realización de Estudios de Riesgo Hídrico",
@@ -59,27 +62,84 @@
   },
   "p24h_by_station_mm": {
     "description": "Precipitaciones máximas en 24 horas (mm) por estación y período de retorno. Fuente: Instructivo ERH SsRH Neuquén 2018, pág. 3.",
-    "return_periods_years": [2, 5, 10, 25, 50, 100],
+    "return_periods_years": [
+      2,
+      5,
+      10,
+      25,
+      50,
+      100
+    ],
     "stations": {
       "Aero Neuquén": {
-        "coordinates_approx": {"lat": -38.95, "lon": -68.13},
-        "p24h_mm": [35, 57, 74, 100, 122, 146]
+        "coordinates_approx": {
+          "lat": -38.95,
+          "lon": -68.13
+        },
+        "p24h_mm": [
+          35,
+          57,
+          74,
+          100,
+          122,
+          146
+        ]
       },
       "Paso de Indios": {
-        "coordinates_approx": {"lat": -43.87, "lon": -69.04},
-        "p24h_mm": [30, 44, 54, 69, 81, 93]
+        "coordinates_approx": {
+          "lat": -43.87,
+          "lon": -69.04
+        },
+        "p24h_mm": [
+          30,
+          44,
+          54,
+          69,
+          81,
+          93
+        ]
       },
       "Catriel": {
-        "coordinates_approx": {"lat": -37.88, "lon": -67.83},
-        "p24h_mm": [34, 47, 60, 82, 104, 130]
+        "coordinates_approx": {
+          "lat": -37.88,
+          "lon": -67.83
+        },
+        "p24h_mm": [
+          34,
+          47,
+          60,
+          82,
+          104,
+          130
+        ]
       },
       "RDLS": {
-        "coordinates_approx": {"lat": -38.20, "lon": -68.90},
-        "p24h_mm": [34, 47, 58, 72, 85, 99]
+        "coordinates_approx": {
+          "lat": -38.2,
+          "lon": -68.9
+        },
+        "p24h_mm": [
+          34,
+          47,
+          58,
+          72,
+          85,
+          99
+        ]
       },
       "Buta Ranquil": {
-        "coordinates_approx": {"lat": -37.05, "lon": -69.73},
-        "p24h_mm": [32, 40, 46, 56, 63, 72]
+        "coordinates_approx": {
+          "lat": -37.05,
+          "lon": -69.73
+        },
+        "p24h_mm": [
+          32,
+          40,
+          46,
+          56,
+          63,
+          72
+        ]
       }
     }
   },
@@ -92,5 +152,6 @@
     "gasoducto": 50,
     "alcantarilla": 25,
     "zanja_guardia_locaciones": 10
-  }
+  },
+  "confidence_level": "official"
 }

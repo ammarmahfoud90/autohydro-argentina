@@ -133,6 +133,7 @@ export interface HydrologyResult {
   runoff_volume_m3?: number;
   time_to_peak_hr?: number;
   base_time_hr?: number;
+  idf_confidence_level?: 'official' | 'peer_reviewed' | 'institutional' | 'unverified';
   idf_verified?: boolean;
   cn_verified?: boolean;
   is_manual_idf?: boolean;

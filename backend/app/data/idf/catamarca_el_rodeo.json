@@ -4,7 +4,10 @@
   "short_name": "El Rodeo (CA)",
   "province": "Catamarca",
   "country": "Argentina",
-  "coordinates": {"lat": -28.2000, "lon": -65.8500},
+  "coordinates": {
+    "lat": -28.2,
+    "lon": -65.85
+  },
   "source": {
     "document": "IT Nº 145-CRA — Delimitación de Áreas de Riesgo Hídrico en El Rodeo, Departamento Ambato, Catamarca",
     "institution": "INA-CRA — Instituto Nacional del Agua, Centro Regional Andino",
@@ -18,16 +21,88 @@
   "idf_model": "simple_scaling_table",
   "idf_table": {
     "description": "Tabla 4-1 del informe INA-CRA IT Nº 145. Intensidades en mm/h.",
-    "durations_min": [60, 90, 120, 180, 240, 360, 720],
-    "return_periods": [2, 5, 10, 25, 50, 100, 200],
+    "durations_min": [
+      60,
+      90,
+      120,
+      180,
+      240,
+      360,
+      720
+    ],
+    "return_periods": [
+      2,
+      5,
+      10,
+      25,
+      50,
+      100,
+      200
+    ],
     "intensities": {
-      "2":   [38.7, 27.2, 21.1, 14.8, 11.5, 8.1, 4.4],
-      "5":   [54.2, 38.1, 29.6, 20.8, 16.2, 11.3, 6.2],
-      "10":  [64.5, 45.3, 35.2, 24.7, 19.2, 13.5, 7.4],
-      "25":  [77.5, 54.4, 42.3, 29.7, 23.1, 16.2, 8.8],
-      "50":  [87.1, 61.1, 47.5, 33.4, 26.0, 18.2, 9.9],
-      "100": [96.6, 67.8, 52.8, 37.0, 28.8, 20.2, 11.0],
-      "200": [106.2, 74.5, 58.0, 40.7, 31.6, 22.2, 12.1]
+      "2": [
+        38.7,
+        27.2,
+        21.1,
+        14.8,
+        11.5,
+        8.1,
+        4.4
+      ],
+      "5": [
+        54.2,
+        38.1,
+        29.6,
+        20.8,
+        16.2,
+        11.3,
+        6.2
+      ],
+      "10": [
+        64.5,
+        45.3,
+        35.2,
+        24.7,
+        19.2,
+        13.5,
+        7.4
+      ],
+      "25": [
+        77.5,
+        54.4,
+        42.3,
+        29.7,
+        23.1,
+        16.2,
+        8.8
+      ],
+      "50": [
+        87.1,
+        61.1,
+        47.5,
+        33.4,
+        26.0,
+        18.2,
+        9.9
+      ],
+      "100": [
+        96.6,
+        67.8,
+        52.8,
+        37.0,
+        28.8,
+        20.2,
+        11.0
+      ],
+      "200": [
+        106.2,
+        74.5,
+        58.0,
+        40.7,
+        31.6,
+        22.2,
+        12.1
+      ]
     }
   },
   "limitations": {
@@ -38,5 +113,6 @@
     "tr_reliability_note": "El documento aplica Simple Scaling sobre una serie de 37 años (1970-2006). TR=200 aparece en el contexto de modelación hidráulica del área inundable. Para TR > 100, la extrapolación estadística supera 3× la longitud de la serie y conlleva incertidumbre alta.",
     "max_reliable_return_period": 100,
     "tr_warning_text": "TR seleccionado excede el límite confiable documentado. Fuente oficial (IT N°145-CRA, INA-Gobierno de Catamarca, 2012, Maza et al.): datos basados en Simple Scaling sobre serie de 37 años. Para TR > 100, la extrapolación supera 3× la longitud de la serie. Los resultados deben interpretarse con precaución y contrastarse con estudios locales."
-  }
+  },
+  "confidence_level": "official"
 }

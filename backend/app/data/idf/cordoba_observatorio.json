@@ -4,7 +4,10 @@
   "short_name": "Córdoba Obs. (CBA)",
   "province": "Córdoba",
   "country": "Argentina",
-  "coordinates": {"lat": -31.4208, "lon": -64.1986},
+  "coordinates": {
+    "lat": -31.4208,
+    "lon": -64.1986
+  },
   "source": {
     "document": "Actualización de Curvas IDF — Ficha Córdoba Observatorio",
     "title": "Actualización de Curvas IDF — Ficha Córdoba Observatorio",
@@ -36,30 +39,115 @@
     "B": 0.154,
     "C": 5.054,
     "mu_lognormal": 3.963,
-    "sigma_lognormal": 0.390
+    "sigma_lognormal": 0.39
   },
   "idf_table": {
     "description": "Tabla de la ficha INA-CIRSA. Intensidades en mm/h.",
-    "durations_min": [60, 120, 180, 360, 1440],
-    "return_periods": [2, 5, 10, 25, 50],
+    "durations_min": [
+      60,
+      120,
+      180,
+      360,
+      1440
+    ],
+    "return_periods": [
+      2,
+      5,
+      10,
+      25,
+      50
+    ],
     "intensities": {
-      "2":  [43.1, 26.6, 19.7, 11.3, 3.2],
-      "5":  [58.0, 35.9, 26.5, 15.2, 4.3],
-      "10": [67.9, 42.0, 31.0, 17.7, 5.1],
-      "25": [80.4, 49.7, 36.7, 21.0, 6.0],
-      "50": [89.5, 55.4, 40.8, 23.4, 6.7]
+      "2": [
+        43.1,
+        26.6,
+        19.7,
+        11.3,
+        3.2
+      ],
+      "5": [
+        58.0,
+        35.9,
+        26.5,
+        15.2,
+        4.3
+      ],
+      "10": [
+        67.9,
+        42.0,
+        31.0,
+        17.7,
+        5.1
+      ],
+      "25": [
+        80.4,
+        49.7,
+        36.7,
+        21.0,
+        6.0
+      ],
+      "50": [
+        89.5,
+        55.4,
+        40.8,
+        23.4,
+        6.7
+      ]
     }
   },
   "intensity_table": {
-    "return_periods": [2, 5, 10, 25, 50],
-    "durations_min": [60, 120, 180, 360, 1440],
+    "return_periods": [
+      2,
+      5,
+      10,
+      25,
+      50
+    ],
+    "durations_min": [
+      60,
+      120,
+      180,
+      360,
+      1440
+    ],
     "values_mm_h": [
-      [43.1, 26.6, 19.7, 11.3, 3.2],
-      [58.0, 35.9, 26.5, 15.2, 4.3],
-      [67.9, 42.0, 31.0, 17.7, 5.1],
-      [80.4, 49.7, 36.7, 21.0, 6.0],
-      [89.5, 55.4, 40.8, 23.4, 6.7]
+      [
+        43.1,
+        26.6,
+        19.7,
+        11.3,
+        3.2
+      ],
+      [
+        58.0,
+        35.9,
+        26.5,
+        15.2,
+        4.3
+      ],
+      [
+        67.9,
+        42.0,
+        31.0,
+        17.7,
+        5.1
+      ],
+      [
+        80.4,
+        49.7,
+        36.7,
+        21.0,
+        6.0
+      ],
+      [
+        89.5,
+        55.4,
+        40.8,
+        23.4,
+        6.7
+      ]
     ]
   },
-  "computation_note": "Intensities computed by log-linear interpolation on the official INA-CIRSA table. Formula parameters A, B, C retained for transposition use only."
+  "computation_note": "Intensities computed by log-linear interpolation on the official INA-CIRSA table. Formula parameters A, B, C retained for transposition use only.",
+  "confidence_level": "official"
 }

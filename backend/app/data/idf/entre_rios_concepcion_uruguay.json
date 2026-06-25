@@ -4,7 +4,10 @@
   "short_name": "Concepción del Uruguay (ER)",
   "province": "Entre Ríos",
   "country": "Argentina",
-  "coordinates": {"lat": -32.4833, "lon": -58.2333},
+  "coordinates": {
+    "lat": -32.4833,
+    "lon": -58.2333
+  },
   "source": {
     "document": "Tormentas de diseño para la provincia de Entre Ríos",
     "title": "Tormentas de diseño para la provincia de Entre Ríos",
@@ -44,15 +47,93 @@
   },
   "idf_table": {
     "description": "Tabla 3.3 del documento fuente. Intensidades en mm/h.",
-    "durations_min": [10, 15, 30, 60, 120, 180, 360, 720, 1440],
-    "return_periods": [2, 5, 10, 20, 25, 50],
+    "durations_min": [
+      10,
+      15,
+      30,
+      60,
+      120,
+      180,
+      360,
+      720,
+      1440
+    ],
+    "return_periods": [
+      2,
+      5,
+      10,
+      20,
+      25,
+      50
+    ],
     "intensities": {
-      "2":  [125, 104, 71, 46, 28, 21, 12, 7, 4],
-      "5":  [148, 124, 85, 54, 33, 25, 15, 9, 5],
-      "10": [169, 141, 97, 62, 38, 28, 17, 10, 6],
-      "20": [193, 161, 110, 71, 43, 32, 19, 11, 7],
-      "25": [202, 168, 115, 74, 45, 34, 20, 12, 7],
-      "50": [230, 192, 131, 84, 52, 38, 23, 13, 8]
+      "2": [
+        125,
+        104,
+        71,
+        46,
+        28,
+        21,
+        12,
+        7,
+        4
+      ],
+      "5": [
+        148,
+        124,
+        85,
+        54,
+        33,
+        25,
+        15,
+        9,
+        5
+      ],
+      "10": [
+        169,
+        141,
+        97,
+        62,
+        38,
+        28,
+        17,
+        10,
+        6
+      ],
+      "20": [
+        193,
+        161,
+        110,
+        71,
+        43,
+        32,
+        19,
+        11,
+        7
+      ],
+      "25": [
+        202,
+        168,
+        115,
+        74,
+        45,
+        34,
+        20,
+        12,
+        7
+      ],
+      "50": [
+        230,
+        192,
+        131,
+        84,
+        52,
+        38,
+        23,
+        13,
+        8
+      ]
     }
-  }
+  },
+  "confidence_level": "institutional"
 }

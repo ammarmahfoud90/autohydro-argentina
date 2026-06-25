@@ -4,7 +4,10 @@
   "short_name": "Salta (SA)",
   "province": "Salta",
   "country": "Argentina",
-  "coordinates": {"lat": -24.8436, "lon": -65.4759},
+  "coordinates": {
+    "lat": -24.8436,
+    "lon": -65.4759
+  },
   "source": {
     "document": "Lluvias para diseño hidrológico — Relación IDF, Salta - Pcia. Salta",
     "title": "Lluvias para diseño hidrológico — Relación IDF, Salta - Pcia. Salta",
@@ -35,8 +38,8 @@
     "expression": "ln(i) = A * phi_T - B * delta_d + C",
     "phi_T": "2.584458 * (ln(T))^(3/8) - 2.252573",
     "delta_d": "(ln(d))^(5/3)",
-    "A": 0.380,
-    "B": 0.150,
+    "A": 0.38,
+    "B": 0.15,
     "C": 5.179,
     "mu_lognormal": 4.296,
     "sigma_lognormal": 0.331,
@@ -44,14 +47,57 @@
   },
   "idf_table": {
     "description": "Tabla de la ficha INA-CIRSA. Intensidades en mm/h.",
-    "durations_min": [60, 120, 180, 360, 1440],
-    "return_periods": [2, 5, 10, 25, 50],
+    "durations_min": [
+      60,
+      120,
+      180,
+      360,
+      1440
+    ],
+    "return_periods": [
+      2,
+      5,
+      10,
+      25,
+      50
+    ],
     "intensities": {
-      "2":  [36.8, 23.1, 17.1, 10.0, 2.9],
-      "5":  [50.6, 31.8, 23.7, 13.9, 4.1],
-      "10": [59.9, 37.5, 27.9, 16.2, 4.8],
-      "25": [71.7, 44.9, 33.4, 19.4, 5.7],
-      "50": [80.4, 50.4, 37.4, 21.8, 6.4]
+      "2": [
+        36.8,
+        23.1,
+        17.1,
+        10.0,
+        2.9
+      ],
+      "5": [
+        50.6,
+        31.8,
+        23.7,
+        13.9,
+        4.1
+      ],
+      "10": [
+        59.9,
+        37.5,
+        27.9,
+        16.2,
+        4.8
+      ],
+      "25": [
+        71.7,
+        44.9,
+        33.4,
+        19.4,
+        5.7
+      ],
+      "50": [
+        80.4,
+        50.4,
+        37.4,
+        21.8,
+        6.4
+      ]
     }
-  }
+  },
+  "confidence_level": "official"
 }

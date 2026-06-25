@@ -456,6 +456,26 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
           </p>
           <p>
             {t('common.source')}: {results.is_manual_idf ? (results.manual_idf_source || 'IDF manual') : results.idf_source}
+            {results.idf_confidence_level && results.idf_confidence_level !== 'unverified' && (
+              <span
+                className={`ml-2 inline-flex items-center text-[10px] font-medium px-1.5 py-0.5 rounded ${
+                  results.idf_confidence_level === 'official'
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                    : results.idf_confidence_level === 'peer_reviewed'
+                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+                    : 'bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-slate-300'
+                }`}
+                title={
+                  results.idf_confidence_level === 'official'
+                    ? 'Fuente oficial: publicación de organismo gubernamental o instituto nacional'
+                    : results.idf_confidence_level === 'peer_reviewed'
+                    ? 'Revisado por pares: publicado en revista indexada o por CONICET'
+                    : 'Institucional: informe técnico universitario o gubernamental'
+                }
+              >
+                {results.idf_confidence_level === 'official' ? '✓ Oficial' : results.idf_confidence_level === 'peer_reviewed' ? '✓ Revisado por pares' : 'Institucional'}
+              </span>
+            )}
           </p>
           {results.cn != null && (
             <p>

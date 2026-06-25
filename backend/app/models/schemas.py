@@ -286,6 +286,7 @@ class CalculationResponse(BaseModel):
     # IDF result
     intensity_mm_hr: float
     idf_source: str
+    idf_confidence_level: Optional[str] = None  # "official" | "peer_reviewed" | "institutional" | "unverified"
     idf_verified: Optional[bool] = None
     cn_verified: Optional[bool] = None   # True only if all CN values are from verified USDA-SCS sources
     is_manual_idf: bool = False

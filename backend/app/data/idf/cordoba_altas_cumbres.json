@@ -4,7 +4,10 @@
   "short_name": "Altas Cumbres (CBA)",
   "province": "Córdoba",
   "country": "Argentina",
-  "coordinates": {"lat": -31.6064, "lon": -64.8839},
+  "coordinates": {
+    "lat": -31.6064,
+    "lon": -64.8839
+  },
   "source": {
     "document": "Actualización de Curvas IDF — Ficha Altas Cumbres",
     "title": "Actualización de Curvas IDF — Ficha Altas Cumbres",
@@ -42,14 +45,57 @@
   },
   "idf_table": {
     "description": "Tabla de la ficha INA-CIRSA. Intensidades en mm/h.",
-    "durations_min": [60, 120, 180, 360, 1440],
-    "return_periods": [2, 5, 10, 25, 50],
+    "durations_min": [
+      60,
+      120,
+      180,
+      360,
+      1440
+    ],
+    "return_periods": [
+      2,
+      5,
+      10,
+      25,
+      50
+    ],
     "intensities": {
-      "2":  [34.7, 21.3, 15.6, 8.8, 2.5],
-      "5":  [43.6, 26.6, 19.5, 11.1, 3.1],
-      "10": [48.9, 29.9, 22.0, 12.4, 3.5],
-      "25": [55.4, 34.0, 24.9, 14.1, 4.0],
-      "50": [60.1, 36.8, 27.0, 15.3, 4.3]
+      "2": [
+        34.7,
+        21.3,
+        15.6,
+        8.8,
+        2.5
+      ],
+      "5": [
+        43.6,
+        26.6,
+        19.5,
+        11.1,
+        3.1
+      ],
+      "10": [
+        48.9,
+        29.9,
+        22.0,
+        12.4,
+        3.5
+      ],
+      "25": [
+        55.4,
+        34.0,
+        24.9,
+        14.1,
+        4.0
+      ],
+      "50": [
+        60.1,
+        36.8,
+        27.0,
+        15.3,
+        4.3
+      ]
     }
-  }
+  },
+  "confidence_level": "official"
 }

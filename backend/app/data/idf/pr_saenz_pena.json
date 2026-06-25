@@ -4,14 +4,19 @@
   "short_name": "P.R. Sáenz Peña",
   "province": "Chaco",
   "country": "Argentina",
-  "coordinates": {"lat": -26.7850, "lon": -60.4400},
+  "coordinates": {
+    "lat": -26.785,
+    "lon": -60.44
+  },
   "source": {
     "document": "Resolución APA 1334/21 — Anexo III",
     "title": "Normas para la Tormenta de Diseño en Desagües Pluviales Urbanos",
     "authors": "Ing. Miguel Valiente; presentado por Ing. Cóceres, Ing. Silva — Dir. Estudios Básicos, APA",
     "institution": "Administración Provincial del Agua (APA) — Provincia del Chaco",
     "date": "2021-11-15",
-    "stations": ["INTA Presidencia Roque Sáenz Peña"],
+    "stations": [
+      "INTA Presidencia Roque Sáenz Peña"
+    ],
     "series_period": "1978–2008",
     "series_length_years": 31,
     "statistical_software": "AFMULTI",
@@ -25,19 +30,83 @@
     "tr_warning_text": "TR seleccionado excede el límite confiable documentado en la fuente. Fuente oficial (Resolución APA N°1334/21, Anexo III, APA Chaco, 2021): 'La extensión de las series utilizadas — 31 años — permite afirmar que los resultados serán confiables hasta un tiempo de recurrencia de 25 años. La relación obtenida para TR=50 deberá contrastarse regionalmente con otros registros al exceder significativamente la muestra original.'"
   },
   "municipalities": [
-    "Presidencia Roque Sáenz Peña", "Pampa del Indio", "Tres Isletas",
-    "Avia Terai", "Campo Largo", "Corzuela", "Las Breñas", "Charata",
-    "General Pinedo", "La Tigra", "La Clotilde", "San Bernardo", "Coronel Du Graty"
+    "Presidencia Roque Sáenz Peña",
+    "Pampa del Indio",
+    "Tres Isletas",
+    "Avia Terai",
+    "Campo Largo",
+    "Corzuela",
+    "Las Breñas",
+    "Charata",
+    "General Pinedo",
+    "La Tigra",
+    "La Clotilde",
+    "San Bernardo",
+    "Coronel Du Graty"
   ],
   "idf_table": {
-    "durations_min": [15, 30, 45, 60, 90, 120, 180],
-    "return_periods_years": [2, 5, 10, 25, 50],
+    "durations_min": [
+      15,
+      30,
+      45,
+      60,
+      90,
+      120,
+      180
+    ],
+    "return_periods_years": [
+      2,
+      5,
+      10,
+      25,
+      50
+    ],
     "intensities_mm_hr": [
-      [87.6, 68.6, 56.5, 48.2, 37.0, 29.9, 21.4],
-      [109.5, 86.5, 71.9, 62.2, 48.3, 40.0, 29.5],
-      [121.7, 96.8, 81.3, 70.9, 55.0, 45.9, 34.2],
-      [134.7, 108.1, 92.2, 81.3, 62.8, 52.5, 39.7],
-      [143.0, 115.6, 99.6, 88.6, 68.1, 56.9, 43.4]
+      [
+        87.6,
+        68.6,
+        56.5,
+        48.2,
+        37.0,
+        29.9,
+        21.4
+      ],
+      [
+        109.5,
+        86.5,
+        71.9,
+        62.2,
+        48.3,
+        40.0,
+        29.5
+      ],
+      [
+        121.7,
+        96.8,
+        81.3,
+        70.9,
+        55.0,
+        45.9,
+        34.2
+      ],
+      [
+        134.7,
+        108.1,
+        92.2,
+        81.3,
+        62.8,
+        52.5,
+        39.7
+      ],
+      [
+        143.0,
+        115.6,
+        99.6,
+        88.6,
+        68.1,
+        56.9,
+        43.4
+      ]
     ]
   },
   "idf_model": "apa_chaco",
@@ -47,11 +116,32 @@
     "Ip_unit": "mm/hr",
     "note": "Parameters A, B, C are specific to each return period. Td = duration in minutes.",
     "parameters_by_return_period": {
-      "2":  {"A": 2693.83, "B": 29.83, "C": 0.898},
-      "5":  {"A": 2711.06, "B": 30.03, "C": 0.842},
-      "10": {"A": 2599.91, "B": 29.90, "C": 0.805},
-      "25": {"A": 2036.66, "B": 29.02, "C": 0.721},
-      "50": {"A": 1805.00, "B": 28.01, "C": 0.677}
+      "2": {
+        "A": 2693.83,
+        "B": 29.83,
+        "C": 0.898
+      },
+      "5": {
+        "A": 2711.06,
+        "B": 30.03,
+        "C": 0.842
+      },
+      "10": {
+        "A": 2599.91,
+        "B": 29.9,
+        "C": 0.805
+      },
+      "25": {
+        "A": 2036.66,
+        "B": 29.02,
+        "C": 0.721
+      },
+      "50": {
+        "A": 1805.0,
+        "B": 28.01,
+        "C": 0.677
+      }
     }
-  }
+  },
+  "confidence_level": "official"
 }

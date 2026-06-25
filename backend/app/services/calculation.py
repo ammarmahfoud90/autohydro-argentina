@@ -28,19 +28,13 @@ from app.models.schemas import (
 )
 
 
-# ── Verified localities ───────────────────────────────────────────────────────
-# IDF data cross-checked against the original source document.
-# Only add an ID here after manually verifying against the primary reference.
-VERIFIED_LOCALITIES: frozenset[str] = frozenset({
-    "amgr",                   # APA Chaco Res. 1334/21
-    "pr_saenz_pena",          # APA Chaco Res. 1334/21
-    "neuquen_zona_aluvional", # SSRH Neuquén official
-    "buenos_aires_azul",      # verified against source
-    "cordoba_observatorio",   # DIT 3P — table interpolation verified against INA-CIRSA (±0%)
-    "cordoba_altas_cumbres",  # DIT 3P — verified against source
-    "cordoba_la_suela",       # DIT 3P — verified against source
-    "cordoba_pampa_olaen",    # DIT 3P — verified against source
-})
+# Confidence levels are stored per-locality in the IDF JSON files under the
+# top-level "confidence_level" key.  Valid values:
+#   "official"      — government/national-institute publication with statutory mandate
+#   "peer_reviewed" — indexed journal or CONICET-affiliated peer-reviewed work
+#   "institutional" — university/government technical report, not peer-reviewed
+#   "unverified"    — manual IDF entry or unknown provenance
+_VERIFIED_CONFIDENCE_LEVELS = frozenset({"official", "peer_reviewed"})
 
 
 # ── Risk classification ───────────────────────────────────────────────────────
@@ -689,7 +683,8 @@ def run_calculation(payload: dict) -> dict:
         location_description=req.location_description,
         intensity_mm_hr=round(intensity, 3),
         idf_source=manual_source if is_manual else locality["source"]["document"],
-        idf_verified=(not is_manual) and (req.locality_id in VERIFIED_LOCALITIES),
+        idf_confidence_level="unverified" if is_manual else locality.get("confidence_level", "institutional"),
+        idf_verified=(not is_manual) and (locality.get("confidence_level", "") in _VERIFIED_CONFIDENCE_LEVELS),
         cn_verified=cn_verified,
         is_manual_idf=is_manual,
         manual_idf_source=manual_source,
