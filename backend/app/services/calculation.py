@@ -172,6 +172,18 @@ def _areal_reduction_k(A_km2: float) -> float:
     design-storm rainfall is not simultaneously uniform over the whole basin.
     Clipped to [0.1, 1.0] for physical validity.
 
+    Source attribution: This form of the ARF is widely cited in Argentine and
+    Spanish hydrology practice and attributed to Témez (1978), "Cálculo
+    hidrometeorológico de caudales máximos en pequeñas cuencas naturales",
+    Ministerio de Obras Públicas y Urbanismo (MOPU), Spain. The specific
+    equation K = 1 − (A^0.1 − 1)/7 also appears in:
+      - Aparicio Mijares, F.J. (1992). Fundamentos de Hidrología de Superficie.
+        Limusa, México. (widely used in Argentina)
+      - INA (2010). Manual de estimación de caudales máximos para pequeñas
+        cuencas. SSRH — referenced in Argentine practice.
+    Note: The MOPU 5.2-IC road drainage instruction uses a log-linear form;
+    the power-law form used here is the adaptation common in Argentine practice.
+
     Note: this is an areal reduction factor (K_ARF < 1), NOT the Témez
     temporal uniformity coefficient (which would be > 1).
     """

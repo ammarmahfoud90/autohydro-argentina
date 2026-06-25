@@ -635,6 +635,11 @@ export function Calculator() {
                     El modelo DIT 3P fue calibrado para duraciones ≥ 60 min. Para duraciones sub-horarias los resultados son extrapolaciones — usar con precaución.
                   </p>
                 )}
+                {selectedLocality?.idf_model === 'neuquen_ssrh' && Math.abs(formData.duration_min - 60) <= 5 && (
+                  <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1 mt-1">
+                    Atención: la duración está próxima al límite de cambio entre fórmula de Cartaya (D ≤ 60 min) y MIC (D &gt; 60 min). Existe una discontinuidad de ~5% en ese punto. Verificar sensibilidad de resultados en ambos rangos.
+                  </p>
+                )}
               </div>
             </div>
 
