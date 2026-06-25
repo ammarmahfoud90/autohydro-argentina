@@ -252,6 +252,7 @@
     "designVerification": "Verificación de diseño",
     "designOk": "Cumple",
     "designFail": "No cumple",
+    "custom": "Personalizado",
     "refTable": "Valores de referencia — Manning n (Argentina)",
     "downloadSvg": "Descargar sección (SVG)",
     "section_rectangular": "Sección rectangular",

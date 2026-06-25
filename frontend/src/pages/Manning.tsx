@@ -380,7 +380,7 @@ export function Manning() {
                     ))}
                   </optgroup>
                 ))}
-                <option value="Personalizado">Personalizado</option>
+                <option value="Personalizado">{t('manning.custom')}</option>
               </select>
               {nPreset === 'Personalizado' ? (
                 <input
