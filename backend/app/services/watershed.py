@@ -99,10 +99,74 @@ def _approx_cell_area_m2(affine: Any, lat: float) -> float:
     Approximate geodesic cell area in m² from the raster affine and latitude.
     For SRTM3 (~3 arc-seconds / ~90 m) this is good to within ~1 %.
     """
-    deg = abs(affine[0])  # degrees per pixel (square pixels assumed)
+    dx_deg, dy_deg = abs(affine.a), abs(affine.e)
     m_per_deg_lat = 111_320.0
     m_per_deg_lon = 111_320.0 * np.cos(np.radians(lat))
-    return (deg * m_per_deg_lat) * (deg * m_per_deg_lon)
+    return (dy_deg * m_per_deg_lat) * (dx_deg * m_per_deg_lon)
+
+
+def _flow_link_lengths_m(fdir: Any) -> Any:
+    """Physical D8 link lengths, including diagonals and geographic latitude.
+
+    pysheds.distance_to_outlet without weights counts cells, not metres.
+    Geographic DEMs use ellipsoidal geodesics; projected DEMs use the CRS
+    axis unit conversion. The output keeps the flow raster's viewfinder.
+    """
+    from pyproj import CRS
+    from pysheds.sview import Raster
+
+    crs = CRS.from_user_input(getattr(fdir.crs, "crs", fdir.crs))
+    affine = fdir.affine
+    values = np.asarray(fdir)
+    weights = np.zeros(values.shape, dtype=float)
+    directions = {64: (-1, 0), 128: (-1, 1), 1: (0, 1), 2: (1, 1),
+                  4: (1, 0), 8: (1, -1), 16: (0, -1), 32: (-1, -1)}
+    geod = crs.get_geod() if crs.is_geographic else None
+    if not crs.is_geographic and not crs.is_projected:
+        raise ValueError("El DEM requiere un CRS geográfico o proyectado conocido.")
+    for code, (dr, dc) in directions.items():
+        rows, cols = np.nonzero(values == code)
+        if not rows.size:
+            continue
+        dx, dy = affine.a * dc + affine.b * dr, affine.d * dc + affine.e * dr
+        if geod is not None:
+            x = affine.a * (cols + 0.5) + affine.b * (rows + 0.5) + affine.c
+            y = affine.d * (cols + 0.5) + affine.e * (rows + 0.5) + affine.f
+            _, _, length = geod.inv(x, y, x + dx, y + dy)
+            weights[rows, cols] = length
+        else:
+            fx, fy = (axis.unit_conversion_factor for axis in crs.axis_info[:2])
+            weights[rows, cols] = np.hypot(dx * fx, dy * fy)
+    return Raster(weights, viewfinder=fdir.viewfinder, metadata=fdir.metadata)
+
+
+def _flow_distances_m(fdir: Any, row: int, col: int) -> np.ndarray:
+    """Upstream D8 distances with explicit bounds at every raster edge.
+
+    The pysheds JIT distance routine can read beyond the raster at a border
+    outlet. This bounded traversal also handles an outlet on the DEM edge.
+    Each upstream cell contributes its own downstream link length.
+    """
+    values = np.asarray(fdir)
+    weights = np.asarray(_flow_link_lengths_m(fdir))
+    rows, cols = values.shape
+    if not (0 <= row < rows and 0 <= col < cols):
+        raise ValueError("El punto de salida está fuera del DEM.")
+    distances = np.full(values.shape, np.nan)
+    distances[row, col] = 0.0
+    stack = [(row, col)]
+    directions = {64: (-1, 0), 128: (-1, 1), 1: (0, 1), 2: (1, 1),
+                  4: (1, 0), 8: (1, -1), 16: (0, -1), 32: (-1, -1)}
+    while stack:
+        r, c = stack.pop()
+        for code, (dr, dc) in directions.items():
+            rr, cc = r - dr, c - dc
+            if not (0 <= rr < rows and 0 <= cc < cols):
+                continue
+            if values[rr, cc] == code and np.isnan(distances[rr, cc]):
+                distances[rr, cc] = distances[r, c] + weights[rr, cc]
+                stack.append((rr, cc))
+    return distances
 
 
 def _process(dem_path: str, lat: float, lon: float) -> dict[str, Any]:
@@ -161,36 +225,48 @@ def _process(dem_path: str, lat: float, lon: float) -> dict[str, Any]:
     if area_km2 > _MAX_AREA_KM2:
         raise ValueError("too_large")
 
-    # ── Average slope within the watershed ───────────────────────────────────
+    # ── Average terrain slope (not a surveyed channel slope) ─────────────────
     dem_masked = np.where(catch_view.astype(bool), dem_view.astype(float), np.nan)
-    dy, dx = np.gradient(dem_masked)
+    dy = np.gradient(dem_masked, axis=0) if dem_masked.shape[0] > 1 else np.zeros_like(dem_masked)
+    dx = np.gradient(dem_masked, axis=1) if dem_masked.shape[1] > 1 else np.zeros_like(dem_masked)
     deg_per_px = abs(grid.affine[0])
-    m_per_px = deg_per_px * 111_320.0  # approximate (good enough for slope)
-    slope_mag = np.sqrt((dx / m_per_px) ** 2 + (dy / m_per_px) ** 2)
+    m_per_px_x = deg_per_px * 111_320.0 * np.cos(np.radians(lat))
+    m_per_px_y = abs(grid.affine.e) * 111_320.0
+    slope_mag = np.sqrt((dx / m_per_px_x) ** 2 + (dy / m_per_px_y) ** 2)
     valid_slope = slope_mag[catch_view.astype(bool) & np.isfinite(slope_mag)]
     avg_slope = float(np.mean(valid_slope)) if valid_slope.size > 0 else 0.005
+    raw_avg_slope = avg_slope
     avg_slope = float(np.clip(avg_slope, 0.0005, 2.0))
 
     # ── Main channel length ───────────────────────────────────────────────────
+    warnings = ["La pendiente calculada es una media del terreno del DEM, no una pendiente relevada del cauce; verificar antes de calcular Tc."]
+    if not valid_slope.size or min(dem_masked.shape) < 2:
+        warnings.append("El DEM no permite estimar todas las componentes de pendiente de esta cuenca; verificar la pendiente manualmente.")
+    if avg_slope != raw_avg_slope:
+        warnings.append("La pendiente media fue limitada al rango de procesamiento [0.0005, 2] m/m; verificar antes de adoptar el valor.")
+    length_method = "longest_d8_flow_path_geodesic"
     try:
-        dist = grid.distance_to_outlet(
-            x=x_snap,
-            y=y_snap,
-            fdir=fdir,
-            catch=catch,
-            xytype="coordinate",
-        )
-        dist_view = grid.view(dist)
+        fdir_view = grid.view(fdir)
+        col, row = grid.nearest_cell(x_snap, y_snap, fdir_view.affine)
+        dist_view = _flow_distances_m(fdir_view, row, col)
         channel_m = float(np.nanmax(dist_view[catch_view.astype(bool)]))
+        if not np.isfinite(channel_m) or channel_m <= 0:
+            raise ValueError("No se obtuvo una longitud física positiva del cauce.")
         channel_km = channel_m / 1_000.0
-    except Exception:
+    except Exception as exc:
+        logger.warning("D8 path length failed; using empirical estimate: %s", exc)
         # Fallback: empirical relationship L ≈ 1.5 · A^0.6 (km, Kirpich-like)
         channel_km = 1.5 * (area_km2 ** 0.6)
+        length_method = "empirical_area_estimate"
+        warnings.append("No se pudo medir la trayectoria D8. La longitud es una estimación empírica L=1.5 A^0.6 y requiere verificación manual.")
 
-    channel_km = float(np.clip(channel_km, 0.1, 1_000.0))
+    if channel_km > 1_000:
+        raise ValueError("La longitud calculada excede el rango de procesamiento (1000 km).")
 
     # ── Vectorise watershed → GeoJSON polygon ────────────────────────────────
-    catch_uint8 = catch_view.astype(np.uint8)
+    # Raster is an ndarray subclass with a .mask attribute that rasterio can
+    # mistake for a band-like object. Pass an ordinary ndarray to polygonize.
+    catch_uint8 = np.asarray(catch_view, dtype=np.uint8)
     polys = [
         shape(geom)
         for geom, val in rio_shapes(catch_uint8, transform=grid.affine)
@@ -208,6 +284,8 @@ def _process(dem_path: str, lat: float, lon: float) -> dict[str, Any]:
         "area_km2": round(area_km2, 4),
         "slope": round(avg_slope, 6),
         "length_km": round(channel_km, 3),
+        "length_method": length_method,
+        "warnings": warnings,
     }
 
 

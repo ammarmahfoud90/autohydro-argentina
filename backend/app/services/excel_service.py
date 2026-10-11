@@ -4,6 +4,7 @@ Generates professional .xlsx workbooks with multiple sheets.
 """
 
 from io import BytesIO
+from app.services.calculation_trace import prepare_report_data, trace_rows
 from datetime import datetime
 from typing import Any, Optional
 
@@ -32,6 +33,7 @@ _METHOD_NAMES = {
     "scs_cn": "Método SCS-CN",
 }
 _RISK_LABELS = {
+    "no_evaluado": "NO EVALUADO",
     "muy_bajo": "MUY BAJO",
     "bajo": "BAJO",
     "moderado": "MODERADO",
@@ -143,6 +145,7 @@ class ExcelReportGenerator:
         self.client = client
 
     def generate(self, calculation_data: dict[str, Any]) -> BytesIO:
+        calculation_data = prepare_report_data(calculation_data)
         wb = Workbook()
         default_sheet = wb.active
         if default_sheet is not None:
@@ -159,6 +162,13 @@ class ExcelReportGenerator:
         if calculation_data.get("hydrograph_times"):
             self._build_hidrograma(wb, calculation_data)
 
+        ws = wb.create_sheet("Trazabilidad")
+        _apply_header_row(ws, 1, ["Campo", "Valor"])
+        for row, (label, value) in enumerate(trace_rows(calculation_data), 2):
+            _apply_data_row(ws, row, [label, value])
+            ws.cell(row, 2).alignment = _align(wrap=True)
+        ws.column_dimensions["A"].width = 42
+        ws.column_dimensions["B"].width = 100
         buffer = BytesIO()
         wb.save(buffer)
         buffer.seek(0)
@@ -339,7 +349,7 @@ class ExcelReportGenerator:
         steps: list[tuple[str, str, str]] = [
             ("PASO 1", "Tiempo de Concentración (Tc)",
              f"Tc adoptado = {data.get('tc_adopted_hours', 0):.3f} hr  = {data.get('tc_adopted_minutes', 0):.1f} min\n"
-             f"(promedio de {len(data.get('tc_results', []))} fórmulas seleccionadas)"),
+             f"(fórmula adoptada: {data.get('tc_adopted_formula_name', '—')})"),
             ("PASO 2", "Intensidad de Diseño (i)",
              f"Ciudad: {data.get('city', '—')}\n"
              f"T = {data.get('return_period', '—')} años, t = {data.get('duration_min', '—')} min\n"
@@ -416,7 +426,7 @@ class ExcelReportGenerator:
                                 bg=bg, number_cols={2, 3})
                 row += 1
             _apply_data_row(ws, row,
-                            ["Tc Adoptado (promedio)", round(data.get("tc_adopted_hours", 0), 3),
+                            ["Tc Adoptado", round(data.get("tc_adopted_hours", 0), 3),
                              round(data.get("tc_adopted_minutes", 0), 1), "Valor utilizado en el cálculo"],
                             bg=_LBLUE, number_cols={2, 3})
             for col in range(1, 5):

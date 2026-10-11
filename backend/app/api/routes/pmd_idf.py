@@ -10,7 +10,7 @@ def get_available_cities():
     return {
         "cities": sorted(list(PMD_CAPITALES.keys())),
         "count": len(PMD_CAPITALES),
-        "source": "Atlas PMD/PMP INA-CIRSA + UNC (2020)",
+        "source": "PMD aproximadas del proyecto; procedencia por ciudad pendiente de verificación",
     }
 
 

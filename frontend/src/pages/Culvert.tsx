@@ -38,6 +38,9 @@ interface CulvertResult {
   recommended: SizeResult;
   alternatives: SizeResult[];
   warnings: string[];
+  assumptions?: string[];
+  source?: string;
+  validation_status?: string;
 }
 
 interface SizeResult {
@@ -56,7 +59,7 @@ interface SizeResult {
   ok: boolean;
   area_m2: number;
   culvert_insufficient?: boolean;
-  /** HW/D > 3: result is an unphysical extrapolation — display as invalid */
+  /** HW/D > 3: result is an outside the conservative screening range — requires review */
   hwd_out_of_range?: boolean;
 }
 
@@ -373,7 +376,7 @@ export function Culvert() {
             {/* Box */}
             <button
               type="button"
-              onClick={() => setCulvertType('box')}
+              onClick={() => { setCulvertType('box'); setInletType('sin_alas'); }}
               className={`flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-colors ${
                 culvertType === 'box'
                   ? 'border-blue-600 bg-blue-50'
@@ -486,6 +489,7 @@ export function Culvert() {
               </select>
             </div>
 
+            <p className="text-xs text-amber-800 col-span-full">Predimensionamiento FHWA HDS-5. Verificar la geometría de entrada y los límites del modelo antes del diseño definitivo.</p>
             {/* Inlet type */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">
@@ -496,7 +500,7 @@ export function Culvert() {
                 onChange={(e) => setInletType(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                {INLET_TYPES.map((it) => (
+                {INLET_TYPES.filter((it) => it.id !== 'redondeado' && !(culvertType === 'box' && it.id === 'proyectante')).map((it) => (
                   <option key={it.id} value={it.id}>{it.label}</option>
                 ))}
               </select>

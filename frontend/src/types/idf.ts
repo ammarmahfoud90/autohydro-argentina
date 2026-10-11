@@ -44,6 +44,8 @@ export interface IDFLocality {
   return_periods: number[];
   durations_min: number[];
   idf_model?: string;
+  stations?: Record<string, { name: string }>;
+  p24h_by_station_mm?: { stations: Record<string, { p24h_mm: number[] }> };
   valid_tr_min?: number;
   valid_tr_max?: number;
   valid_duration_min?: number;

@@ -278,7 +278,11 @@ class CalculationResponse(BaseModel):
     city: str          # locality full name (for display)
     province: str
     return_period: int
-    duration_min: int
+    duration_min: float
+    requested_duration_min: Optional[float] = None
+    calculation_inputs: dict = Field(default_factory=dict)
+    calculation_version: str = "scientific-fixes-2026-10-11"
+    validation_status: str = "reference_cases_only"
     area_km2: float
     method: str
     location_description: Optional[str] = None
@@ -286,8 +290,11 @@ class CalculationResponse(BaseModel):
     # IDF result
     intensity_mm_hr: float
     idf_source: str
+    idf_model: Optional[str] = None
+    idf_data_sha256: Optional[str] = None
     idf_confidence_level: Optional[str] = None  # "official" | "peer_reviewed" | "institutional" | "unverified"
     idf_verified: Optional[bool] = None
+    idf_extrapolated: bool = False
     cn_verified: Optional[bool] = None   # True only if all CN values are from verified USDA-SCS sources
     is_manual_idf: bool = False
     manual_idf_source: Optional[str] = None
@@ -344,4 +351,5 @@ class CalculationResponse(BaseModel):
     runoff_volume_m3: Optional[float] = None
     time_to_peak_hr: Optional[float] = None
     base_time_hr: Optional[float] = None
+    hydrograph_model: Optional[str] = None
 

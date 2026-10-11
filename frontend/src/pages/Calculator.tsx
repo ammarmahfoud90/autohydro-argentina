@@ -1,9 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useLocation, useSearchParams } from 'react-router-dom';
-import { calculateHydrology, getLocality } from '../services/api';
+import { calculateHydrology } from '../services/api';
+import { IDFStationSelector } from '../components/forms/IDFStationSelector';
+import { needsIDFStation } from '../utils/idfStations';
 import { CitySelector } from '../components/forms/CitySelector';
 import { ManualIDFInput } from '../components/forms/ManualIDFInput';
 import { BasinInputs } from '../components/forms/BasinInputs';
@@ -29,50 +31,7 @@ function isNetworkError(err: unknown): boolean {
   return err instanceof TypeError && err.message.toLowerCase().includes('fetch');
 }
 
-/** Parse a numeric URL param safely, returning fallback when missing/NaN/Infinity. */
-function parseNum(raw: string | null, fallback: number): number {
-  if (raw == null || raw === '') return fallback;
-  const n = Number(raw);
-  return Number.isFinite(n) ? n : fallback;
-}
-
-function parseIntParam(raw: string | null, fallback: number): number {
-  const n = parseNum(raw, fallback);
-  return Math.trunc(n);
-}
-
-/** Valid method values — used as a guard against malformed ?method= */
-const VALID_METHODS = new Set<HydrologyInput['method']>([
-  'rational',
-  'modified_rational',
-  'scs_cn',
-]);
-
-export function hydrateFormFromParams(params: URLSearchParams): HydrologyInput | null {
-  const localidad = params.get('localidad');
-  const methodRaw = params.get('method') as HydrologyInput['method'] | null;
-  const method = methodRaw && VALID_METHODS.has(methodRaw) ? methodRaw : DEFAULT_FORM.method;
-
-  if (!localidad) {
-    // No locality: only hydrate if a valid method was explicitly provided via ?method=
-    if (method !== DEFAULT_FORM.method) {
-      return { ...DEFAULT_FORM, method };
-    }
-    return null;
-  }
-
-  return {
-    ...DEFAULT_FORM,
-    locality_id: localidad,
-    station_id: params.get('station') ?? null,
-    return_period: parseIntParam(params.get('TR'), DEFAULT_FORM.return_period),
-    duration_min: parseIntParam(params.get('t'), DEFAULT_FORM.duration_min),
-    area_km2: Math.max(0, parseNum(params.get('area'), DEFAULT_FORM.area_km2)),
-    length_km: Math.max(0, parseNum(params.get('length'), DEFAULT_FORM.length_km)),
-    slope: Math.max(0, parseNum(params.get('slope'), DEFAULT_FORM.slope)),
-    method,
-  };
-}
+import { hydrateFormFromParams } from '../utils/calculatorParams';
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
@@ -266,9 +225,10 @@ export function Calculator() {
     if (formData.length_km > 0) next.length = String(formData.length_km);
     if (formData.slope > 0) next.slope = String(formData.slope);
     if (formData.station_id) next.station = formData.station_id;
+    if (formData.station_name) next.station_name = formData.station_name;
     setSearchParams(next, { replace: true });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.locality_id, formData.return_period, formData.duration_min, formData.area_km2, formData.length_km, formData.slope, formData.method, formData.station_id]);
+  }, [formData.locality_id, formData.return_period, formData.duration_min, formData.area_km2, formData.length_km, formData.slope, formData.method, formData.station_id, formData.station_name]);
 
   // Scroll to top whenever the step changes
   useEffect(() => {
@@ -350,17 +310,6 @@ export function Calculator() {
     mutation.mutate(formData);
   };
 
-  // Fetch full locality detail to get stations (used for dit_tucuman)
-  const isTucuman = formData.locality_id === 'tucuman_estaciones';
-  const { data: tucumanLocality } = useQuery({
-    queryKey: ['locality', 'tucuman_estaciones'],
-    queryFn: () => getLocality('tucuman_estaciones'),
-    enabled: isTucuman,
-    staleTime: Infinity,
-  });
-  const tucumanStations: Record<string, { name: string }> =
-    (tucumanLocality as any)?.stations ?? {};
-
   // ── Locality-derived constraints ────────────────────────────────────────────
 
   const isManualLocality = formData.locality_id === 'manual';
@@ -376,7 +325,7 @@ export function Calculator() {
   const step1Valid =
     !!formData.locality_id &&
     (!isManualLocality || (!!formData.manual_idf_table || !!formData.manual_idf_formula)) &&
-    (!isTucuman || !!formData.station_id);
+    (!needsIDFStation(formData.locality_id) || !!(formData.station_id || formData.station_name));
 
   const step2Valid =
     formData.area_km2 > 0 && formData.length_km > 0 && formData.slope > 0;
@@ -476,6 +425,7 @@ export function Calculator() {
                   manual_idf_table: null,
                   manual_idf_formula: null,
                   station_id: null,
+                  station_name: null,
                   return_period: newReturnPeriod,
                 });
               }}
@@ -505,28 +455,9 @@ export function Calculator() {
               </>
             )}
 
-            {/* Tucumán station selector — required for dit_tucuman model */}
-            {isTucuman && (
-              <div className="mt-4 space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Estación pluviográfica <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={formData.station_id ?? ''}
-                  onChange={(e) => update({ station_id: e.target.value || null })}
-                  className="w-full rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Seleccionar estación más cercana a la cuenca</option>
-                  {Object.entries(tucumanStations).map(([id, s]) => (
-                    <option key={id} value={id}>{s.name}</option>
-                  ))}
-                </select>
-                <p className="text-xs text-gray-500">
-                  Seleccioná la estación geográficamente más próxima a tu área de estudio.
-                  Red EEAOC + DRH + SMN — Tesis doctoral Bazzano 2019 (UNT-FACET).
-                </p>
-              </div>
-            )}
+            <IDFStationSelector localityId={formData.locality_id}
+              stationId={formData.station_id} stationName={formData.station_name}
+              onChange={update} />
 
             {formData.locality_id === 'el_colorado' && (
               <div className="mt-3 rounded-lg bg-amber-50 border border-amber-300 px-4 py-3 text-sm text-amber-800">

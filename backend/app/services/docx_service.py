@@ -6,6 +6,7 @@ in Microsoft Word format, mirroring the structure and content of the PDF report.
 """
 
 from io import BytesIO
+from app.services.calculation_trace import prepare_report_data, trace_rows
 from datetime import datetime
 from typing import Any, Optional
 
@@ -53,6 +54,7 @@ _INFRASTRUCTURE_NAMES: dict[str, str] = {
 }
 
 _RISK_LABELS_ES: dict[str, str] = {
+    "no_evaluado": "NO EVALUADO",
     "muy_bajo": "MUY BAJO",
     "bajo": "BAJO",
     "moderado": "MODERADO",
@@ -60,6 +62,7 @@ _RISK_LABELS_ES: dict[str, str] = {
     "muy_alto": "MUY ALTO",
 }
 _RISK_LABELS_EN: dict[str, str] = {
+    "no_evaluado": "NOT ASSESSED",
     "muy_bajo": "VERY LOW",
     "bajo": "LOW",
     "moderado": "MODERATE",
@@ -537,10 +540,10 @@ class MemoriaCalculoDocxGenerator:
                 "Para diseños definitivos, verificar con registros locales del SMN/INA.",
             )
 
-        self._body(doc, "F\u00f3rmula IDF aplicada:  i = (a \u00d7 T^b) / (t + c)^d", justify=False)
+        self._body(doc, f"Modelo IDF utilizado: {data.get('idf_model', 'ver fuente')}", justify=False)
         self._body(
             doc,
-            "donde i [mm/hr], T [a\u00f1os], t [minutos] y a, b, c, d son coeficientes regionales.",
+            "Los parámetros y la fuente se registran en el anexo de trazabilidad; cada localidad utiliza su propio modelo.",
         )
 
         # ── TR reliability warning box ────────────────────────────────────
@@ -902,6 +905,7 @@ class MemoriaCalculoDocxGenerator:
             ("Fecha de c\u00e1lculo", datetime.now().strftime("%d/%m/%Y %H:%M")),
         ]
 
+        flat.extend(trace_rows(data))
         all_rows = [["Campo", "Valor"]] + [[k, str(v)] for k, v in flat]
         self._make_table(doc, all_rows)
 
@@ -925,6 +929,7 @@ class MemoriaCalculoDocxGenerator:
         Returns:
             BytesIO buffer containing the .docx file
         """
+        calculation_data = prepare_report_data(calculation_data)
         ai_sections: dict[str, str] = (
             ai_recommendations if isinstance(ai_recommendations, dict) else {}
         )

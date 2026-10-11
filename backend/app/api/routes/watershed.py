@@ -16,6 +16,8 @@ class DelineateResponse(BaseModel):
     area_km2: float
     slope: float
     length_km: float
+    length_method: str
+    warnings: list[str] = Field(default_factory=list)
 
 
 @router.post("/watershed/delineate", response_model=DelineateResponse)

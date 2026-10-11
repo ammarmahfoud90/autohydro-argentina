@@ -512,9 +512,13 @@ class CulvertReportGenerator:
         input_data.append(["Longitud de alcantarilla (L)", f"{result.get('length_m', 0):.1f} m"])
         input_data.append(["Pendiente longitudinal (S)", f"{result.get('slope', 0):.5f} m/m"])
         input_data.append(["Tipo de entrada", inlet_label])
+        input_data.append(["Tirante de aguas abajo (TW)", f"{result.get('tailwater_m', 0):.2f} m"])
         input_data.append(["Tirante máximo admisible (HW máx.)", f"{result.get('headwater_max_m', 0):.2f} m"])
 
         story.append(_param_table(input_data))
+        story.append(Paragraph("Predimensionamiento: " + result.get("source", "FHWA HDS-5"), S["body"]))
+        for assumption in result.get("assumptions", []):
+            story.append(Paragraph(str(assumption), S["body"]))
 
         # ── Section 3: Methodology ─────────────────────────────────────────
         story.append(Paragraph("3. Metodología", S["section"]))
@@ -527,7 +531,7 @@ class CulvertReportGenerator:
         ))
         story.append(Paragraph(
             "• <b>Control de entrada (IC):</b> la capacidad está limitada por la boca de ingreso. "
-            "HW se determina mediante los nomogramas FHWA (aproximación polinomial).",
+            "HW se determina mediante las ecuaciones del apéndice A y los coeficientes de la tabla A.1, con conversión explícita de unidades.",
             S["body"]
         ))
         story.append(Paragraph(

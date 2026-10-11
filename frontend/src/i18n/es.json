@@ -48,7 +48,7 @@
     "runoffCoefficientHint": "Valor entre 0 y 1. Típico: 0.2 (rural) – 0.9 (urbano impermeabilizado)",
     "infrastructureType": "Tipo de infraestructura",
     "tcFormulas": "Fórmulas de Tiempo de Concentración",
-    "tcInfo": "Seleccione una o más fórmulas. Se calculará el promedio para el diseño.",
+    "tcInfo": "Compará las fórmulas y elegí una para el diseño; se adopta la primera si no elegís otra.",
     "cn": "Número de Curva compuesto",
     "cnHint": "Calculado automáticamente según uso del suelo y grupo hidrológico",
     "soilGroup": "Grupo hidrológico de suelo",
@@ -64,7 +64,9 @@
     "projectNamePlaceholder": "Ej: Diseño hidráulico acceso a planta industrial",
     "clientName": "Comitente (opcional)",
     "clientNamePlaceholder": "Nombre del comitente o entidad",
-    "language": "Idioma del informe"
+    "language": "Idioma del informe",
+    "idfStation": "Estación IDF",
+    "selectStation": "Seleccioná la estación que corresponda a tu cuenca"
   },
   "infrastructure": {
     "alcantarilla_menor": "Alcantarilla menor (< 1 m)",
@@ -109,7 +111,8 @@
     "share": "Compartir",
     "share_copied": "¡URL copiada!",
     "open_manning": "Dimensionar canal (Manning)",
-    "open_culvert": "Dimensionar alcantarilla"
+    "open_culvert": "Dimensionar alcantarilla",
+    "referenceValidation": "Comprobado con casos de referencia; pendiente de validación con datos locales. Versión:"
   },
   "warnings": {
     "prefilled_flow": "Caudal de diseño completado automáticamente desde el análisis hidrológico.",
@@ -135,7 +138,8 @@
     "bajo": "Bajo",
     "moderado": "Moderado",
     "alto": "Alto",
-    "muy_alto": "Muy Alto"
+    "muy_alto": "Muy Alto",
+    "no_evaluado": "No evaluado"
   },
   "soilGroup": {
     "A": "Grupo A — Alta infiltración",
@@ -353,7 +357,7 @@
     "passes": "✓ Cumple",
     "fails": "✗ No cumple",
     "insufficientTitle": "Alcantarilla insuficiente",
-    "insufficientDesc": "HW/D = {{ratio}} excede el límite físico de 4.0. La sección no puede evacuar este caudal. Se requiere una alcantarilla más grande, múltiples conductos o un puente.",
+    "insufficientDesc": "HW/D = {{ratio}} excede el rango de predimensionamiento adoptado por la aplicación (4.0). Revisar con un modelo hidráulico detallado y evaluar otras secciones.",
     "hwNearLimit": "HW/D = {{ratio}} — cercano al límite recomendado. Considerá una sección mayor.",
     "hwUpstream": "Tirante aguas arriba (HW)",
     "hwRatio": "Relación HW/D",
@@ -452,7 +456,7 @@
       },
       "scs_type_ii": {
         "label": "SCS Tipo II",
-        "desc": "Distribución adimensional USDA-NRCS para regiones húmedas (NEA, Pampa Húmeda). Pico al 70% de la duración."
+        "desc": "Distribución estadounidense de 24 h; pico cerca de la mitad de la tormenta. Validar su aplicación local y el cambio de duración."
       },
       "chicago": {
         "label": "Chicago (r = 0.4)",
@@ -506,7 +510,7 @@
     "idfOwnData": "Datos IDF propios",
     "tcFormulaCol": "Fórmula",
     "tcApplicabilityCol": "Aplicabilidad",
-    "tcAdoptedAvg": "Tc adoptado (promedio)",
+    "tcAdoptedAvg": "Tc adoptado",
     "wordError": "Error al generar el Word. Intente nuevamente.",
     "excelError": "Error al generar el Excel. Intente nuevamente.",
     "shapefileError": "Error al exportar el Shapefile.",

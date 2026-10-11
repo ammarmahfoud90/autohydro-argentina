@@ -1,7 +1,10 @@
 from typing import Optional
+from unicodedata import normalize
+from urllib.parse import quote
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
+from app.services.calculation_trace import prepare_report_data
 from app.services.report_service import MemoriaCalculoGenerator
 from app.services.docx_service import MemoriaCalculoDocxGenerator
 from app.services.excel_service import ExcelReportGenerator
@@ -10,6 +13,19 @@ from app.services.hydraulic_report_service import ManningReportGenerator, Culver
 from app.services.proyecto_report_service import ProyectoReportGenerator
 
 router = APIRouter()
+
+
+def _download_header(project_name: str, prefix: str, extension: str) -> str:
+    """ASCII HTTP header with a UTF-8 filename for projects containing accents."""
+    safe_name = "".join(
+        c if c.isalnum() or c in (" ", "-", "_") else "_"
+        for c in project_name[:40]
+    ).strip() or "Proyecto"
+    ascii_name = normalize("NFKD", safe_name).encode("ascii", "ignore").decode("ascii")
+    ascii_name = ascii_name.strip() or "Proyecto"
+    filename = f"{prefix}_{safe_name}.{extension}"
+    fallback = f"{prefix}_{ascii_name}.{extension}"
+    return f'attachment; filename="{fallback}"; filename*=UTF-8\'\'{quote(filename, safe="")}'
 
 
 class ReportRequest(BaseModel):
@@ -29,6 +45,10 @@ def generate_report(req: ReportRequest) -> StreamingResponse:
     """
     Generate PDF Memoria de Cálculo Hidrológico.
     """
+    try:
+        req.calculationData = prepare_report_data(req.calculationData)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     location = req.location or req.calculationData.get("city", "Argentina")
 
     # Optionally fetch AI-generated section text
@@ -64,16 +84,12 @@ def generate_report(req: ReportRequest) -> StreamingResponse:
             detail=f"Error al generar el PDF: {str(exc)}",
         ) from exc
 
-    safe_name = "".join(
-        c if c.isalnum() or c in (" ", "-", "_") else "_"
-        for c in req.projectName[:40]
-    ).strip()
-    filename = f"memoria_calculo_{safe_name}.pdf"
+    disposition = _download_header(req.projectName, "memoria_calculo", "pdf")
 
     return StreamingResponse(
         buffer,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={"Content-Disposition": disposition},
     )
 
 
@@ -93,6 +109,10 @@ def generate_report_docx(req: DocxReportRequest) -> StreamingResponse:
     """
     Generate Word (.docx) Memoria de Cálculo Hidrológico.
     """
+    try:
+        req.calculationData = prepare_report_data(req.calculationData)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     location = req.location or req.calculationData.get("city", "Argentina")
 
     ai_sections: dict = {}
@@ -125,16 +145,12 @@ def generate_report_docx(req: DocxReportRequest) -> StreamingResponse:
             detail=f"Error al generar el Word: {str(exc)}",
         ) from exc
 
-    safe_name = "".join(
-        c if c.isalnum() or c in (" ", "-", "_") else "_"
-        for c in req.projectName[:40]
-    ).strip()
-    filename = f"memoria_calculo_{safe_name}.docx"
+    disposition = _download_header(req.projectName, "memoria_calculo", "docx")
 
     return StreamingResponse(
         buffer,
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={"Content-Disposition": disposition},
     )
 
 
@@ -150,6 +166,10 @@ def generate_report_excel(req: ExcelReportRequest) -> StreamingResponse:
     """
     Generate Excel (.xlsx) Memoria de Cálculo Hidrológico.
     """
+    try:
+        req.calculationData = prepare_report_data(req.calculationData)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     location = req.location or req.calculationData.get("city", "Argentina")
 
     try:
@@ -165,16 +185,12 @@ def generate_report_excel(req: ExcelReportRequest) -> StreamingResponse:
             detail=f"Error al generar el Excel: {str(exc)}",
         ) from exc
 
-    safe_name = "".join(
-        c if c.isalnum() or c in (" ", "-", "_") else "_"
-        for c in req.projectName[:40]
-    ).strip()
-    filename = f"memoria_calculo_{safe_name}.xlsx"
+    disposition = _download_header(req.projectName, "memoria_calculo", "xlsx")
 
     return StreamingResponse(
         buffer,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={"Content-Disposition": disposition},
     )
 
 
@@ -204,16 +220,12 @@ def generate_manning_pdf(req: ManningReportRequest) -> StreamingResponse:
             detail=f"Error al generar el PDF: {str(exc)}",
         ) from exc
 
-    safe_name = "".join(
-        c if c.isalnum() or c in (" ", "-", "_") else "_"
-        for c in req.projectName[:40]
-    ).strip()
-    filename = f"memoria_hidraulica_manning_{safe_name}.pdf"
+    disposition = _download_header(req.projectName, "memoria_hidraulica_manning", "pdf")
 
     return StreamingResponse(
         buffer,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={"Content-Disposition": disposition},
     )
 
 
@@ -246,16 +258,12 @@ def generate_proyecto_pdf(req: ProyectoReportRequest) -> StreamingResponse:
             detail=f"Error al generar el PDF: {str(exc)}",
         ) from exc
 
-    safe_name = "".join(
-        c if c.isalnum() or c in (" ", "-", "_") else "_"
-        for c in req.projectName[:40]
-    ).strip()
-    filename = f"memoria_proyecto_{safe_name}.pdf"
+    disposition = _download_header(req.projectName, "memoria_proyecto", "pdf")
 
     return StreamingResponse(
         buffer,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={"Content-Disposition": disposition},
     )
 
 
@@ -284,14 +292,10 @@ def generate_culvert_pdf(req: CulvertReportRequest) -> StreamingResponse:
             detail=f"Error al generar el PDF: {str(exc)}",
         ) from exc
 
-    safe_name = "".join(
-        c if c.isalnum() or c in (" ", "-", "_") else "_"
-        for c in req.projectName[:40]
-    ).strip()
-    filename = f"memoria_hidraulica_alcantarilla_{safe_name}.pdf"
+    disposition = _download_header(req.projectName, "memoria_hidraulica_alcantarilla", "pdf")
 
     return StreamingResponse(
         buffer,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={"Content-Disposition": disposition},
     )

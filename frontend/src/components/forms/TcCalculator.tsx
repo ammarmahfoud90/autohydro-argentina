@@ -41,7 +41,7 @@ export function TcCalculator({ selectedFormulas, adoptedFormula, basinData, onCh
       },
       selectedFormulas,
     );
-  }, [area_km2, length_km, slope, elevation_diff_m, avg_elevation_m, selectedFormulas]);
+  }, [hasBasin, area_km2, length_km, slope, elevation_diff_m, avg_elevation_m, selectedFormulas]);
 
   function toggleFormula(key: TcFormulaKey) {
     if (selectedFormulas.includes(key)) {

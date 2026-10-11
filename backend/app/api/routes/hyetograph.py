@@ -13,6 +13,8 @@ class HyetographRequest(BaseModel):
     duration_min: int = Field(..., ge=15, le=1440)
     time_step_min: int = Field(10, ge=1, le=60)
     method: str = Field("alternating_blocks")
+    station_name: str | None = None
+    station_id: str | None = None
     r: float = Field(0.4, ge=0.1, le=0.9, description="Peak position for Chicago method")
 
 
@@ -25,6 +27,8 @@ def create_hyetograph(req: HyetographRequest) -> dict:
             detail=f"Método '{req.method}' no válido. Use: {sorted(VALID_METHODS)}",
         )
     # Ensure duration is divisible by time step
+    if req.duration_min % req.time_step_min:
+        raise HTTPException(status_code=422, detail="La duración debe ser múltiplo exacto del intervalo de tiempo.")
     n = req.duration_min // req.time_step_min
     if n < 4:
         raise HTTPException(
@@ -35,10 +39,12 @@ def create_hyetograph(req: HyetographRequest) -> dict:
         return generate_hyetograph(
             locality_id=req.locality_id,
             return_period=req.return_period,
-            duration_min=(n * req.time_step_min),  # snap to multiple
+            duration_min=req.duration_min,
             time_step_min=req.time_step_min,
             method=req.method,
             r=req.r,
+            station_name=req.station_name,
+            station_id=req.station_id,
         )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc

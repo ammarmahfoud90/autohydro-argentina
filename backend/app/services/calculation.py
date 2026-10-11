@@ -5,11 +5,13 @@ Implements:
   - Método Racional (Rational Method)
   - Método Racional Modificado (Modified Rational Method — Témez areal reduction)
   - Método SCS-CN (with Argentine Pampa Húmeda λ variant)
-  - Risk classification with Argentine infrastructure thresholds
+  - Explicitly unevaluated risk until hydraulic capacity and exposure are assessed
 """
 
 import logging
 import math
+import json
+import hashlib
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -39,104 +41,18 @@ _VERIFIED_CONFIDENCE_LEVELS = frozenset({"official", "peer_reviewed"})
 
 # ── Risk classification ───────────────────────────────────────────────────────
 
-# Thresholds in m³/s per infrastructure type
-_RISK_THRESHOLDS: dict[str, dict[str, float]] = {
-    "alcantarilla_menor": {
-        "muy_bajo": 0.5, "bajo": 1.5, "moderado": 3.0, "alto": 5.0
-    },
-    "alcantarilla_mayor": {
-        "muy_bajo": 2.0, "bajo": 5.0, "moderado": 10.0, "alto": 20.0
-    },
-    "puente_menor": {
-        "muy_bajo": 5.0, "bajo": 15.0, "moderado": 30.0, "alto": 50.0
-    },
-    "puente_mayor": {
-        "muy_bajo": 20.0, "bajo": 50.0, "moderado": 100.0, "alto": 200.0
-    },
-    "canal_urbano": {
-        "muy_bajo": 1.0, "bajo": 3.0, "moderado": 8.0, "alto": 15.0
-    },
-    "canal_rural": {
-        "muy_bajo": 3.0, "bajo": 10.0, "moderado": 25.0, "alto": 50.0
-    },
-    "defensa_costera": {
-        "muy_bajo": 10.0, "bajo": 30.0, "moderado": 80.0, "alto": 150.0
-    },
-}
-
-_RISK_RECOMMENDATIONS: dict[str, dict[str, str]] = {
-    "muy_bajo": {
-        "general": "Condiciones favorables para la infraestructura propuesta.",
-        "action": "Proceder con diseño estándar.",
-        "verification": "Verificación básica de capacidad hidráulica.",
-    },
-    "bajo": {
-        "general": "Caudal manejable con diseño convencional.",
-        "action": "Dimensionar según normativa estándar.",
-        "verification": "Verificar velocidades máximas y erosión.",
-    },
-    "moderado": {
-        "general": "Requiere atención en el diseño hidráulico.",
-        "action": "Considerar obras de protección adicionales.",
-        "verification": "Análisis de socavación y estabilidad de márgenes.",
-    },
-    "alto": {
-        "general": "Condiciones exigentes que requieren diseño detallado.",
-        "action": "Estudio hidráulico completo recomendado (HEC-RAS o similar).",
-        "verification": "Modelación hidráulica, análisis de alternativas.",
-    },
-    "muy_alto": {
-        "general": "Condiciones críticas. Riesgo significativo.",
-        "action": "Estudio integral obligatorio. Considerar alternativas de emplazamiento.",
-        "verification": "Modelación 2D, análisis de riesgo, plan de contingencia.",
-    },
-}
-
-
 def classify_risk(
     Q: float,
     infrastructure: str,
     return_period: int,
 ) -> tuple[str, RiskRecommendations]:
-    """
-    Classify flood risk given peak discharge and infrastructure type.
-
-    Returns:
-        (risk_level string, RiskRecommendations)
-    """
-    thresholds = _RISK_THRESHOLDS.get(infrastructure, _RISK_THRESHOLDS["canal_rural"])
-
-    if Q < thresholds["muy_bajo"]:
-        level = "muy_bajo"
-    elif Q < thresholds["bajo"]:
-        level = "bajo"
-    elif Q < thresholds["moderado"]:
-        level = "moderado"
-    elif Q < thresholds["alto"]:
-        level = "alto"
-    else:
-        level = "muy_alto"
-
-    base = _RISK_RECOMMENDATIONS[level].copy()
-
-    period_note: Optional[str] = None
-    if return_period < 10:
-        period_note = (
-            f"Período de retorno de {return_period} años es bajo para obras permanentes. "
-            f"Considerar T ≥ 25 años."
-        )
-    elif return_period >= 100:
-        period_note = (
-            f"Período de retorno de {return_period} años apropiado para infraestructura crítica."
-        )
-
-    recs = RiskRecommendations(
-        general=base["general"],
-        action=base["action"],
-        verification=base["verification"],
-        period_note=period_note,
+    """Discharge alone does not establish capacity, exposure or flood risk."""
+    return "no_evaluado", RiskRecommendations(
+        general="Riesgo no evaluado: el caudal por sí solo no determina el riesgo de la obra.",
+        action="Comparar el caudal de diseño con la capacidad hidráulica de la estructura y las condiciones de descarga.",
+        verification="Evaluar niveles de agua, obstrucción, socavación, exposición y consecuencias de falla.",
+        period_note=f"Verificar que T={return_period} años cumpla el criterio de diseño exigido para esta obra y jurisdicción.",
     )
-    return level, recs
 
 
 # ── Rational Method ───────────────────────────────────────────────────────────
@@ -218,7 +134,7 @@ def scs_cn_method(
     duration_min: float = 60.0,
 ) -> dict[str, float]:
     """
-    SCS-CN peak discharge using triangular unit hydrograph.
+    SCS-CN peak discharge using the volume-normalized NRCS curvilinear shape.
 
     Args:
         CN: Composite curve number
@@ -251,37 +167,46 @@ def scs_cn_method(
     # Peak discharge (m³/s) — SCS formula
     # Qp = 0.208 × A (km²) × Q (mm) / Tp (hr)
     if Tp > 0 and Q_mm > 0:
-        Qp = 0.208 * A_km2 * Q_mm / Tp
+        Qp = _SCS_PEAK_FACTOR * A_km2 * Q_mm / Tp
     else:
         Qp = 0.0
 
     return {
-        "Q_mm": round(Q_mm, 3),
+        "Q_mm": round(Q_mm, 8),
         "S_mm": round(S, 3),
         "Ia_mm": round(Ia, 3),
-        "Qp_m3s": round(Qp, 4),
-        "Tp_hr": round(Tp, 4),
+        "Qp_m3s": round(Qp, 8),
+        "Tp_hr": round(Tp, 8),
     }
 
 
 # ── SCS Unit Hydrograph ───────────────────────────────────────────────────────
 
 # Standard SCS dimensionless curvilinear unit hydrograph
-# Source: USDA-SCS, National Engineering Handbook, Section 4 (1972/1986)
+# Source: TxDOT Hydraulic Design Manual, Chapter 4, Section 13, Table 4-29 (NRCS).
 # Coordinates: (t/Tp, q/Qp)
 _SCS_DIM_UH: list[tuple[float, float]] = [
     (0.0, 0.000),
-    (0.1, 0.015), (0.2, 0.075), (0.3, 0.160), (0.4, 0.280),
-    (0.5, 0.430), (0.6, 0.600), (0.7, 0.770), (0.8, 0.890),
-    (0.9, 0.970), (1.0, 1.000),
-    (1.1, 0.980), (1.2, 0.920), (1.3, 0.840), (1.4, 0.750),
-    (1.5, 0.660), (1.6, 0.560), (1.7, 0.460), (1.8, 0.390),
+    (0.1, 0.030), (0.2, 0.100), (0.3, 0.190), (0.4, 0.310),
+    (0.5, 0.470), (0.6, 0.660), (0.7, 0.820), (0.8, 0.930),
+    (0.9, 0.990), (1.0, 1.000),
+    (1.1, 0.990), (1.2, 0.930), (1.3, 0.860), (1.4, 0.780),
+    (1.5, 0.680), (1.6, 0.560), (1.7, 0.460), (1.8, 0.390),
     (1.9, 0.330), (2.0, 0.280),
     (2.2, 0.207), (2.4, 0.147), (2.6, 0.107), (2.8, 0.077),
     (3.0, 0.055), (3.2, 0.040), (3.4, 0.029), (3.6, 0.021),
     (3.8, 0.015), (4.0, 0.011),
     (4.5, 0.005), (5.0, 0.000),
 ]
+
+
+# Numerically normalize the published, rounded ordinates to one unit of
+# runoff. This coefficient rounds to the customary 0.208 SI peak factor.
+_SCS_DIM_AREA = sum(
+    (t1 - t0) * (q0 + q1) / 2
+    for (t0, q0), (t1, q1) in zip(_SCS_DIM_UH, _SCS_DIM_UH[1:])
+)
+_SCS_PEAK_FACTOR = 1000.0 / (3600.0 * _SCS_DIM_AREA)
 
 
 def scs_unit_hydrograph(
@@ -293,7 +218,7 @@ def scs_unit_hydrograph(
 
     Args:
         Qp:  Peak discharge (m³/s) from scs_cn_method
-        Tp:  Time to peak (hours) = 0.6 * Tc
+        Tp:  Time to peak (hours) = D/2 + 0.6 * Tc for one excess-rainfall pulse
 
     Returns dict with:
         times_hr:       list of time values (hours)
@@ -314,8 +239,8 @@ def scs_unit_hydrograph(
     base_time = times[-1]  # last point = 5 × Tp
 
     return {
-        "times_hr": [round(t, 4) for t in times],
-        "flows_m3s": [round(q, 5) for q in flows],
+        "times_hr": [round(t, 8) for t in times],
+        "flows_m3s": [round(q, 8) for q in flows],
         "runoff_volume_m3": round(volume, 1),
         "base_time_hr": round(base_time, 4),
         "time_to_peak_hr": round(Tp, 4),
@@ -334,7 +259,7 @@ def compute_cn_sensitivity(
 ) -> list[CNSensitivityPoint]:
     """
     Compute peak flow for CN-5, CN, and CN+5.
-    CN is clamped to [30, 98] to stay within physical bounds.
+    CN is clamped to [1, 100], matching the accepted calculation inputs.
 
     Returns:
         List of three CNSensitivityPoint objects (low, base, high).
@@ -344,7 +269,7 @@ def compute_cn_sensitivity(
     base_q = 0.0
 
     for delta, label in deltas:
-        cn = round(max(30.0, min(98.0, cn_base + delta)), 1)
+        cn = max(1.0, min(100.0, cn_base + delta))
         scs = scs_cn_method(cn, P_mm, A_km2, tc_hours, use_pampa_lambda, duration_min)
         q = round(scs["Qp_m3s"], 4)
         if label == "CN":
@@ -507,6 +432,14 @@ def run_calculation(payload: dict) -> dict:
         manual_source = None
 
     intensity = idf_result["intensity_mm_hr"]
+    calc_warnings.extend(idf_result.get("warnings", []))
+    idf_extrapolated = bool(idf_result.get("duration_extrapolation_warning", False))
+    idf_extrapolated = idf_extrapolated or any("extrapol" in w.lower() for w in idf_result.get("warnings", []))
+    if idf_result.get("duration_extrapolation_warning"):
+        calc_warnings.append(
+            f"Duración IDF {effective_duration_min:.3f} min fuera del rango publicado "
+            f"[{idf_result.get('duration_valid_range_min')}, {idf_result.get('duration_valid_range_max')}] min: resultado extrapolado."
+        )
 
     # ── TR reliability warning ────────────────────────────────────────────
     if not is_manual:
@@ -566,6 +499,10 @@ def run_calculation(payload: dict) -> dict:
         extra["areal_reduction_k"] = round(K, 4)
 
     else:  # scs_cn
+        if req.use_pampa_lambda:
+            calc_warnings.append("λ=0.05 fue elegido por el usuario; verificar calibración local y compatibilidad del CN con esa abstracción inicial.")
+        calc_warnings.append("El hidrograma SCS representa un único pulso de lluvia efectiva de duración D; no convoluciona el hietograma del proyecto y requiere validación local.")
+        extra["hydrograph_model"] = "nrcs_single_excess_pulse_volume_normalized"
         scs = scs_cn_method(
             CN=cn_value,  # type: ignore[arg-type]
             P_mm=P_mm,
@@ -629,6 +566,9 @@ def run_calculation(payload: dict) -> dict:
                 station_id=getattr(req, "station_id", None),
             )
         intensity_for_rational = _rat_idf["intensity_mm_hr"]
+        calc_warnings.extend("Comparación racional: " + w for w in _rat_idf.get("warnings", []))
+        if _rat_idf.get("duration_extrapolation_warning"):
+            calc_warnings.append("Comparación racional: la duración Tc está fuera del rango IDF publicado; resultado extrapolado.")
     else:
         # Primary method is already Rational/ModRational (duration == Tc) — reuse.
         intensity_for_rational = intensity
@@ -689,7 +629,16 @@ def run_calculation(payload: dict) -> dict:
         city=locality["name"],
         province=locality["province"],
         return_period=req.return_period,
-        duration_min=req.duration_min,
+        duration_min=round(effective_duration_min, 8),
+        requested_duration_min=req.duration_min,
+        calculation_inputs=req.model_dump(mode="json"),
+        idf_model="manual" if is_manual else locality.get("idf_model", "apa_chaco"),
+        idf_data_sha256=hashlib.sha256(json.dumps(
+            {"table": req.manual_idf_table.model_dump() if req.manual_idf_table else None,
+             "formula": req.manual_idf_formula.model_dump() if req.manual_idf_formula else None}
+            if is_manual else locality, sort_keys=True, ensure_ascii=False
+        ).encode()).hexdigest(),
+        idf_extrapolated=idf_extrapolated,
         area_km2=req.area_km2,
         method=req.method,
         location_description=req.location_description,
@@ -712,9 +661,9 @@ def run_calculation(payload: dict) -> dict:
         risk_recommendations=risk_recs,
         infrastructure_type=req.infrastructure_type,
         use_pampa_lambda=req.use_pampa_lambda,
-        effective_duration_min=round(effective_duration_min, 2),
+        effective_duration_min=round(effective_duration_min, 8),
         duration_override=duration_override,
-        warnings=calc_warnings,
+        warnings=list(dict.fromkeys(calc_warnings)),
         **extra,
     )
 

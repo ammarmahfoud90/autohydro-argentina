@@ -117,7 +117,7 @@ class TestSCSCNMethod:
         result = scs_cn_method(CN=CN, P_mm=P, A_km2=A, tc_hours=tc, duration_min=D)
         Tp_expected = (D / 60.0) / 2.0 + 0.6 * tc
         Qp_expected = 0.208 * A * result["Q_mm"] / Tp_expected
-        assert abs(result["Qp_m3s"] - Qp_expected) < 0.001
+        assert result["Qp_m3s"] == pytest.approx(Qp_expected, rel=0.005)  # 0.208 is the rounded peak factor
 
     def test_cn100_returns_all_runoff(self):
         """CN=100 means S=0, so all precipitation becomes runoff."""
@@ -145,23 +145,23 @@ class TestSCSCNMethod:
 class TestRiskClassification:
     def test_muy_bajo(self):
         level, _ = classify_risk(Q=0.3, infrastructure="alcantarilla_menor", return_period=25)
-        assert level == "muy_bajo"
+        assert level == "no_evaluado"
 
     def test_bajo(self):
         level, _ = classify_risk(Q=1.0, infrastructure="alcantarilla_menor", return_period=25)
-        assert level == "bajo"
+        assert level == "no_evaluado"
 
     def test_moderado(self):
         level, _ = classify_risk(Q=2.0, infrastructure="alcantarilla_menor", return_period=25)
-        assert level == "moderado"
+        assert level == "no_evaluado"
 
     def test_alto(self):
         level, _ = classify_risk(Q=4.0, infrastructure="alcantarilla_menor", return_period=25)
-        assert level == "alto"
+        assert level == "no_evaluado"
 
     def test_muy_alto(self):
         level, _ = classify_risk(Q=10.0, infrastructure="alcantarilla_menor", return_period=25)
-        assert level == "muy_alto"
+        assert level == "no_evaluado"
 
     def test_low_return_period_note(self):
         _, recs = classify_risk(Q=1.0, infrastructure="canal_rural", return_period=5)
@@ -173,9 +173,10 @@ class TestRiskClassification:
         assert recs.period_note is not None
         assert "100" in recs.period_note
 
-    def test_mid_return_period_no_note(self):
+    def test_mid_return_period_requires_local_design_criterion(self):
         _, recs = classify_risk(Q=1.0, infrastructure="canal_rural", return_period=25)
-        assert recs.period_note is None
+        assert "25" in recs.period_note
+        assert "criterio" in recs.period_note
 
     def test_all_infrastructure_types(self):
         infra_types = [
@@ -184,7 +185,7 @@ class TestRiskClassification:
         ]
         for infra in infra_types:
             level, recs = classify_risk(Q=100.0, infrastructure=infra, return_period=25)
-            assert level in {"muy_bajo", "bajo", "moderado", "alto", "muy_alto"}
+            assert level == "no_evaluado"
             assert recs.general
 
 
@@ -291,7 +292,7 @@ class TestRunCalculation:
 
     def test_risk_level_in_response(self):
         result = run_calculation(self.BASE_RATIONAL)
-        assert result["risk_level"] in {"muy_bajo", "bajo", "moderado", "alto", "muy_alto"}
+        assert result["risk_level"] == "no_evaluado"
 
 
 # ── BUG 1: Comparison table intensity at Tc ───────────────────────────────────

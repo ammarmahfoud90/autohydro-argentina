@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
@@ -90,18 +90,11 @@ function ReliabilityBadge({ years }: { years: number | null | undefined }) {
 
 function LocalitySourceCard({ localityId }: { localityId: string }) {
   const { t } = useTranslation();
-  const [data, setData] = useState<IDFLocalityFull | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    setLoading(true);
-    setError(false);
-    getLocality(localityId)
-      .then((d) => setData(d as IDFLocalityFull))
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
-  }, [localityId]);
+  const { data, isLoading: loading, error } = useQuery({
+    queryKey: ['locality', localityId],
+    queryFn: async () => await getLocality(localityId) as IDFLocalityFull,
+    staleTime: Infinity,
+  });
 
   if (loading) {
     return (

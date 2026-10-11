@@ -193,6 +193,8 @@ export async function getLocality(id: string): Promise<IDFLocality> {
 }
 
 export interface WatershedResult {
+  warnings?: string[];
+  length_method?: string;
   geojson: object;
   area_km2: number;
   slope: number;
@@ -327,6 +329,9 @@ export interface HyetographResult {
   peak_time_min: number;
   method: string;
   method_label: string;
+  warnings?: string[];
+  station_name?: string | null;
+  station_id?: string | null;
   city: string;
   province: string;
   return_period: number;
@@ -342,6 +347,8 @@ export async function generateHyetograph(params: {
   time_step_min: number;
   method: string;
   r?: number;
+  station_id?: string | null;
+  station_name?: string | null;
 }): Promise<HyetographResult> {
   return request<HyetographResult>('/api/hydrology/hyetograph', {
     method: 'POST',

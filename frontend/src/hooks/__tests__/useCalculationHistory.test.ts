@@ -9,7 +9,7 @@ import { useCalculationHistory, type CalculationHistoryEntry } from '../useCalcu
 // Minimal localStorage polyfill (node env doesn't have one)
 function installLocalStorage() {
   const store: Record<string, string> = {};
-  (globalThis as any).localStorage = {
+  globalThis.localStorage = {
     getItem: (k: string) => (k in store ? store[k] : null),
     setItem: (k: string, v: string) => {
       store[k] = String(v);
@@ -20,12 +20,12 @@ function installLocalStorage() {
     clear: () => {
       for (const k of Object.keys(store)) delete store[k];
     },
-  };
+  } as Storage;
   // crypto.randomUUID is in Node 18+, but vitest node env may not expose it
-  if (!(globalThis as any).crypto?.randomUUID) {
-    (globalThis as any).crypto = {
-      ...(globalThis as any).crypto,
-      randomUUID: () => 'uuid-' + Math.random().toString(36).slice(2),
+  if (!globalThis.crypto?.randomUUID) {
+    globalThis.crypto = {
+      ...globalThis.crypto,
+      randomUUID: () => `00000000-0000-4000-8000-${Math.floor(Math.random()*1e12).toString().padStart(12, '0')}`,
     };
   }
 }

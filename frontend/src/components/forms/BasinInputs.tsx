@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { HydrologyInput } from '../../types';
 
@@ -43,36 +43,26 @@ function numToStr(v: number | null | undefined): string {
   return String(v);
 }
 
+function useNumberDraft(external: number | null, emptyValue: number | null) {
+  const [draft, setDraft] = useState({ text: numToStr(external), applied: external });
+  const text = draft.applied === external ? draft.text : numToStr(external);
+  function setText(raw: string) {
+    const n = parseFloat(raw);
+    const applied = raw.endsWith('.') ? external : raw === '' || !Number.isFinite(n) ? emptyValue : n;
+    setDraft({ text: raw, applied });
+  }
+  return [text, setText] as const;
+}
+
 export function BasinInputs({ formData, onChange }: Props) {
   const { t } = useTranslation();
 
-  // ── Local string state (source of truth for what the user sees) ───────────
-  // These are NEVER overwritten by re-renders from the parent — the parent's
-  // numeric values are only used to initialise on mount and to handle external
-  // resets (e.g. "New Calculation").
-  const [area, setArea] = useState(() => numToStr(formData.area_km2));
-  const [length, setLength] = useState(() => numToStr(formData.length_km));
-  const [slope, setSlope] = useState(() => numToStr(formData.slope));
-  const [elevDiff, setElevDiff] = useState(() => numToStr(formData.elevation_diff_m));
-  const [avgElev, setAvgElev] = useState(() => numToStr(formData.avg_elevation_m));
-
-  // Flag: did the LAST formData change come from our own onChange call?
-  // If yes, skip syncing local strings from the parent (the user is typing).
-  // If no (external reset), sync so the form shows the reset values.
-  const isOwnChange = useRef(false);
-
-  useEffect(() => {
-    if (!isOwnChange.current) {
-      // External change — resync display strings from parent (e.g. form reset).
-      setArea(numToStr(formData.area_km2));
-      setLength(numToStr(formData.length_km));
-      setSlope(numToStr(formData.slope));
-      setElevDiff(numToStr(formData.elevation_diff_m));
-      setAvgElev(numToStr(formData.avg_elevation_m));
-    }
-    isOwnChange.current = false;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.area_km2, formData.length_km, formData.slope, formData.elevation_diff_m, formData.avg_elevation_m]);
+  // Keep partially typed decimals while reflecting external form resets.
+  const [area, setArea] = useNumberDraft(formData.area_km2, 0);
+  const [length, setLength] = useNumberDraft(formData.length_km, 0);
+  const [slope, setSlope] = useNumberDraft(formData.slope, 0);
+  const [elevDiff, setElevDiff] = useNumberDraft(formData.elevation_diff_m, null);
+  const [avgElev, setAvgElev] = useNumberDraft(formData.avg_elevation_m, null);
 
   // ── Generic handlers ───────────────────────────────────────────────────────
 
@@ -95,14 +85,12 @@ export function BasinInputs({ formData, onChange }: Props) {
       setter(raw);
 
       if (raw === '') {
-        isOwnChange.current = true;
         parentUpdate(null);
       } else if (!raw.endsWith('.')) {
         // Only push complete numbers; "0.", "0.0" etc. are valid intermediate states.
         const n = parseFloat(raw);
         if (!isNaN(n)) {
-          isOwnChange.current = true;
-          parentUpdate(n);
+            parentUpdate(n);
         }
       }
       // Intermediate states ("0.", "0.0", …) do NOT call parentUpdate —
@@ -123,11 +111,9 @@ export function BasinInputs({ formData, onChange }: Props) {
       const n = parseFloat(raw);
       if (raw === '' || isNaN(n)) {
         setter('');
-        isOwnChange.current = true;
         parentUpdate(null);
       } else {
         setter(String(n));        // normalise e.g. "0.0035 " → "0.0035"
-        isOwnChange.current = true;
         parentUpdate(n);
       }
     };

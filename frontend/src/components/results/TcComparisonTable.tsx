@@ -27,10 +27,10 @@ export function TcComparisonTable({ results }: { results: HydrologyResult }) {
               </tr>
             ))}
             <tr className="bg-blue-50 dark:bg-blue-900/20 font-semibold text-blue-700 dark:text-blue-300">
-              <td className="py-2 pr-2">{t('results.tcAdopted')} (promedio)</td>
+              <td className="py-2 pr-2">{t('results.tcAdopted')}</td>
               <td className="text-right py-2">{results.tc_adopted_hours.toFixed(3)}</td>
               <td className="text-right py-2">{results.tc_adopted_minutes.toFixed(1)}</td>
-              <td className="pl-3 py-2" />
+              <td className="pl-3 py-2">{results.tc_adopted_formula_name}</td>
             </tr>
           </tbody>
         </table>
