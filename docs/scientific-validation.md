@@ -118,6 +118,11 @@ Archivos de regresión: `test_scientific_audit_regressions.py`,
 TypeScript, lint y compilación. Los límites de hilos evitan agotar los recursos
 nativos de Numba en entornos con muchos núcleos.
 
+La primera ejecución de CI detectó que `pysheds` 0.5 usa `np.in1d`, ausente en
+NumPy 2.4.6. Producción y CI limitan NumPy a versiones anteriores a 2.4; la suite
+local fue ejecutada con 2.3.5. Se conserva esta restricción hasta actualizar y
+validar el motor GIS con una versión compatible.
+
 ## Fuentes primarias
 
 - [FHWA, HDS-5, tercera edición (2012)](https://www.fhwa.dot.gov/engineering/hydraulics/pubs/12026/hif12026.pdf): apéndice A, tabla A.1, factor de unidades SI; sección 3.1.3 para los límites del control de salida; tabla C.2 para pérdidas de entrada.
