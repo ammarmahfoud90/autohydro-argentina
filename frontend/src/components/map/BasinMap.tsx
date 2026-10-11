@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { importShapefile } from '../../services/api';
 import { MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
@@ -48,11 +48,13 @@ function DrawController({ mode, vertices, onAddVertex, onClose, onVertexDrag }: 
   const onAddRef = useRef(onAddVertex);
   const onCloseRef = useRef(onClose);
   const onDragRef = useRef(onVertexDrag);
-  modeRef.current = mode;
-  vertsRef.current = vertices;
-  onAddRef.current = onAddVertex;
-  onCloseRef.current = onClose;
-  onDragRef.current = onVertexDrag;
+  useLayoutEffect(() => {
+    modeRef.current = mode;
+    vertsRef.current = vertices;
+    onAddRef.current = onAddVertex;
+    onCloseRef.current = onClose;
+    onDragRef.current = onVertexDrag;
+  }, [mode, vertices, onAddVertex, onClose, onVertexDrag]);
 
   useEffect(() => {
     const lg = layerGroup.current;

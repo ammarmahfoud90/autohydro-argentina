@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { HydroMethod, HydrologyInput, InfrastructureType } from '../../types';
 
@@ -32,14 +32,9 @@ export function MethodSelector({ formData, onChange, province }: Props) {
   const { t } = useTranslation();
 
   // Local string state for the runoff coefficient number input
-  const [runoffStr, setRunoffStr] = useState(() => String(formData.runoff_coeff ?? 0.6));
-  const runoffOwnChange = useRef(false);
-  useEffect(() => {
-    if (!runoffOwnChange.current) {
-      setRunoffStr(String(formData.runoff_coeff ?? 0.6));
-    }
-    runoffOwnChange.current = false;
-  }, [formData.runoff_coeff]);
+  const coeff = formData.runoff_coeff ?? 0.6;
+  const [draft, setDraft] = useState({ value: String(coeff), coeff });
+  const runoffStr = draft.coeff === coeff ? draft.value : String(coeff);
 
   return (
     <div className="space-y-5">
@@ -101,10 +96,9 @@ export function MethodSelector({ formData, onChange, province }: Props) {
               value={runoffStr}
               onChange={(e) => {
                 const raw = e.target.value;
-                setRunoffStr(raw);
                 const val = Number(raw);
+                setDraft({ value: raw, coeff: raw !== '' && Number.isFinite(val) ? val : coeff });
                 if (raw !== '' && !isNaN(val)) {
-                  runoffOwnChange.current = true;
                   onChange({ runoff_coeff: val });
                 }
               }}
@@ -114,8 +108,7 @@ export function MethodSelector({ formData, onChange, province }: Props) {
                   ? 0.6
                   : Math.min(Math.max(val, 0.05), 1.0);
                 const rounded = Math.round(clamped * 100) / 100;
-                setRunoffStr(String(rounded));
-                runoffOwnChange.current = true;
+                setDraft({ value: String(rounded), coeff: rounded });
                 onChange({ runoff_coeff: rounded });
               }}
               className="w-20 rounded-lg border border-gray-300 px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -159,8 +152,8 @@ export function MethodSelector({ formData, onChange, province }: Props) {
             <label htmlFor="pampa_lambda" className="text-sm text-yellow-800 cursor-pointer">
               <span className="font-semibold">Usar λ = 0.05 (Pampa Húmeda)</span>
               <p className="text-xs mt-0.5 font-normal">
-                Reemplaza la abstracción inicial estándar λ=0.20 por λ=0.05, apropiado para
-                suelos de baja pendiente con alta humedad antecedente (recomendado para región pampeana).
+                Reemplaza la abstracción inicial estándar λ=0.20 por λ=0.05, opción que requiere
+                calibrar el CN y la abstracción inicial con datos locales.
               </p>
             </label>
           </div>
@@ -171,7 +164,7 @@ export function MethodSelector({ formData, onChange, province }: Props) {
               </svg>
               <p className="text-xs text-blue-800">
                 La localidad seleccionada está en <strong>{province}</strong>. Para cuencas pampeanas
-                se recomienda activar λ = 0.05 (Pampa Húmeda), que produce estimaciones más conservadoras.
+                la alternativa λ = 0.05 debe justificarse con datos locales y un CN compatible.
               </p>
             </div>
           )}
@@ -195,7 +188,7 @@ export function MethodSelector({ formData, onChange, province }: Props) {
           ))}
         </select>
         <p className="mt-1 text-xs text-gray-500">
-          Determina los umbrales de clasificación de riesgo hidrológico.
+          Describe la obra prevista. El riesgo requiere verificar capacidad hidráulica, exposición y consecuencias de falla.
         </p>
       </div>
     </div>

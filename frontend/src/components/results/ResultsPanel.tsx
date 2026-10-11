@@ -11,6 +11,7 @@ import { CNSensitivityPanel } from './CNSensitivityPanel';
 import { HydrographChart } from './HydrographChart';
 
 const RISK_STYLES: Record<string, string> = {
+  no_evaluado: 'bg-gray-100 text-gray-800 border-gray-300',
   muy_bajo: 'bg-green-100 text-green-800 border-green-300',
   bajo: 'bg-lime-100 text-lime-800 border-lime-300',
   moderado: 'bg-yellow-100 text-yellow-800 border-yellow-300',
@@ -86,7 +87,7 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
       method: results.method,
       tc_min: results.tc_adopted_minutes,
       risk_level: results.risk_level,
-      input_params: formData as unknown as Record<string, unknown>,
+      input_params: results.calculation_inputs ?? formData as unknown as Record<string, unknown>,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -361,7 +362,7 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
     }
   }
 
-  const trWarnings = (results.warnings ?? []).filter(w => !w.startsWith('⚠️'));
+  const trWarnings = (results.warnings ?? []);
 
   return (
     <div className="space-y-4">
@@ -372,7 +373,7 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
           <div className="flex items-start gap-3">
             <span className="text-amber-600 dark:text-amber-400 mt-0.5 shrink-0 text-lg leading-none">⚠️</span>
             <div className="text-sm">
-              <p className="font-bold text-amber-900 dark:text-amber-200 mb-1">Advertencia sobre período de retorno</p>
+              <p className="font-bold text-amber-900 dark:text-amber-200 mb-1">Advertencias del cálculo</p>
               {trWarnings.map((w, i) => (
                 <p key={i} className="text-amber-800 dark:text-amber-300">{w}</p>
               ))}
@@ -432,6 +433,10 @@ export function ResultsPanel({ results, formData, basinPolygon, onBack, onNewCal
         >
           {t('results.riskLevel')}: {t(`risk.${results.risk_level}`)}
         </div>
+
+        <p className="mt-3 text-sm text-gray-600 dark:text-slate-300">
+          {t('results.referenceValidation')} {results.calculation_version}
+        </p>
 
         {/* Info row */}
         <div className="mt-4 text-sm text-gray-600 dark:text-slate-300 space-y-1">

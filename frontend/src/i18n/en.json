@@ -48,7 +48,7 @@
     "runoffCoefficientHint": "Value between 0 and 1. Typical: 0.2 (rural) – 0.9 (impervious urban)",
     "infrastructureType": "Infrastructure type",
     "tcFormulas": "Time of Concentration Formulas",
-    "tcInfo": "Select one or more formulas. The average will be used for design.",
+    "tcInfo": "Compare the formulas and select one for design; the first is adopted unless another is selected.",
     "cn": "Composite Curve Number",
     "cnHint": "Calculated automatically from land use and soil group",
     "soilGroup": "Hydrological soil group",
@@ -64,7 +64,9 @@
     "projectNamePlaceholder": "E.g.: Hydraulic design for industrial plant access",
     "clientName": "Client (optional)",
     "clientNamePlaceholder": "Client or entity name",
-    "language": "Report language"
+    "language": "Report language",
+    "idfStation": "IDF station",
+    "selectStation": "Select the station applicable to your basin"
   },
   "infrastructure": {
     "alcantarilla_menor": "Minor culvert (< 1 m)",
@@ -109,7 +111,8 @@
     "share": "Share",
     "share_copied": "URL copied!",
     "open_manning": "Size channel (Manning)",
-    "open_culvert": "Size culvert"
+    "open_culvert": "Size culvert",
+    "referenceValidation": "Checked against reference cases; local observations still require validation. Version:"
   },
   "warnings": {
     "prefilled_flow": "Design discharge auto-filled from hydrological analysis.",
@@ -135,7 +138,8 @@
     "bajo": "Low",
     "moderado": "Moderate",
     "alto": "High",
-    "muy_alto": "Very High"
+    "muy_alto": "Very High",
+    "no_evaluado": "Not assessed"
   },
   "soilGroup": {
     "A": "Group A — High infiltration",
@@ -353,7 +357,7 @@
     "passes": "✓ Passes",
     "fails": "✗ Fails",
     "insufficientTitle": "Insufficient culvert",
-    "insufficientDesc": "HW/D = {{ratio}} exceeds the physical limit of 4.0. The section cannot convey this flow. A larger culvert, multiple barrels, or a bridge is required.",
+    "insufficientDesc": "HW/D = {{ratio}} exceeds the application screening range (4.0). Review with a detailed hydraulic model and assess alternative sections.",
     "hwNearLimit": "HW/D = {{ratio}} — near the recommended limit. Consider a larger section.",
     "hwUpstream": "Headwater (HW)",
     "hwRatio": "HW/D ratio",
@@ -452,7 +456,7 @@
       },
       "scs_type_ii": {
         "label": "SCS Type II",
-        "desc": "USDA-NRCS dimensionless distribution for humid regions (NEA, Pampa Húmeda). Peak at 70% of duration."
+        "desc": "US 24-hour distribution; peak near mid-storm. Validate local applicability and duration rescaling."
       },
       "chicago": {
         "label": "Chicago (r = 0.4)",
@@ -506,7 +510,7 @@
     "idfOwnData": "User-provided IDF data",
     "tcFormulaCol": "Formula",
     "tcApplicabilityCol": "Applicability",
-    "tcAdoptedAvg": "Adopted Tc (average)",
+    "tcAdoptedAvg": "Adopted Tc",
     "wordError": "Error generating Word document. Please try again.",
     "excelError": "Error generating Excel file. Please try again.",
     "shapefileError": "Error exporting Shapefile.",

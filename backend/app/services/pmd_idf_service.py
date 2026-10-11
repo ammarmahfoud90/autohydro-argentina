@@ -98,13 +98,21 @@ def compute_dit_intensity(
     duration_min: duración en minutos
     return_period: período de retorno en años
     B: parámetro regional del Modelo DIT
-    A: parámetro de frecuencia (default 0.370)
+    A: parámetro de frecuencia. Como PMD ya corresponde al TR dado,
+       su efecto se cancela al normalizar el ancla de 24 h para ese mismo TR.
+    La equivalencia PMD diaria = precipitación de duración móvil 24 h es
+    una hipótesis de este estimador, no una corrección regional validada.
     """
+    if not all(math.isfinite(v) for v in (pmd_mm, duration_min, return_period, B, A)):
+        raise ValueError("Los parámetros PMD→IDF deben ser finitos.")
+    if pmd_mm <= 0 or not 1 <= duration_min <= 1440 or return_period <= 1 or B <= 0:
+        raise ValueError("PMD y B deben ser positivos, TR > 1 y duración entre 1 y 1440 min.")
     delta_1440 = (math.log(1440)) ** (5 / 3)
     i_24h = pmd_mm / 24
-    C = math.log(i_24h) + B * delta_1440
-
     phi_T = 2.584458 * (math.log(return_period)) ** (3 / 8) - 2.252573
+    # PMD(T) already incorporates return-period frequency. Subtract A*phi_T
+    # from C(T) to preserve i(1440,T)=PMD(T)/24 instead of counting it twice.
+    C = math.log(i_24h) - A * phi_T + B * delta_1440
     delta_d = (math.log(duration_min)) ** (5 / 3)
 
     ln_i = A * phi_T - B * delta_d + C
@@ -141,8 +149,10 @@ def estimate_idf_from_pmd(
     return {
         "city": city,
         "zona_climatica": zona,
-        "source": "Atlas PMD/PMP INA-CIRSA + UNC (2020) + Modelo DIT",
-        "method": "Desagregación temporal mediante Modelo DIT (Caamaño Nelli et al.)",
+        "source": "PMD aproximadas del proyecto; atribución al Atlas INA-CIRSA/UNC pendiente de verificación por ciudad",
+        "method": "Desagregación temporal DIT normalizada a PMD(T) en 24 h",
+        "verified": False,
+        "anchor_duration_min": 1440,
         "B_parameter": B,
         "durations_min": durations_min,
         "return_periods": return_periods,
@@ -152,9 +162,10 @@ def estimate_idf_from_pmd(
             for tr in return_periods
         },
         "warnings": [
-            "ESTIMACIÓN DERIVADA DEL ATLAS PMD — No es un dato pluviográfico directo.",
-            "Basado en precipitaciones máximas diarias del Atlas INA-CIRSA/UNC (2020).",
-            "Desagregación temporal mediante Modelo DIT (INA-CIRSA).",
+            "ESTIMACIÓN PRELIMINAR — No es un dato pluviográfico directo.",
+            "Las PMD incluidas son aproximaciones; verificar su fuente y ubicación antes de usarlas en diseño.",
+            "Se conserva PMD(T) como ancla de 24 h, sin aplicar de nuevo el factor de frecuencia.",
+            "Se asume PMD diaria equivalente a precipitación de duración móvil de 24 h; validar esa hipótesis localmente.",
             "Para proyectos críticos, verificar con datos pluviográficos locales.",
             f"Parámetro B regional usado: {B} (zona {zona}).",
         ],

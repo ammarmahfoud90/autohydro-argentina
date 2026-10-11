@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { hydrateFormFromParams } from '../Calculator';
+import { hydrateFormFromParams } from '../../utils/calculatorParams';
 import { DEFAULT_FORM } from '../../types';
 
 function makeParams(obj: Record<string, string>): URLSearchParams {

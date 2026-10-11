@@ -5,6 +5,8 @@ import {
   BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
+import { IDFStationSelector } from '../components/forms/IDFStationSelector';
+import { needsIDFStation } from '../utils/idfStations';
 import { generateHyetograph, getLocalities } from '../services/api';
 import type { HyetographResult } from '../services/api';
 import type { IDFLocality } from '../types/idf';
@@ -97,6 +99,8 @@ export function Hyetograph() {
 
   // Step 0: IDF source
   const [localityId, setLocalityId] = useState('');
+  const [stationId, setStationId] = useState<string | null>(null);
+  const [stationName, setStationName] = useState<string | null>(null);
   const [returnPeriod, setReturnPeriod] = useState(25);
 
   // Step 1: Storm parameters
@@ -113,9 +117,11 @@ export function Hyetograph() {
 
   const hyetoMissingMsg: string | null = (() => {
     if (!localityId) return t('hyetograph.validation.localityRequired');
+    if (needsIDFStation(localityId) && !(stationId || stationName)) return t('calculator.selectStation');
     if (!(returnPeriod > 0)) return t('hyetograph.validation.returnPeriodRequired');
     if (!(duration > 0)) return t('hyetograph.validation.durationRequired');
     if (!(timeStep > 0)) return t('hyetograph.validation.timeStepRequired');
+    if (duration % timeStep || duration < 4 * timeStep) return 'Usá una duración múltiplo del intervalo y al menos cuatro intervalos.';
     if (timeStep > duration) return t('hyetograph.validation.timeStepExceedsDuration');
     return null;
   })();
@@ -131,6 +137,8 @@ export function Hyetograph() {
         time_step_min: timeStep,
         method,
         r: 0.4,
+        station_id: stationId,
+        station_name: stationName,
       });
       setResult(data);
       setStep(3);
@@ -199,7 +207,7 @@ export function Hyetograph() {
                 </label>
                 <select
                   value={localityId}
-                  onChange={(e) => setLocalityId(e.target.value)}
+                  onChange={(e) => { setLocalityId(e.target.value); setStationId(null); setStationName(null); }}
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">{t('hyetograph.idfStep.cityPlaceholder')}</option>
@@ -210,6 +218,8 @@ export function Hyetograph() {
                   ))}
                 </select>
               </div>
+              <IDFStationSelector localityId={localityId} stationId={stationId} stationName={stationName}
+                onChange={(value) => { setStationId(value.station_id); setStationName(value.station_name); }} />
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   {t('hyetograph.idfStep.returnPeriod')}
@@ -234,7 +244,7 @@ export function Hyetograph() {
               <div className="flex justify-end pt-2">
                 <button
                   type="button"
-                  disabled={!localityId}
+                  disabled={!localityId || (needsIDFStation(localityId) && !(stationId || stationName))}
                   onClick={() => setStep(1)}
                   className="px-6 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
@@ -397,7 +407,8 @@ export function Hyetograph() {
         {/* ── Step 3: Results ─────────────────────────────────────────────── */}
         {step === 3 && result && (
           <div className="space-y-5">
-            {/* Summary stats */}
+            {result?.warnings?.map((warning, i) => <p key={i} className="text-sm text-amber-800">{warning}</p>)}
+          {/* Summary stats */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
                 { label: t('hyetograph.results.totalRainfall'), value: `${result.total_depth_mm.toFixed(1)} mm` },

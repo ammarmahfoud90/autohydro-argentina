@@ -6,6 +6,8 @@ of the Modo Proyecto: IDF → Cuenca → Hietograma → Hidrograma → Canal →
 """
 
 from io import BytesIO
+from html import escape
+from app.services.calculation_trace import prepare_report_data, trace_rows
 from datetime import datetime
 from typing import Any, Optional
 
@@ -38,6 +40,7 @@ _ORANGE = colors.HexColor("#d97706")
 _YELLOW = colors.HexColor("#ca8a04")
 
 _RISK_COLORS = {
+    "no_evaluado": _GRAY,
     "muy_bajo": _GREEN,
     "bajo": colors.HexColor("#65a30d"),
     "moderado": _YELLOW,
@@ -45,6 +48,7 @@ _RISK_COLORS = {
     "muy_alto": _RED,
 }
 _RISK_LABELS = {
+    "no_evaluado": "No evaluado",
     "muy_bajo": "Muy bajo", "bajo": "Bajo", "moderado": "Moderado",
     "alto": "Alto", "muy_alto": "Muy alto",
 }
@@ -115,6 +119,14 @@ class ProyectoReportGenerator:
     # ── Public ────────────────────────────────────────────────────────────────
 
     def generate(self, proyecto_data: dict) -> BytesIO:
+        proyecto_data = {**proyecto_data}
+        if (proyecto_data.get("paso4") or {}).get("result"):
+            p4 = {**proyecto_data["paso4"]}
+            result = prepare_report_data(p4["result"])
+            if abs(result.get("peak_flow_m3s", 0) - p4.get("q_pico_m3s", 0)) > 1e-4:
+                raise ValueError("El caudal guardado cambió con el motor actual; recalcular el proyecto y el canal antes de emitir el informe.")
+            p4.update(result=result, nivel_riesgo=result["risk_level"])
+            proyecto_data["paso4"] = p4
         buffer = BytesIO()
         doc = SimpleDocTemplate(
             buffer,
@@ -348,6 +360,9 @@ class ProyectoReportGenerator:
         if result.get("intensity_mm_hr"):
             rows.append(("Intensidad IDF adoptada", f"{result.get('intensity_mm_hr', 0):.2f} mm/hr"))
 
+        rows.append(("Duración utilizada en IDF", f"{result.get('duration_min', '—')} min"))
+        rows.append(("Fórmula Tc adoptada", escape(result.get("tc_adopted_formula_name") or "—")))
+        rows.extend((escape(k), escape(v)) for k, v in trace_rows(result))
         elems.append(self._kv_table(rows))
         elems.append(Spacer(1, 0.4 * cm))
         return elems

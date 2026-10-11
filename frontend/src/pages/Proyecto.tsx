@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { IDFStationSelector } from '../components/forms/IDFStationSelector';
+import { needsIDFStation } from '../utils/idfStations';
 import { CitySelector } from '../components/forms/CitySelector';
 import { ChannelCrossSectionSVG } from '../components/manning/ChannelCrossSectionSVG';
 import {
@@ -17,6 +19,7 @@ import {
   useProyecto,
   saveProjectToStorage,
   type Paso5Data,
+  type ProyectoHidraulico,
 } from '../hooks/useProyecto';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -33,7 +36,7 @@ const DURATIONS = [
 ];
 const HYETO_METHODS = [
   { id: 'alternating_blocks', label: 'Bloques Alternos', desc: 'Más usado en Argentina. Pico central simétrico.' },
-  { id: 'scs_type_ii', label: 'SCS Tipo II', desc: 'USDA-NRCS. Pico al 70% de la duración.' },
+  { id: 'scs_type_ii', label: 'SCS Tipo II', desc: 'Distribución estadounidense de 24 h. Validar su aplicación local.' },
   { id: 'chicago', label: 'Chicago (r = 0.4)', desc: 'Pico al 40%. Común en estudios urbanos.' },
   { id: 'uniform', label: 'Uniforme', desc: 'Intensidad constante. Conservador.' },
 ];
@@ -63,6 +66,7 @@ const MANNING_PRESETS = [
 ];
 
 const RISK_BADGE: Record<string, string> = {
+  no_evaluado: 'bg-gray-100 text-gray-800 border-gray-300',
   muy_bajo: 'bg-green-100 text-green-800 border-green-300',
   bajo:     'bg-lime-100 text-lime-800 border-lime-300',
   moderado: 'bg-yellow-100 text-yellow-800 border-yellow-300',
@@ -70,6 +74,7 @@ const RISK_BADGE: Record<string, string> = {
   muy_alto: 'bg-red-100 text-red-800 border-red-300',
 };
 const RISK_LABEL: Record<string, string> = {
+  no_evaluado: 'No evaluado',
   muy_bajo: 'Muy bajo', bajo: 'Bajo', moderado: 'Moderado', alto: 'Alto', muy_alto: 'Muy alto',
 };
 
@@ -248,10 +253,12 @@ function InputField({
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function Proyecto() {
-  const { proyecto, step, setStep, updateStep, saveProject } = useProyecto();
+  const { proyecto, step, setStep, updateStep: persistStep, saveProject } = useProyecto();
 
   // ── Step 1 state ─────────────────────────────────────────────────────────
   const [localityId, setLocalityId] = useState('');
+  const [stationId, setStationId] = useState<string | null>(null);
+  const [stationName, setStationName] = useState<string | null>(null);
   const [locality, setLocality] = useState<IDFLocality | null>(null);
   const [returnPeriod, setReturnPeriod] = useState(25);
   const [durationMin, setDurationMin] = useState(60);
@@ -314,6 +321,14 @@ export function Proyecto() {
     }
   }, [locality, projName]);
 
+  function updateStep<K extends keyof ProyectoHidraulico>(key: K, value: ProyectoHidraulico[K]) {
+    const changed = Number(String(key).replace('paso', ''));
+    if (changed < 3) setHyetoResult(null);
+    if (changed < 4) setHydroResult(null);
+    if (changed < 5) setManningResult(null);
+    persistStep(key, value);
+  }
+
   // ── Computed Tc ───────────────────────────────────────────────────────────
 
   const areaVal = parseFloat(area) || 0;
@@ -348,6 +363,8 @@ export function Proyecto() {
         duration_min: durationMin,
         time_step_min: 5,
         method: 'uniform',
+        station_id: stationId,
+        station_name: stationName,
       });
       updateStep('paso1', {
         localidad_id: localityId,
@@ -357,6 +374,8 @@ export function Proyecto() {
         duration_min: durationMin,
         intensidad_mm_hr: res.peak_intensity_mm_hr,
         fuente_idf: locality.source.document,
+        station_id: stationId,
+        station_name: stationName,
       });
       setStep(2);
     } catch (err) {
@@ -378,6 +397,8 @@ export function Proyecto() {
         time_step_min: deltaT,
         method: hyetoMethod,
         r: 0.4,
+        station_id: proyecto.paso1.station_id,
+        station_name: proyecto.paso1.station_name,
       });
       setHyetoResult(res);
       updateStep('paso3', {
@@ -425,7 +446,8 @@ export function Proyecto() {
         language: 'es',
         manual_idf_table: null,
         manual_idf_formula: null,
-        station_id: null,
+        station_id: p1.station_id,
+        station_name: p1.station_name,
       });
       setHydroResult(res);
       updateStep('paso4', {
@@ -600,7 +622,9 @@ export function Proyecto() {
                   value={localityId}
                   onChange={(id, loc) => {
                     setLocalityId(id);
-                    if (loc) setLocality(loc);
+                    setLocality(loc ?? null);
+                    setStationId(null);
+                    setStationName(null);
                   }}
                 />
               </div>
@@ -629,9 +653,11 @@ export function Proyecto() {
                   {step1Error}
                 </div>
               )}
+              <IDFStationSelector localityId={localityId} stationId={stationId} stationName={stationName}
+                onChange={(value) => { setStationId(value.station_id); setStationName(value.station_name); }} />
               <NavButtons
                 onNext={handleStep1Continue}
-                nextDisabled={!localityId}
+                nextDisabled={!localityId || (needsIDFStation(localityId) && !(stationId || stationName))}
                 loading={step1Loading}
                 nextLabel="Verificar IDF y continuar →"
               />
@@ -783,6 +809,7 @@ export function Proyecto() {
               </div>
 
               {/* Mini chart if already generated */}
+              {hyetoResult?.warnings?.map((warning, i) => <p key={i} className="text-sm text-amber-800">{warning}</p>)}
               {hyetoResult && (
                 <div className="rounded-lg border border-gray-200 dark:border-slate-600 p-3 bg-gray-50 dark:bg-slate-700/50">
                   <p className="text-xs text-gray-500 dark:text-slate-400 mb-2">
@@ -833,7 +860,7 @@ export function Proyecto() {
                     <button
                       key={m.id}
                       type="button"
-                      onClick={() => setHydroMethod(m.id as typeof hydroMethod)}
+                      onClick={() => { setHydroMethod(m.id as typeof hydroMethod); setHydroResult(null); updateStep('paso4', null); }}
                       className={`px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-all ${
                         hydroMethod === m.id
                           ? 'border-blue-600 bg-blue-600 text-white'
@@ -869,6 +896,7 @@ export function Proyecto() {
                 </div>
               )}
 
+              {hydroResult?.warnings?.map((warning, i) => <p key={i} className="text-sm text-amber-800">{warning}</p>)}
               {hydroResult && (
                 <>
                   <div className="grid grid-cols-2 gap-3">

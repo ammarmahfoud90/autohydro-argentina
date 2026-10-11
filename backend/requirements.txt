@@ -13,8 +13,11 @@ httpx>=0.28.1
 python-dotenv>=1.0.1
 staticmap>=0.5.7
 # Watershed delineation (uses httpx for DEM download, already listed above)
-numpy>=1.24
+# pysheds 0.5 still calls np.in1d, removed in NumPy 2.4.
+numpy>=1.24,<2.4
 scipy>=1.11
 pysheds>=0.4
 rasterio>=1.3
 shapely>=2.0
+pyproj>=3.6
+pypdf>=5.0

@@ -76,7 +76,7 @@ export function PMDEstimator() {
     navigate('/calculadora', {
       state: {
         manualIDF: {
-          source: `Atlas PMD INA-CIRSA — ${result.city}`,
+          source: result.source,
           table: result.idf_table,
           durations: result.durations_min,
           returnPeriods: result.return_periods,
@@ -125,9 +125,7 @@ export function PMDEstimator() {
                 Estimación basada en datos diarios — No datos pluviográficos
               </h3>
               <p className="text-amber-700 dark:text-amber-400 mt-1 text-sm">
-                Estos resultados se derivan del{' '}
-                <strong>Atlas de Precipitaciones Máximas Diarias (PMD)</strong>{' '}
-                del INA-CIRSA/UNC (2020) mediante el Modelo DIT de desagregación temporal.
+                Estos resultados usan PMD aproximadas incluidas en el proyecto y un modelo DIT normalizado a 24 horas. La procedencia de los valores por ciudad está pendiente de verificación.
                 Son estimaciones orientativas para zonas sin datos pluviográficos verificados.
               </p>
               <p className="text-amber-700 dark:text-amber-400 mt-1 text-sm font-medium">

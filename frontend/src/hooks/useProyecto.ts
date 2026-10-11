@@ -12,6 +12,8 @@ export interface Paso1Data {
   duration_min: number;
   intensidad_mm_hr: number;
   fuente_idf: string;
+  station_id?: string | null;
+  station_name?: string | null;
 }
 
 export interface Paso2Data {
@@ -131,6 +133,21 @@ function createProyecto(): ProyectoHidraulico {
   };
 }
 
+export function updateProjectStep<K extends keyof ProyectoHidraulico>(
+  previous: ProyectoHidraulico, key: K, value: ProyectoHidraulico[K],
+): ProyectoHidraulico {
+  const next = { ...previous, [key]: value, modificado: new Date().toISOString() };
+  const stepNumber = Number(String(key).replace('paso', ''));
+  if (stepNumber >= 1 && stepNumber <= 4) {
+    if (stepNumber < 2) next.paso2 = null;
+    if (stepNumber < 3) next.paso3 = null;
+    if (stepNumber < 4) next.paso4 = null;
+    next.paso5 = null;
+  }
+  // Report author/client notes are metadata and may safely remain.
+  return next;
+}
+
 export function useProyecto() {
   const [proyecto, setProyecto] = useState<ProyectoHidraulico>(createProyecto);
   const [step, setStep] = useState(1);
@@ -139,11 +156,7 @@ export function useProyecto() {
     key: K,
     value: ProyectoHidraulico[K],
   ) {
-    setProyecto((prev) => ({
-      ...prev,
-      [key]: value,
-      modificado: new Date().toISOString(),
-    }));
+    setProyecto((prev) => updateProjectStep(prev, key, value));
   }
 
   function saveProject(extraPaso6?: Paso6Data) {

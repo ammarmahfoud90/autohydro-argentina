@@ -13,32 +13,36 @@ IDF formula used: Ip = A / (Td + B)^C  (APA Resolución 1334/21)
 
 from __future__ import annotations
 
+import math
+
 from app.services.idf_service import get_locality, calculate_intensity
 
 
 # ── IDF helpers ───────────────────────────────────────────────────────────────
 
-def _idf_intensity(locality_id: str, T: float, t_min: float) -> float:
+def _idf_intensity(locality_id: str, T: float, t_min: float, **station) -> float:
     """Return rainfall intensity [mm/hr] for given duration t_min [min]."""
-    return calculate_intensity(locality_id, T, t_min)["intensity_mm_hr"]
+    return calculate_intensity(locality_id, T, t_min, **station)["intensity_mm_hr"]
 
 
-def _idf_depth(locality_id: str, T: float, t_min: float) -> float:
+def _idf_depth(locality_id: str, T: float, t_min: float, **station) -> float:
     """Return cumulative rainfall depth [mm] for duration t_min."""
     if t_min <= 0:
         return 0.0
-    return _idf_intensity(locality_id, T, t_min) * t_min / 60.0
+    return _idf_intensity(locality_id, T, t_min, **station) * t_min / 60.0
 
 
 # ── SCS Type II dimensionless distribution ────────────────────────────────────
-# Fraction of total 24-hour storm depth accumulated at each tenth of the duration.
-# Source: USDA-NRCS NEH Part 630, Chapter 4 (2010).
+# Hourly cumulative ratios from USDA-NRCS NEH 630, Chapter 4, Fig. 4-36
+# (2019). They describe the standard US 24-hour Type II storm. Rescaling
+# the time axis to another duration is an explicit uncalibrated assumption.
 
 _SCS_TYPE_II: list[tuple[float, float]] = [
-    (0.0, 0.000), (0.1, 0.040), (0.2, 0.080), (0.3, 0.120), (0.35, 0.147),
-    (0.4, 0.163), (0.45, 0.181), (0.5, 0.204), (0.55, 0.235), (0.6, 0.283),
-    (0.65, 0.387), (0.70, 0.663), (0.75, 0.735), (0.80, 0.772), (0.85, 0.799),
-    (0.9, 0.820), (0.95, 0.860), (1.0, 1.000),
+    (hour / 24.0, fraction) for hour, fraction in enumerate([
+        0.000, 0.011, 0.022, 0.035, 0.048, 0.063, 0.080, 0.099,
+        0.120, 0.147, 0.181, 0.235, 0.663, 0.772, 0.820, 0.854,
+        0.880, 0.902, 0.921, 0.938, 0.952, 0.965, 0.977, 0.989, 1.000,
+    ])
 ]
 
 
@@ -60,7 +64,7 @@ def _scs_cumulative_fraction(t_frac: float) -> float:
 # ── Method implementations ────────────────────────────────────────────────────
 
 def _alternating_blocks(
-    locality_id: str, T: float, duration_min: int, time_step_min: int
+    locality_id: str, T: float, duration_min: int, time_step_min: int, **station
 ) -> tuple[list[float], list[float], list[float]]:
     """
     Alternating Blocks method.
@@ -75,8 +79,10 @@ def _alternating_blocks(
     # Incremental depths for each block (cumulative depth at j*dt minus (j-1)*dt)
     increments: list[float] = []
     for j in range(1, n + 1):
-        d_now = _idf_depth(locality_id, T, j * dt)
-        d_prev = _idf_depth(locality_id, T, (j - 1) * dt)
+        d_now = _idf_depth(locality_id, T, j * dt, **station)
+        d_prev = _idf_depth(locality_id, T, (j - 1) * dt, **station)
+        if d_now < d_prev - 1e-9:
+            raise ValueError("La curva IDF produce láminas acumuladas decrecientes; revisar sus datos antes de generar bloques.")
         increments.append(max(0.0, d_now - d_prev))
 
     # Sort descending by magnitude
@@ -105,7 +111,7 @@ def _alternating_blocks(
 
 
 def _scs_type_ii(
-    locality_id: str, T: float, duration_min: int, time_step_min: int
+    locality_id: str, T: float, duration_min: int, time_step_min: int, **station
 ) -> tuple[list[float], list[float], list[float]]:
     """
     SCS Type II synthetic storm.
@@ -115,7 +121,7 @@ def _scs_type_ii(
     """
     n = duration_min // time_step_min
     dt = time_step_min
-    total_depth = _idf_depth(locality_id, T, duration_min)
+    total_depth = _idf_depth(locality_id, T, duration_min, **station)
 
     depths: list[float] = []
     times: list[float] = []
@@ -132,62 +138,38 @@ def _scs_type_ii(
 
 
 def _chicago(
-    locality_id: str, T: float, duration_min: int, time_step_min: int, r: float = 0.4
+    locality_id: str, T: float, duration_min: int, time_step_min: int,
+    r: float = 0.4, **station,
 ) -> tuple[list[float], list[float], list[float]]:
-    """
-    Chicago method — asymmetric with peak at approximately r * duration_min.
+    """Integrate continuous Chicago depth over each interval, including the peak.
 
-    Incremental depths are computed from the partial-duration cumulative functions:
-
-        P_before(ta) = r  * IDF_depth(ta / r)          [pre-peak, ta measured backward]
-        P_after(td)  = (1-r) * IDF_depth(td / (1-r))   [post-peak, td measured forward]
-
-    This ensures Sigma(ΔP_k) = IDF_depth(D) = i(D)*D/60, i.e. total precipitation
-    is conserved for any input parameters.
+    Keeping the peak at r*D (rather than rounding it to a whole block)
+    preserves total rainfall for every time step and peak position.
     """
     n = duration_min // time_step_min
-    dt = time_step_min
-    peak_step = int(round(r * n))
-    one_minus_r = max(1.0 - r, 0.01)
+    peak_time = r * duration_min
+    total = _idf_depth(locality_id, T, duration_min, **station)
 
-    depths: list[float] = []
-    times: list[float] = []
+    def cumulative(t):
+        if t <= peak_time:
+            return r * (total - _idf_depth(locality_id, T, (peak_time - t) / r, **station))
+        return r * total + (1 - r) * _idf_depth(locality_id, T, (t - peak_time) / (1 - r), **station)
 
-    for j in range(n):
-        if j < peak_step:
-            # Pre-peak: step j covers [j*dt, (j+1)*dt], both before the peak.
-            # ta goes from (peak_step-j)*dt DOWN to (peak_step-j-1)*dt.
-            k = peak_step - j           # steps from peak (1-indexed; k=1 is nearest)
-            d1 = _idf_depth(locality_id, T, k * dt / r)
-            d2 = _idf_depth(locality_id, T, (k - 1) * dt / r)
-            delta = max(0.0, r * (d1 - d2))
-
-        elif j == peak_step:
-            # Peak step: interval [peak_step*dt, (peak_step+1)*dt] starts at the peak.
-            # The entire step is on the post-peak side.
-            delta = max(0.0, one_minus_r * _idf_depth(locality_id, T, dt / one_minus_r))
-
-        else:
-            # Post-peak: td goes from (j-peak_step)*dt to (j-peak_step+1)*dt.
-            m = j - peak_step           # steps past peak (1-indexed; m=1 is nearest)
-            d1 = _idf_depth(locality_id, T, (m + 1) * dt / one_minus_r)
-            d2 = _idf_depth(locality_id, T, m * dt / one_minus_r)
-            delta = max(0.0, one_minus_r * (d1 - d2))
-
-        depths.append(delta)
-        times.append(j * dt)
-
-    intensities = [d / (dt / 60.0) for d in depths]
-    return times, depths, intensities
+    times = [j * time_step_min for j in range(n)]
+    depths = [cumulative(t + time_step_min) - cumulative(t) for t in times]
+    if any(d < -1e-9 for d in depths):
+        raise ValueError("La curva IDF produce bloques Chicago negativos; revisar sus datos.")
+    depths = [max(0.0, d) for d in depths]
+    return times, depths, [d * 60 / time_step_min for d in depths]
 
 
 def _uniform(
-    locality_id: str, T: float, duration_min: int, time_step_min: int
+    locality_id: str, T: float, duration_min: int, time_step_min: int, **station
 ) -> tuple[list[float], list[float], list[float]]:
     """Uniform (constant intensity) distribution."""
     n = duration_min // time_step_min
     dt = time_step_min
-    intensity = _idf_intensity(locality_id, T, duration_min)
+    intensity = _idf_intensity(locality_id, T, duration_min, **station)
     depth_per_step = intensity * dt / 60.0
 
     times = [j * dt for j in range(n)]
@@ -205,6 +187,8 @@ def generate_hyetograph(
     time_step_min: int,
     method: str,
     r: float = 0.4,
+    station_name: str | None = None,
+    station_id: str | None = None,
 ) -> dict:
     """
     Generate a design storm hyetograph.
@@ -223,25 +207,40 @@ def generate_hyetograph(
             total_depth_mm, peak_intensity_mm_hr, peak_time_min,
             method, city, return_period, duration_min, time_step_min
     """
+    if not all(math.isfinite(v) for v in (return_period, duration_min, time_step_min, r)):
+        raise ValueError("Los parámetros deben ser finitos.")
+    if return_period <= 1 or duration_min <= 0 or time_step_min <= 0 or duration_min % time_step_min:
+        raise ValueError("La duración debe ser positiva y múltiplo exacto del intervalo; T debe ser mayor que 1.")
+    if not 0 < r < 1:
+        raise ValueError("Chicago requiere 0 < r < 1.")
+    station = {"station_name": station_name, "station_id": station_id}
     loc = get_locality(locality_id)
+    idf = calculate_intensity(locality_id, return_period, duration_min, **station)
+    warnings = list(idf.get("warnings", []))
+    if idf.get("duration_extrapolation_warning"):
+        warnings.append("Duración fuera del rango IDF publicado; lluvia extrapolada.")
+    if method == "scs_type_ii":
+        warnings.append("SCS Tipo II usa la distribución estadounidense de 24 h, interpolada desde valores horarios; su aplicación local requiere validación.")
+        if duration_min != 1440:
+            warnings.append("La distribución SCS Tipo II fue reescalada a otra duración; no representa una tormenta de 24 h validada.")
 
     T = float(return_period)
 
     if method == "alternating_blocks":
         times, depths, intensities = _alternating_blocks(
-            locality_id, T, duration_min, time_step_min
+            locality_id, T, duration_min, time_step_min, **station
         )
     elif method == "scs_type_ii":
         times, depths, intensities = _scs_type_ii(
-            locality_id, T, duration_min, time_step_min
+            locality_id, T, duration_min, time_step_min, **station
         )
     elif method == "chicago":
         times, depths, intensities = _chicago(
-            locality_id, T, duration_min, time_step_min, r
+            locality_id, T, duration_min, time_step_min, r, **station
         )
     elif method == "uniform":
         times, depths, intensities = _uniform(
-            locality_id, T, duration_min, time_step_min
+            locality_id, T, duration_min, time_step_min, **station
         )
     else:
         raise ValueError(f"Método '{method}' no reconocido")
@@ -281,4 +280,8 @@ def generate_hyetograph(
         "duration_min": duration_min,
         "time_step_min": time_step_min,
         "idf_source": loc["source"]["document"],
+        "station_name": station_name,
+        "station_id": station_id,
+        "warnings": warnings,
+        "validation_status": "synthetic_design_storm",
     }

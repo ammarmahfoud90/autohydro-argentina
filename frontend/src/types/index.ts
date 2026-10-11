@@ -35,7 +35,7 @@ export type InfrastructureType =
   | 'canal_urbano'
   | 'canal_rural'
   | 'defensa_costera';
-export type RiskLevel = 'muy_bajo' | 'bajo' | 'moderado' | 'alto' | 'muy_alto';
+export type RiskLevel = 'no_evaluado' | 'muy_bajo' | 'bajo' | 'moderado' | 'alto' | 'muy_alto';
 
 export interface LandUseCategory {
   land_use: string;
@@ -68,6 +68,7 @@ export interface HydrologyInput {
   manual_idf_table?: ManualIDFTable | null;
   manual_idf_formula?: ManualIDFFormula | null;
   station_id?: string | null;
+  station_name?: string | null;
   // Rational method: when false (default) the backend overrides duration_min
   // with tc_adopted for the IDF lookup. Setting true is the "advanced" path.
   override_duration?: boolean;
@@ -146,6 +147,14 @@ export interface HydrologyResult {
   tc_adopted_is_user_selected?: boolean;
   use_pampa_lambda?: boolean;
   warnings?: string[];
+  calculation_inputs?: Record<string, unknown>;
+  calculation_version?: string;
+  validation_status?: string;
+  requested_duration_min?: number;
+  idf_extrapolated?: boolean;
+  idf_model?: string;
+  idf_data_sha256?: string;
+  hydrograph_model?: string;
 }
 
 export interface CNSensitivityPoint {
@@ -185,5 +194,6 @@ export const DEFAULT_FORM: HydrologyInput = {
   manual_idf_table: null,
   manual_idf_formula: null,
   station_id: null,
+  station_name: null,
   override_duration: false,
 };

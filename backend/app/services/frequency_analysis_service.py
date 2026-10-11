@@ -75,16 +75,17 @@ def log_pearson_iii_quantile(
 ) -> float:
     """
     Q para TR usando Log-Pearson III.
-    Usa el factor de frecuencia K de Wilson-Hilferty.
+    Usa el cuantil Pearson III estandarizado en escala log10.
+    SciPy pearson3.isf(1/TR, skew) evalúa la cola superior sin la
+    aproximación Wilson-Hilferty y recupera el caso normal para skew=0.
     """
-    p = 1 - 1 / tr
-    Cs = skew_log
-    if abs(Cs) < 1e-6:
-        K = stats.norm.ppf(p)
-    else:
-        k = 2 / Cs
-        z = stats.norm.ppf(p)
-        K = k * ((z - k / 6) * Cs / 6 + 1) ** 3 - k
+    if not all(np.isfinite(v) for v in (mean_log, std_log, skew_log, tr)):
+        raise ValueError("Los parámetros Log-Pearson III deben ser finitos.")
+    if tr <= 1 or std_log < 0:
+        raise ValueError("TR debe ser mayor que 1 y el desvío no puede ser negativo.")
+    if std_log == 0:
+        return float(10 ** mean_log)
+    K = stats.pearson3.isf(1.0 / tr, skew_log)
 
     log_q = mean_log + K * std_log
     return float(10 ** log_q)
@@ -154,8 +155,12 @@ def run_frequency_analysis(
 
     if len(data) < 5:
         raise ValueError("Se necesitan al menos 5 años de datos.")
-    if any(q <= 0 for q in data):
+    if any(not np.isfinite(q) or q <= 0 for q in data):
         raise ValueError("Todos los caudales deben ser positivos.")
+    if not return_periods or any(not np.isfinite(tr) or tr <= 1 for tr in return_periods):
+        raise ValueError("Los períodos de retorno deben ser finitos y mayores que 1.")
+    if np.std(data) == 0:
+        raise ValueError("La serie debe tener variación para ajustar distribuciones de frecuencia.")
 
     stats_desc = compute_statistics(data)
 

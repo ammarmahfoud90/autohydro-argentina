@@ -14,6 +14,11 @@ def compute_muskingum_coefficients(
     X: coeficiente de ponderación (0-0.5)
     dt: intervalo de tiempo (horas)
     """
+    if not all(np.isfinite(v) for v in (K, X, dt)) or K <= 0 or dt <= 0 or not 0 <= X <= 0.5:
+        raise ValueError("Muskingum requiere K y Δt positivos y finitos, y 0 ≤ X ≤ 0.5.")
+    lower, upper = 2 * K * X, 2 * K * (1 - X)
+    if dt < lower - 1e-12 or dt > upper + 1e-12:
+        raise ValueError(f"Δt={dt:g} h fuera del rango de coeficientes no negativos [{lower:g}, {upper:g}] h. Ajustar Δt, K o X.")
     denom = K - K * X + dt / 2
     if abs(denom) < 1e-10:
         raise ValueError("Denominador cero — verificar K, X y Δt.")
@@ -37,15 +42,16 @@ def validate_muskingum_stability(
     """
     lower = 2 * K * X
     upper = 2 * K * (1 - X)
-    stable = lower < dt < upper
+    stable = bool(all(np.isfinite(v) for v in (K, X, dt)) and K > 0 and dt > 0
+                  and 0 <= X <= 0.5 and lower - 1e-12 <= dt <= upper + 1e-12)
     return {
         "stable": stable,
-        "condition": f"2KX = {lower:.2f} < Δt = {dt:.2f} < 2K(1-X) = {upper:.2f}",
+        "condition": f"2KX = {lower:.2f} ≤ Δt = {dt:.2f} ≤ 2K(1-X) = {upper:.2f}",
         "lower_bound": lower,
         "upper_bound": upper,
         "recommendation": (
             "Parámetros estables." if stable
-            else f"Ajustar Δt al rango ({lower:.2f}, {upper:.2f}) horas."
+            else f"Ajustar Δt al rango [{lower:.2f}, {upper:.2f}] horas."
         )
     }
 
@@ -74,7 +80,14 @@ def route_muskingum(
     if K <= 0:
         raise ValueError("K debe ser positivo.")
 
-    dt = times[1] - times[0]
+    if not all(np.isfinite(v) for v in [*times, *inflow, K, X, Q_initial]):
+        raise ValueError("El hidrograma y los parámetros deben contener valores finitos.")
+    if any(q < 0 for q in inflow) or Q_initial < 0:
+        raise ValueError("Los caudales de entrada y el caudal inicial no pueden ser negativos.")
+    intervals = np.diff(times)
+    dt = float(intervals[0])
+    if dt <= 0 or not np.allclose(intervals, dt, rtol=1e-9, atol=1e-12):
+        raise ValueError("Los tiempos deben ser crecientes y tener un intervalo uniforme Δt.")
 
     stability = validate_muskingum_stability(K, X, dt)
 
@@ -83,7 +96,9 @@ def route_muskingum(
     outflow = [Q_initial]
     for i in range(1, len(inflow)):
         Q_out = C0 * inflow[i] + C1 * inflow[i - 1] + C2 * outflow[i - 1]
-        outflow.append(max(0.0, float(Q_out)))
+        if Q_out < -1e-10:
+            raise ValueError("El tránsito produjo un caudal negativo; revisar parámetros.")
+        outflow.append(max(0.0, float(Q_out)))  # roundoff only; unstable inputs are rejected
 
     Q_peak_in = max(inflow)
     Q_peak_out = max(outflow)
@@ -92,6 +107,11 @@ def route_muskingum(
 
     attenuation = (Q_peak_in - Q_peak_out) / Q_peak_in * 100 if Q_peak_in > 0 else 0.0
     lag = t_peak_out - t_peak_in
+    volume_in = sum((inflow[i] + inflow[i - 1]) * dt * 1800 for i in range(1, len(inflow)))
+    volume_out = sum((outflow[i] + outflow[i - 1]) * dt * 1800 for i in range(1, len(outflow)))
+    storage_initial = K * 3600 * (X * inflow[0] + (1 - X) * outflow[0])
+    storage_final = K * 3600 * (X * inflow[-1] + (1 - X) * outflow[-1])
+    balance_error = volume_in - volume_out - (storage_final - storage_initial)
 
     return {
         "method": "Muskingum",
@@ -107,6 +127,12 @@ def route_muskingum(
             "lag_hours": round(lag, 2),
             "t_peak_in": t_peak_in,
             "t_peak_out": t_peak_out,
+            "volume_in_m3": volume_in,
+            "volume_out_m3": volume_out,
+            "storage_initial_m3": storage_initial,
+            "storage_final_m3": storage_final,
+            "mass_balance_error_m3": balance_error,
+            "mass_balance_error_pct": 100 * balance_error / volume_in if volume_in else 0.0,
         }
     }
 

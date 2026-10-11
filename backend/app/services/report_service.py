@@ -5,7 +5,9 @@ Produces a professional Argentine-standard hydrological calculation report.
 """
 
 from io import BytesIO
+from app.services.calculation_trace import prepare_report_data, trace_rows
 from datetime import datetime
+from html import escape
 from typing import Any, Optional
 
 from reportlab.lib.pagesizes import A4
@@ -58,6 +60,7 @@ _GREEN = colors.HexColor("#16a34a")
 _YELLOW = colors.HexColor("#ca8a04")
 
 _RISK_COLORS = {
+    "no_evaluado": _GRAY,
     "muy_bajo": _GREEN,
     "bajo": colors.HexColor("#65a30d"),
     "moderado": _YELLOW,
@@ -66,6 +69,7 @@ _RISK_COLORS = {
 }
 
 _RISK_LABELS_ES = {
+    "no_evaluado": "NO EVALUADO",
     "muy_bajo": "MUY BAJO",
     "bajo": "BAJO",
     "moderado": "MODERADO",
@@ -74,6 +78,7 @@ _RISK_LABELS_ES = {
 }
 
 _RISK_LABELS_EN = {
+    "no_evaluado": "NOT ASSESSED",
     "muy_bajo": "VERY LOW",
     "bajo": "LOW",
     "moderado": "MODERATE",
@@ -527,13 +532,13 @@ class MemoriaCalculoGenerator:
         story.append(Spacer(1, 0.5 * cm))
         story.append(
             Paragraph(
-                "<b>Fórmula IDF aplicada:</b>  i = (a × T<sup>b</sup>) / (t + c)<sup>d</sup>",
+                "<b>Modelo IDF aplicado:</b> " + escape(str(data.get("idf_model", "ver fuente y anexo"))),
                 S["body_left"],
             )
         )
         story.append(
             Paragraph(
-                "donde i [mm/hr], T [años], t [minutos] y a, b, c, d son coeficientes regionales.",
+                "Cada localidad utiliza su propio modelo. La fuente y las entradas completas quedan registradas en el anexo de trazabilidad.",
                 S["body"],
             )
         )
@@ -551,8 +556,8 @@ class MemoriaCalculoGenerator:
                 row = [str(d)]
                 for tr in tr_list:
                     try:
-                        res = calculate_intensity(locality_id, float(tr), float(d))
-                        row.append(f"{res['intensity_mm_hr']:.1f}")
+                        res = calculate_intensity(locality_id, float(tr), float(d), station_name=data.get("station_name"), station_id=data.get("station_id"))
+                        row.append("—" if res.get("duration_extrapolation_warning") else f"{res['intensity_mm_hr']:.1f}")
                         any_value = True
                     except Exception:
                         row.append("—")
@@ -582,7 +587,7 @@ class MemoriaCalculoGenerator:
                 story.append(idf_tbl)
                 story.append(Spacer(1, 0.2 * cm))
                 story.append(Paragraph(
-                    "Valores calculados con la formulación oficial vigente para la "
+                    "Valores calculados con la formulación registrada en el proyecto para la "
                     "localidad. Las celdas marcadas con '—' corresponden a duraciones "
                     "o períodos de retorno fuera del rango de validez.",
                     S["body"],
@@ -590,13 +595,13 @@ class MemoriaCalculoGenerator:
 
         # ── TR reliability warning box ────────────────────────────────────
         _tr_warn = next(
-            (w for w in data.get("warnings", []) if not w.startswith("⚠️")), None
+            iter(data.get("warnings", [])), None
         )
         if _tr_warn:
             story.append(Spacer(1, 0.4 * cm))
             _tr_tbl = Table(
                 [[Paragraph(
-                    f"<b>⚠️ ADVERTENCIA — Período de retorno seleccionado</b><br/>{_tr_warn}",
+                    f"<b>ADVERTENCIAS DEL CÁLCULO</b><br/>{escape(_tr_warn)}",
                     S["body"],
                 )]],
                 colWidths=[16 * cm],
@@ -747,7 +752,7 @@ class MemoriaCalculoGenerator:
             if data.get("use_pampa_lambda"):
                 amc_note = (
                     "Condición de humedad antecedente: Pampa Húmeda "
-                    "(λ=0.05, criterio regional INA)."
+                    "(λ=0.05, opción a calibrar junto con CN)."
                 )
             else:
                 amc_note = (
@@ -1192,7 +1197,8 @@ class MemoriaCalculoGenerator:
             ("Fecha de cálculo", datetime.now().strftime("%d/%m/%Y %H:%M")),
         ])
 
-        all_rows.extend([[k, v] for k, v in flat_fields])
+        flat_fields.extend(trace_rows(data))
+        all_rows.extend([[Paragraph(escape(str(k)), S["body"]), Paragraph(escape(str(v)), S["body"])] for k, v in flat_fields])
         story.append(self._make_table(all_rows))
         return story
 
@@ -1257,6 +1263,9 @@ class MemoriaCalculoGenerator:
         Returns:
             BytesIO buffer containing the PDF
         """
+        calculation_data = prepare_report_data(calculation_data)
+        if comparison_data:
+            comparison_data = prepare_report_data(comparison_data)
         # ai_recommendations may be a dict of sections or plain string
         if isinstance(ai_recommendations, dict):
             ai_sections = ai_recommendations
