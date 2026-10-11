@@ -98,6 +98,10 @@ frontend aprobadas**; lint y compilación de producción aprobados, con Python
 deprecación de `pysheds` y avisos de tamaño del bundle y antigüedad de Browserslist;
 no se presentan como errores de cálculo corregidos.
 
+La [ejecución de CI 46](https://github.com/ammarmahfoud90/autohydro-argentina/actions/runs/38117501010)
+aprobó backend y frontend después de corregir la incompatibilidad de NumPy. Esto
+incluye las pruebas en Python 3.11, TypeScript, lint y compilación de producción.
+
 ```bash
 cd backend
 python -m pip install -r requirements-ci.txt
